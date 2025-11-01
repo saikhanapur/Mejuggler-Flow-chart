@@ -10,6 +10,7 @@ import TermsOfService from './pages/TermsOfService';
 import Dashboard from './components/Dashboard';
 import ProcessCreator from './components/ProcessCreator';
 import FlowchartEditor from './components/FlowchartEditor';
+import HTMLFlowchartViewer from './components/HTMLFlowchartViewer';
 import TemplateGallery from './components/TemplateGallery';
 import StudioDashboard from './components/StudioDashboard';
 import Header from './components/Header';
