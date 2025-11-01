@@ -936,12 +936,11 @@ Return ONLY this JSON structure (no markdown, no explanations):
       "timeEstimate": null,
       "operationalDetails": {{
         "requiredData": ["specific field 1", "specific field 2"],
-        "specificActions": ["exact action 1", "exact action 2", "exact action 3"],
+        "specificActions": ["brief action 1 (max 80 chars)", "brief action 2 (max 80 chars)"],
         "contactInfo": {{"Contact Name": "phone/email"}},
         "timeline": "time requirement if any",
         "systems": ["System 1", "System 2"],
         "decisionCriteria": null,
-        "emailTemplates": ["template text if mentioned"],
         "sourcePage": null
       }}
     }},
