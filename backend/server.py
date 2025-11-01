@@ -213,6 +213,7 @@ class Process(BaseModel):
     status: str = "draft"  # draft, published, archived
     nodes: List[ProcessNode] = []
     edges: List[ProcessEdge] = []  # NEW: Explicit edge definitions for branching
+    swimLanes: List[SwimLane] = []  # NEW: Swim lanes for parallel workflows
     actors: List[str] = []
     criticalGaps: List[str] = []
     improvementOpportunities: List[Dict[str, Any]] = []
