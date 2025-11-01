@@ -1165,49 +1165,76 @@ IMPORTANT: If the process is very complex (30+ steps), focus on the MOST CRITICA
             raise HTTPException(status_code=500, detail=f"Failed to parse process: {str(e)}")
     
     async def _enrich_nodes_with_details(self, input_text: str, nodes: List[Dict]) -> List[Dict]:
-        """STAGE 2: Enrich each node with operational details"""
+        """STAGE 2: Extract VALUE-ADD operational details (not repetition)"""
         try:
-            # For now, we'll do a batch enrichment to avoid too many API calls
-            logger.info(f"Enriching {len(nodes)} nodes with operational details...")
+            logger.info(f"Enriching {len(nodes)} nodes with VALUE-ADD operational details...")
             
-            # Create a summary of all nodes for context
-            node_titles = [f"{n['id']}: {n['title']}" for n in nodes[:15]]
+            # Create context for AI
+            node_summary = []
+            for i, n in enumerate(nodes[:12], 1):
+                node_summary.append(f"{i}. {n['id']}: {n['title']}")
             
             chat = LlmChat(
                 api_key=self.api_key,
                 session_id=f"enrich_{uuid.uuid4()}",
-                system_message="Extract operational details for process steps. Be concise."
+                system_message="You are extracting EXECUTABLE details that ADD VALUE. Extract information that helps someone ACTUALLY DO the work, not just repeat what's in the node title."
             ).with_model("anthropic", "claude-4-sonnet-20250514")
             
-            prompt = f"""For these process steps, extract operational details from the document:
+            prompt = f"""EXTRACT VALUE-ADD OPERATIONAL DETAILS
 
-STEPS:
-{chr(10).join(node_titles)}
+You have these HIGH-LEVEL process nodes:
+{chr(10).join(node_summary)}
 
-DOCUMENT EXCERPT:
-{input_text[:15000]}
+For EACH node, extract details that ENABLE EXECUTION:
 
-For EACH step, extract (keep brief - max 80 chars per item):
-- specificActions: List of actions to take
-- requiredData: Data fields to collect  
-- contactInfo: Phone numbers/emails mentioned
-- systems: Software/tools mentioned
-- timeline: Time requirements
+WHAT TO EXTRACT (The VALUE-ADD):
+1. **specificActions**: CONCRETE steps to take (not just repeating the node title)
+   ✅ Good: "Call Wilson IT at 0061 8 9415 2888 ext. 8088", "Screenshot error messages and save to ticket"
+   ❌ Bad: "Notify stakeholders" (this just repeats the node)
 
-Return JSON array matching the step IDs:
+2. **requiredData**: What information/inputs are needed
+   Example: "Officer name", "Error message text", "Ticket number"
+
+3. **contactInfo**: Phone numbers, emails, specific people to contact
+   Example: {{"Wilson IT": "0061 8 9415 2888 ext. 8088", "Patrol Officer": "[dynamic]"}}
+
+4. **systems**: Software, tools, platforms used
+   Example: ["Wilsar", "Lighthouse", "Service Hub", "Rapid app"]
+
+5. **timeline**: Time-based requirements
+   Example: "Check every 30 minutes until resolved", "Respond within 2 hours"
+
+6. **communicationTemplates**: Actual message text or email scripts (brief summary only)
+   Example: "See Modica script for council notification", "Email template: services restored"
+
+7. **decisionCriteria**: For decision nodes - what determines YES/NO
+   Example: "YES if: Wilsar session responsive and test job delivered; NO if: error persists after restart"
+
+DOCUMENT CONTEXT:
+{input_text[:18000]}
+
+Return JSON array:
 [
   {{
     "id": "node-1",
-    "specificActions": ["action 1", "action 2"],
-    "requiredData": ["field1", "field2"],
-    "contactInfo": {{"Name": "phone/email"}},
-    "systems": ["System1"],
+    "specificActions": ["action 1 (concrete, max 80 chars)", "action 2"],
+    "requiredData": ["data1", "data2"],
+    "contactInfo": {{"name": "phone/email"}},
+    "systems": ["System1", "System2"],
     "timeline": "time requirement",
+    "communicationTemplates": ["template reference or brief summary"],
     "decisionCriteria": "for decision nodes only"
   }}
 ]
 
-Keep ALL values under 80 chars. Return valid JSON only."""
+CRITICAL RULES:
+✅ Extract information that helps someone EXECUTE (not just understand)
+✅ Include ALL contact info mentioned (names, phones, emails)
+✅ Keep each item under 80 characters
+✅ For templates: Include brief reference, not full text
+✅ If no details exist for a field, use empty array/null
+
+RETURN VALID JSON ONLY"""
             
             message = UserMessage(text=prompt)
             response = await chat.send_message(message)
