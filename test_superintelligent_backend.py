@@ -307,7 +307,7 @@ def main():
     
     # Test 3: Full Pipeline (only if Stage 0 passed)
     if analysis:
-        input("\n⏸️  Press ENTER to test the full pipeline (Stages 1-3)...")
+        print("\n⏸️  Now testing full pipeline (Stages 1-3)...")
         test_full_pipeline()
     
     print("""
