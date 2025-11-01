@@ -279,5 +279,19 @@ export const api = {
   getLearningInsights: async () => {
     const res = await axios.get(`${API}/learning/insights`);
     return res.data;
+  },
+
+  // HTML Flowchart Generator (Simple, Fast)
+  generateHTMLFlowchart: async (text, inputType) => {
+    const res = await axios.post(`${API}/process/generate-html`, {
+      text,
+      inputType
+    });
+    return res.data;
+  },
+
+  getHTMLFlowchart: async (processId) => {
+    const res = await axios.get(`${API}/process/html/${processId}`);
+    return res.data;
   }
 };
