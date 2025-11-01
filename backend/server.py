@@ -833,47 +833,62 @@ BE THOROUGH. The preprocessing hints should guide you."""
             return await self._parse_single_process(input_text, input_type)
     
     async def _parse_single_process(self, input_text: str, input_type: str) -> Dict[str, Any]:
-        """Parse a single process from input text WITH operational details"""
+        """Parse a single process from input text WITH operational details and swim lane structure"""
         try:
             chat = LlmChat(
                 api_key=self.api_key,
                 session_id=f"parse_{uuid.uuid4()}",
-                system_message="You are SuperHumanly AI, specialized in extracting process workflows WITH detailed operational information for execution."
+                system_message="You are SuperHumanly AI, an expert at extracting COMPLETE enterprise process workflows with hierarchical structure, swim lanes, and ALL operational details."
             ).with_model("anthropic", "claude-4-sonnet-20250514")
             
-            prompt = f"""Extract the process workflow from this {input_type} with TWO LEVELS of information:
+            prompt = f"""ENTERPRISE PROCESS EXTRACTION - COMPLETE CAPTURE
 
-LEVEL 1 - High-level steps (for overview):
-- Extract 5-8 most critical steps
-- Keep titles concise (max 6 words)
+Your mission: Extract EVERY step, decision, and detail from this {input_type}. DO NOT SUMMARIZE OR SKIP STEPS.
 
-LEVEL 2 - Operational details (for execution):
-For EACH step, extract and preserve:
+STEP 1: IDENTIFY SWIM LANES (Parallel Workflows)
+Look for separate sections that represent different teams/roles working in parallel:
+- Section headers like "Onshore Actions", "Offshore Actions", "Team A Steps"
+- Different departments/roles handling different parts
+- Concurrent workflows that happen simultaneously
 
-1. **Required Data Fields**: List ALL specific data points that must be collected
-   Example: "Officer Name", "Phone Number", "License Plate", "Vehicle Issue"
+STEP 2: EXTRACT ALL STEPS
+For EACH swim lane/section:
+- Extract EVERY step mentioned (not just 5-8, extract ALL steps even if 30+)
+- Maintain sequence and hierarchy
+- Identify decision points (IF/THEN/ELSE)
+- Group related sub-actions under parent steps when logical
 
-2. **Specific Actions**: Exact instructions, questions to ask, checks to perform
-   Example: "Ask: 'Are you harmed or injured?'", "Screenshot error messages"
+STEP 3: CAPTURE OPERATIONAL DETAILS
+For EVERY step, preserve EXACTLY as written:
 
-3. **Contact Information**: Phone numbers, email addresses (preserve exactly as written)
-   Example: "Custom Fleet: 0800 11 63 63", "Wilson IT: 0061 8 9415 2888 ext. 8088"
+1. **Required Data Fields**: ALL specific data points to collect
+   Example: "Officer Name", "Phone Number", "License Plate", "Incident Time"
 
-4. **Timelines/SLAs**: Any time-based requirements
+2. **Specific Actions**: Exact instructions (copy verbatim)
+   Example: "Screenshot any errors", "Send Modica group message", "Begin Lighthouse timeline"
+
+3. **Contact Information**: Phone/email (preserve exactly)
+   Example: "Wilson IT: 0061 8 9415 2888 ext. 8088"
+
+4. **Timelines/SLAs**: Time requirements
    Example: "Check every 30 minutes", "Respond within 2 hours"
 
-5. **Systems/Tools**: Specific software, platforms, tools mentioned
-   Example: "MYIT ticketing system", "Lighthouse timeline", "Service Hub"
+5. **Systems/Tools**: Software, platforms, tools mentioned
+   Example: "Wilsar", "Lighthouse", "Service Hub", "BCP phones"
 
-6. **Decision Criteria**: Specific conditions for YES/NO branches
-   Example: "If call answered", "If error persists after restart"
+6. **Decision Criteria**: Conditions for YES/NO
+   Example: "If Wilsar restarted", "If job received by patrol officer"
+
+7. **Email/Message Templates**: Any scripts or template text mentioned
 
 CRITICAL RULES:
-- DO NOT summarize or abstract operational details - preserve them EXACTLY as written
-- If a step says "collect 6 specific fields", LIST all 6 fields in requiredData
-- If a phone number is mentioned, include it in contactInfo
-- If a system is mentioned, include it in systems
-- If no operational details exist for a step, leave the fields empty
+✅ Extract ALL steps (not 5-8, extract 20-40 if needed)
+✅ If document has 4 decision points, create 4 decision nodes
+✅ If document has separate sections for different teams, create swim lanes
+✅ DO NOT summarize operational details - copy them verbatim
+✅ If step says "do A, B, C, D", list all 4 in specificActions
+✅ Group steps into sections/swim lanes when document structure indicates it
+✅ Preserve parallel workflows (onshore AND offshore happening simultaneously)
 
 INPUT TEXT:
 {input_text}
