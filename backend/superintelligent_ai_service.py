@@ -245,7 +245,29 @@ CRITICAL:
         if not skeleton.get('nodes'):
             raise ValueError("Skeleton extraction failed - no nodes")
         
-        logger.info(f"✅ Skeleton extracted: {len(skeleton.get('nodes', []))} nodes")
+        # Validate and clean edges
+        node_ids = {node['id'] for node in skeleton.get('nodes', [])}
+        valid_edges = []
+        
+        for edge in skeleton.get('edges', []):
+            source = edge.get('source')
+            target = edge.get('target')
+            
+            # Skip edges with undefined or missing source/target
+            if not source or not target or source == 'undefined' or target == 'undefined':
+                logger.warning(f"Skipping invalid edge: {edge.get('id')} (source: {source}, target: {target})")
+                continue
+            
+            # Skip edges pointing to non-existent nodes
+            if source not in node_ids or target not in node_ids:
+                logger.warning(f"Skipping edge {edge.get('id')} - references non-existent nodes (source: {source}, target: {target})")
+                continue
+            
+            valid_edges.append(edge)
+        
+        skeleton['edges'] = valid_edges
+        
+        logger.info(f"✅ Skeleton extracted: {len(skeleton.get('nodes', []))} nodes, {len(valid_edges)} valid edges")
         return skeleton
     
     async def _enrich_skeleton(self, skeleton: Dict[str, Any], section_content: str) -> Dict[str, Any]:
