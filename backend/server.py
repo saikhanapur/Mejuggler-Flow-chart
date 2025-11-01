@@ -898,15 +898,24 @@ Return ONLY this JSON structure (no markdown, no explanations):
   "processName": "string",
   "description": "brief description",
   "actors": ["actor1", "actor2"],
+  "swimLanes": [
+    {{
+      "id": "lane-1",
+      "name": "Section/Team Name (e.g., Onshore Supervisor, Offshore Actions)",
+      "role": "primary role of this lane",
+      "color": "#6366f1"
+    }}
+  ],
   "nodes": [
     {{
       "id": "node-1",
       "type": "trigger",
       "status": "trigger",
-      "title": "Clear title (max 6 words)",
+      "title": "Clear title (max 8 words)",
       "description": "Brief description",
       "actors": ["who"],
-      "subSteps": ["step 1", "step 2"],
+      "swimLane": "lane-1",
+      "subSteps": ["step 1", "step 2", "step 3"],
       "dependencies": [],
       "parallelWith": [],
       "failures": [],
@@ -918,11 +927,12 @@ Return ONLY this JSON structure (no markdown, no explanations):
       "timeEstimate": null,
       "operationalDetails": {{
         "requiredData": ["specific field 1", "specific field 2"],
-        "specificActions": ["exact action 1", "exact action 2"],
+        "specificActions": ["exact action 1", "exact action 2", "exact action 3"],
         "contactInfo": {{"Contact Name": "phone/email"}},
         "timeline": "time requirement if any",
         "systems": ["System 1", "System 2"],
-        "decisionCriteria": "conditions for branching if decision node",
+        "decisionCriteria": null,
+        "emailTemplates": ["template text if mentioned"],
         "sourcePage": null
       }}
     }},
@@ -930,9 +940,10 @@ Return ONLY this JSON structure (no markdown, no explanations):
       "id": "node-2",
       "type": "decision",
       "status": "current",
-      "title": "Question to decide? (e.g., Call answered?)",
+      "title": "Question to decide?",
       "description": "Decision point",
       "actors": ["who"],
+      "swimLane": "lane-1",
       "subSteps": [],
       "dependencies": [],
       "parallelWith": [],
@@ -950,6 +961,7 @@ Return ONLY this JSON structure (no markdown, no explanations):
         "contactInfo": {{}},
         "timeline": null,
         "systems": [],
+        "emailTemplates": [],
         "sourcePage": null
       }}
     }}
@@ -986,14 +998,21 @@ Return ONLY this JSON structure (no markdown, no explanations):
   ]
 }}
 
-CRITICAL DECISION NODE RULES:
-- If the document has IF/THEN/ELSE logic, create a "decision" type node
-- Decision nodes should have a question as title (e.g., "Call answered?", "Error persists?")
-- Create separate edges for YES and NO branches
-- The YES branch edge should have label="YES" and condition="yes"
-- The NO branch edge should have label="NO" and condition="no"
-- Regular nodes have type="trigger" or type="process"
-- Each edge must have unique id, source, and target node IDs"""
+CRITICAL RULES FOR DECISION NODES & EDGES:
+- If document has IF/THEN/ELSE logic, create "decision" type node
+- Decision nodes have question title (e.g., "Wilsar restarted?", "Job received?")
+- Create separate edges for YES and NO branches from decision nodes
+- YES branch: label="YES", condition="yes"
+- NO branch: label="NO", condition="no"
+- Regular nodes: type="trigger" or type="process"
+- Each edge must have unique id, source, target node IDs
+- Nodes in same swim lane stay in that lane; cross-lane communication shown via edges
+
+SWIM LANE RULES:
+- If document has sections like "Onshore Actions" + "Offshore Actions", create 2 swim lanes
+- Assign each node to appropriate swim lane via "swimLane" field
+- If no clear swim lanes, put all nodes in one default lane
+- Swim lane colors: use blue (#6366f1), purple (#a855f7), green (#10b981), orange (#f59e0b)"""
             
             message = UserMessage(text=prompt)
             response = await chat.send_message(message)
