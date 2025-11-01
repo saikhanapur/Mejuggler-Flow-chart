@@ -92,16 +92,16 @@ const DocumentAnalysisReview = ({ analysis, onApprove, onCancel, isLoading }) =>
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 flex-shrink-0">
           <div className="flex items-start justify-between">
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Sparkles className="w-6 h-6" />
-                <h2 className="text-2xl font-bold">Document Intelligence Analysis</h2>
+              <div className="flex items-center gap-2 mb-1">
+                <Sparkles className="w-5 h-5" />
+                <h2 className="text-xl font-bold">Document Intelligence Analysis</h2>
               </div>
-              <p className="text-indigo-100 text-sm">
+              <p className="text-indigo-100 text-xs">
                 Review how the AI classified your document sections
               </p>
             </div>
@@ -109,52 +109,52 @@ const DocumentAnalysisReview = ({ analysis, onApprove, onCancel, isLoading }) =>
               onClick={onCancel}
               className="text-white/80 hover:text-white transition-colors"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
         {/* Summary Stats */}
-        <div className="p-6 bg-slate-50 border-b border-slate-200">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-lg p-4 border border-slate-200">
-              <div className="text-sm text-slate-600 mb-1">Complexity</div>
-              <div className="text-2xl font-bold text-slate-900 capitalize">
+        <div className="p-4 bg-slate-50 border-b border-slate-200 flex-shrink-0">
+          <div className="grid grid-cols-4 gap-3">
+            <div className="bg-white rounded-lg p-3 border border-slate-200">
+              <div className="text-xs text-slate-600 mb-1">Complexity</div>
+              <div className="text-lg font-bold text-slate-900 capitalize">
                 {overallAnalysis.complexity || 'N/A'}
               </div>
             </div>
-            <div className="bg-white rounded-lg p-4 border border-emerald-200">
-              <div className="text-sm text-slate-600 mb-1">Flowchartable</div>
-              <div className="text-2xl font-bold text-emerald-600">
-                {flowchartableCount} sections
+            <div className="bg-white rounded-lg p-3 border border-emerald-200">
+              <div className="text-xs text-slate-600 mb-1">Flowchartable</div>
+              <div className="text-lg font-bold text-emerald-600">
+                {flowchartableCount}
               </div>
             </div>
-            <div className="bg-white rounded-lg p-4 border border-blue-200">
-              <div className="text-sm text-slate-600 mb-1">Reference</div>
-              <div className="text-2xl font-bold text-blue-600">
-                {overallAnalysis.referenceSections || 0} sections
+            <div className="bg-white rounded-lg p-3 border border-blue-200">
+              <div className="text-xs text-slate-600 mb-1">Reference</div>
+              <div className="text-lg font-bold text-blue-600">
+                {overallAnalysis.referenceSections || 0}
               </div>
             </div>
-            <div className="bg-white rounded-lg p-4 border border-indigo-200">
-              <div className="text-sm text-slate-600 mb-1">Estimated Steps</div>
-              <div className="text-2xl font-bold text-indigo-600">
+            <div className="bg-white rounded-lg p-3 border border-indigo-200">
+              <div className="text-xs text-slate-600 mb-1">Est. Steps</div>
+              <div className="text-lg font-bold text-indigo-600">
                 {overallAnalysis.totalEstimatedSteps || 0}
               </div>
             </div>
           </div>
 
-          {/* Document Summary */}
-          <div className="mt-4 p-4 bg-white rounded-lg border border-slate-200">
-            <div className="text-sm font-semibold text-slate-700 mb-2">Document Summary</div>
-            <p className="text-sm text-slate-600 leading-relaxed">
+          {/* Document Summary - Compact */}
+          <div className="mt-3 p-3 bg-white rounded-lg border border-slate-200">
+            <div className="text-xs font-semibold text-slate-700 mb-1">Summary</div>
+            <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
               {analysis?.documentSummary || 'No summary available'}
             </p>
           </div>
         </div>
 
-        {/* Sections List */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="space-y-4">
+        {/* Sections List - Scrollable */}
+        <div className="flex-1 overflow-y-auto p-4" style={{ maxHeight: 'calc(85vh - 280px)' }}>
+          <div className="space-y-3">
             {sections.map((section) => {
               const Icon = classificationIcons[section.classification];
               const isExpanded = expandedSections.has(section.sectionId);
