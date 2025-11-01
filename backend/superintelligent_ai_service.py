@@ -75,16 +75,22 @@ EXTRACT:
 5. **Timings**: Time constraints, frequencies
 6. **Parallel Processes**: Steps that happen simultaneously
 
-RETURN JSON:
+RETURN JSON (MUST BE VALID JSON):
 {{
   "documentSummary": "Brief overview",
   "steps": ["Step 1", "Step 2",...],
   "decisions": [{{"condition": "...", "ifYes": "...", "ifNo": "..."}}],
-  "contacts": {{"Name": "Phone/Email"}},
+  "contacts": {{"ContactName1": "contact_info", "ContactName2": "contact_info"}},
   "systems": ["System1", "System2"],
   "timings": ["Every 30 minutes", "Within 2 hours"],
   "parallelProcesses": [["Step A", "Step B"]]
 }}
+
+CRITICAL: 
+- contacts MUST be a JSON object with key-value pairs, NOT an array
+- contacts example: {{"Emergency": "111", "Support": "0800 347 788"}}
+- DO NOT mix array and object syntax
+- Return ONLY valid JSON, no explanatory text
 
 Be thorough. Return valid JSON only."""
             
