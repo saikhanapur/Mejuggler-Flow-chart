@@ -101,6 +101,9 @@ const AppContent = () => {
           </>
         } />
         
+        {/* HTML Flowchart Viewer */}
+        <Route path="/html-flow/:id" element={<HTMLFlowchartViewer />} />
+        
         {/* Guest Flowchart Editor */}
         <Route path="/guest-edit/:id" element={
           <>
