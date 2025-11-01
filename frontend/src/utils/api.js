@@ -250,5 +250,34 @@ export const api = {
   refineProcess: async (processId, message) => {
     const res = await axios.post(`${API}/process/${processId}/refine`, { message });
     return res.data;
+  },
+
+  // Superintelligent AI Pipeline
+  analyzeDocumentIntelligence: async (text, inputType) => {
+    const res = await axios.post(`${API}/process/analyze-document`, {
+      text,
+      inputType
+    });
+    return res.data;
+  },
+
+  generateFromAnalysis: async (documentText, analysisId, approvedSections, userCorrections = []) => {
+    const res = await axios.post(`${API}/process/generate-from-analysis`, {
+      documentText,
+      analysisId,
+      approvedSections,
+      userCorrections
+    });
+    return res.data;
+  },
+
+  bulkAnalyzeDocuments: async (documents) => {
+    const res = await axios.post(`${API}/process/bulk-analyze`, documents);
+    return res.data;
+  },
+
+  getLearningInsights: async () => {
+    const res = await axios.get(`${API}/learning/insights`);
+    return res.data;
   }
 };
