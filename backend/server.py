@@ -148,6 +148,13 @@ class OperationalDetails(BaseModel):
     decisionCriteria: Optional[str] = None  # Conditions for branching
     sourcePage: Optional[str] = None  # Which page this came from
 
+class SwimLane(BaseModel):
+    """Swim lane for organizing parallel workflows"""
+    id: str
+    name: str  # e.g., "Onshore Supervisor", "Offshore Team"
+    role: Optional[str] = None  # Primary role/responsibility
+    color: str = "#6366f1"  # Color for visual distinction
+
 class ProcessNode(BaseModel):
     id: str
     type: str  # trigger, process, decision, gap
@@ -155,6 +162,7 @@ class ProcessNode(BaseModel):
     title: str
     description: str
     actors: List[str] = []
+    swimLane: Optional[str] = None  # NEW: Swim lane ID this node belongs to
     subSteps: List[str] = []
     dependencies: List[str] = []
     parallelWith: List[str] = []
