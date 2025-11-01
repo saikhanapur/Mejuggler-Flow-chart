@@ -2604,6 +2604,101 @@ async def get_learning_insights(request: Request):
 
 # ==================== SIMPLE ONE-SHOT FLOWCHART (WHAT CLAUDE DID) ====================
 
+# ==================== SIMPLE HTML FLOWCHART GENERATOR ====================
+
+@api_router.post("/process/generate-html")
+async def generate_html_flowchart(
+    input_data: ProcessInput,
+    request: Request
+):
+    """
+    Generate beautiful HTML flowchart in one shot - like Claude did!
+    
+    Returns complete HTML ready to display
+    Time: 15-30 seconds
+    """
+    try:
+        from html_flowchart_generator import HTMLFlowchartGenerator
+        
+        user = await get_current_user(request)
+        user_id = user.get("id") if user else None
+        
+        logger.info(f"🎨 HTML flowchart generation for user {user_id}")
+        
+        generator = HTMLFlowchartGenerator(
+            api_key=os.environ.get("EMERGENT_LLM_KEY")
+        )
+        
+        # Determine document name from first line or default
+        doc_name = input_data.text.split('\n')[0][:50] if input_data.text else "Process Flow"
+        
+        html = await generator.generate_html_flowchart(
+            document_text=input_data.text,
+            document_name=doc_name
+        )
+        
+        # Save to MongoDB for later retrieval
+        from datetime import datetime, timezone
+        import uuid
+        
+        process_id = str(uuid.uuid4())
+        
+        html_process = {
+            "id": process_id,
+            "userId": user_id,
+            "name": doc_name,
+            "htmlContent": html,
+            "inputType": input_data.inputType,
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+            "isGuest": user is None,
+            "type": "html_flowchart"
+        }
+        
+        await db.processes.insert_one(html_process)
+        
+        logger.info(f"✅ HTML flowchart created: {process_id}")
+        
+        return {
+            "success": True,
+            "processId": process_id,
+            "html": html,
+            "metadata": {
+                "generationTime": "15-30 seconds",
+                "approach": "html-direct",
+                "htmlLength": len(html)
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ HTML generation failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/process/html/{process_id}")
+async def get_html_flowchart(process_id: str, request: Request):
+    """
+    Retrieve HTML flowchart by ID
+    """
+    try:
+        process = await db.processes.find_one({"id": process_id, "type": "html_flowchart"})
+        
+        if not process:
+            raise HTTPException(status_code=404, detail="HTML flowchart not found")
+        
+        return {
+            "id": process["id"],
+            "name": process.get("name"),
+            "html": process.get("htmlContent"),
+            "createdAt": process.get("createdAt")
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to retrieve HTML flowchart: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== END HTML FLOWCHART GENERATOR ====================
+
 @api_router.post("/process/simple-generate")
 async def simple_flowchart_generation(
     input_data: ProcessInput,
