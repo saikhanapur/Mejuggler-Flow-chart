@@ -59,6 +59,13 @@ const FlowchartEditor = ({ theme, readOnly = false, accessLevel = 'owner', proce
   const [showIntelligence, setShowIntelligence] = useState(false); // Hidden by default
   const [intelligenceBadgeVisible, setIntelligenceBadgeVisible] = useState(false);
 
+  // Operational details panel (for swim lane view)
+  const [showOperationalDetails, setShowOperationalDetails] = useState(false);
+  const [operationalDetailsNode, setOperationalDetailsNode] = useState(null);
+
+  // View mode: 'classic' (vertical list) or 'swimlane' (React Flow)
+  const [viewMode, setViewMode] = useState('swimlane'); // Default to swimlane for enterprise feel
+
   useEffect(() => {
     if (!processData) {
       loadProcess();
