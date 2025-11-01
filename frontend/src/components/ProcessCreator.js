@@ -79,31 +79,58 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
   };
 
   const handleInputComplete = async (input, inputType) => {
-    // For documents, use HTML generation (simple, fast, beautiful)
+    // For documents, use EROAD-style hybrid approach
     if (inputType === 'document') {
       setExtractedText(input);
       setProcessing(true);
-      setProcessingStep('Generating beautiful flowchart...');
+      setProcessingStep('Creating intelligent flowchart...');
       
       try {
-        // Generate HTML flowchart in one shot
-        const result = await api.generateHTMLFlowchart(input, inputType);
+        // EROAD-style: Extract → Enhance → Display
+        const result = await api.generateEROADStyleFlowchart(input, inputType);
+        
+        // Check if multiple processes
+        if (result.multipleProcesses && result.processes.length > 1) {
+          setExtractedData(result);
+          setProcessing(false);
+          return;
+        }
+        
+        // Single process - create it
+        const process = result.processes[0];
+        
+        // Validate
+        if (!process.name || !process.nodes) {
+          throw new Error('Invalid process structure');
+        }
+        
+        const processData = {
+          ...process,
+          workspaceId: selectedWorkspace,
+          userId: null,
+          isGuest: isGuestMode
+        };
+        
+        console.log('Creating EROAD-style process:', processData);
+        
+        const createdProcess = await api.createProcess(processData);
         
         setProcessing(false);
         toast.success('Flowchart created successfully!');
         
-        // Navigate to HTML viewer
+        // Navigate to editor
+        const editRoute = isGuestMode ? `/guest-edit/${createdProcess.id}` : `/edit/${createdProcess.id}`;
         setTimeout(() => {
-          navigate(`/html-flow/${result.processId}`);
+          navigate(editRoute);
         }, 1000);
         
       } catch (error) {
-        console.error('HTML flowchart generation failed:', error);
+        console.error('EROAD-style generation failed:', error);
         toast.error(`Failed to generate flowchart: ${error.message || 'Please try again.'}`);
         setProcessing(false);
       }
     } else {
-      // For voice/chat, process directly with old flow
+      // For voice/chat, use existing flow
       await processWithAI(input, inputType, null, null);
     }
   };
