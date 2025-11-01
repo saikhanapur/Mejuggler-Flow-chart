@@ -132,8 +132,18 @@ Make it BEAUTIFUL and FUNCTIONAL. Users should immediately understand the proces
         html = html.strip()
         
         # Validate it's HTML
-        if not html.startswith('<!DOCTYPE') and not html.startswith('<html'):
+        if not (html.startswith('<!DOCTYPE') or html.startswith('<html') or html.startswith('<HTML')):
             raise ValueError("Generated content is not valid HTML")
+        
+        # Check for basic completeness
+        if '</html>' not in html.lower():
+            logger.warning("HTML appears incomplete, missing closing tag")
+            # Try to fix
+            html += '\n</body>\n</html>'
+        
+        # Validate minimum length (should be substantial)
+        if len(html) < 5000:
+            logger.warning(f"HTML seems too short ({len(html)} chars) - may be incomplete")
         
         logger.info(f"✅ Generated {len(html)} characters of HTML")
         return html
