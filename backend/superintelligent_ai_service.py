@@ -634,7 +634,113 @@ Return valid JSON only."""
         except Exception as e:
             logger.warning(f"Could not update patterns: {e}")
     
-    # ==================== HELPER METHODS ====================
+    async def generate_eroad_style_flowchart(
+        self,
+        document_text: str,
+        input_type: str,
+        user_id: str = None
+    ) -> Dict[str, Any]:
+        """
+        HYBRID APPROACH: Extract → Enhance → Return
+        
+        Phase 1: Extract structured data
+        Phase 2: Enhance with EROAD-style grouping and rich details
+        
+        Returns visualization-ready flowchart (10-15 nodes with PURPOSE)
+        """
+        logger.info("🚀 EROAD-Style Flowchart Generation (Hybrid)")
+        
+        try:
+            # Phase 1: Extract data
+            extracted = await self.analyze_document(document_text, input_type, user_id)
+            
+            # Phase 2: Enhance for visualization
+            from eroad_style_enhancer import EROADStyleEnhancer
+            
+            enhancer = EROADStyleEnhancer(self.api_key)
+            enhanced = await enhancer.enhance_for_visualization(extracted, document_text)
+            
+            # Map to expected format
+            process = {
+                "name": enhanced.get("processName"),
+                "description": extracted.get("documentSummary"),
+                "nodes": [],
+                "edges": [],
+                "swimLanes": enhanced.get("swimLanes", []),
+                "actors": list(set([
+                    actor 
+                    for node in enhanced.get("nodes", []) 
+                    for actor in node.get("contacts", [])
+                ])),
+                "quickReference": {
+                    "criticalActions": [n["title"] for n in enhanced["nodes"] if n.get("status") == "critical"],
+                    "keyTimings": extracted.get("timings", []),
+                    "emergencyContacts": extracted.get("contacts", {})
+                }
+            }
+            
+            # Process nodes
+            for node in enhanced.get("nodes", []):
+                processed_node = {
+                    "id": node["id"],
+                    "title": node["title"],
+                    "description": node.get("details", ""),
+                    "type": self._map_status_to_type(node.get("status")),
+                    "status": node.get("status", "operational"),
+                    "position": {"x": node.get("x", 0), "y": node.get("y", 0)},
+                    "actors": node.get("contacts", []),
+                    "subSteps": node.get("actions", []),
+                    "dependencies": node.get("dependencies", []),
+                    "parallelWith": [],
+                    "failures": [],
+                    "blocking": None,
+                    "impact": "high" if node.get("status") == "critical" else "medium",
+                    "timeEstimate": node.get("timing"),
+                    "operationalDetails": {
+                        "purpose": node.get("purpose", ""),
+                        "specificActions": node.get("actions", []),
+                        "requiredData": [],
+                        "contactInfo": {c.split(":")[0]: c.split(":")[1].strip() if ":" in c else c for c in node.get("contacts", [])},
+                        "timeline": node.get("timing"),
+                        "systems": node.get("systems", []),
+                        "decisionCriteria": None,
+                        "emailTemplates": [],
+                        "currentState": node.get("currentState"),
+                        "idealState": node.get("idealState"),
+                        "gap": node.get("gap"),
+                        "sourcePage": None
+                    }
+                }
+                process["nodes"].append(processed_node)
+                
+                # Create edges
+                for target_id in node.get("connections", []):
+                    process["edges"].append({
+                        "id": f"e-{node['id']}-{target_id}",
+                        "source": node['id'],
+                        "target": target_id,
+                        "label": None
+                    })
+            
+            logger.info(f"✅ EROAD-style flowchart complete: {len(process['nodes'])} nodes")
+            return {"processes": [process], "multipleProcesses": False}
+            
+        except Exception as e:
+            logger.error(f"❌ EROAD-style generation failed: {e}", exc_info=True)
+            raise
+    
+    def _map_status_to_type(self, status: str) -> str:
+        """Map EROAD status to node type"""
+        mapping = {
+            "critical": "warning",
+            "action": "active",
+            "communication": "active",
+            "operational": "active",
+            "monitoring": "active",
+            "verification": "active",
+            "recovery": "active"
+        }
+        return mapping.get(status, "active")
     
     def _extract_section_content(self, document_text: str, sections: List[Dict]) -> str:
         """Extract content for specified sections from document"""
