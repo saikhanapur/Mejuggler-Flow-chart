@@ -496,32 +496,32 @@ const DocumentAnalysisReview = ({ analysis, onApprove, onCancel, isLoading }) =>
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div className="border-t border-slate-200 p-6 bg-slate-50">
+        {/* Footer Actions - Compact */}
+        <div className="border-t border-slate-200 p-4 bg-slate-50 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-slate-600">
-              <AlertCircle className="w-4 h-4 inline mr-1" />
+            <div className="text-xs text-slate-600">
               {flowchartableCount === 0 ? (
-                <span className="text-amber-600 font-medium">
-                  No flowchartable sections selected. Please reclassify at least one section.
+                <span className="text-amber-600 font-medium flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  No flowchartable sections. Please reclassify at least one.
                 </span>
               ) : (
                 <span>
-                  Ready to generate flowchart from <strong>{flowchartableCount}</strong> section(s)
+                  Ready to generate from <strong>{flowchartableCount}</strong> section(s)
                 </span>
               )}
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 onClick={onCancel}
-                className="px-6 py-2.5 border-2 border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 transition-colors font-medium"
+                className="px-4 py-2 border-2 border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 transition-colors font-medium text-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={handleApprove}
                 disabled={flowchartableCount === 0 || isLoading}
-                className={`px-6 py-2.5 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm ${
                   flowchartableCount === 0 || isLoading
                     ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
                     : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700'
