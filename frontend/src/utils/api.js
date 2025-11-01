@@ -293,5 +293,14 @@ export const api = {
   getHTMLFlowchart: async (processId) => {
     const res = await axios.get(`${API}/process/html/${processId}`);
     return res.data;
+  },
+
+  // EROAD-Style Hybrid Generation
+  generateEROADStyleFlowchart: async (text, inputType) => {
+    const res = await axios.post(`${API}/process/eroad-style`, {
+      text,
+      inputType
+    });
+    return res.data;
   }
 };
