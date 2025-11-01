@@ -869,85 +869,56 @@ BE THOROUGH. The preprocessing hints should guide you."""
                 system_message="You are an expert at extracting process structure. Return ONLY valid JSON."
             ).with_model("anthropic", "claude-4-sonnet-20250514")
             
-            prompt = f"""ENTERPRISE PROCESS EXTRACTION - COMPLETE CAPTURE
+            prompt = f"""Extract ONLY the process structure from this document. Focus on STRUCTURE, not details.
 
-Your mission: Extract EVERY step, decision, and detail from this {input_type}. DO NOT SUMMARIZE OR SKIP STEPS.
+Extract:
+1. Process name and description
+2. All actors/roles involved
+3. Swim lanes (if document has parallel workflows like "Onshore" and "Offshore")
+4. All process steps with: id, type (trigger/process/decision), title (brief), actors
+5. All edges/connections between steps (including YES/NO branches for decisions)
 
-STEP 1: IDENTIFY SWIM LANES (Parallel Workflows)
-Look for separate sections that represent different teams/roles working in parallel:
-- Section headers like "Onshore Actions", "Offshore Actions", "Team A Steps"
-- Different departments/roles handling different parts
-- Concurrent workflows that happen simultaneously
+For complex documents, extract up to 25 most important steps.
 
-STEP 2: EXTRACT ALL STEPS
-For EACH swim lane/section:
-- Extract EVERY step mentioned (extract ALL steps even if 30+)
-- Maintain sequence and hierarchy
-- Identify decision points (IF/THEN/ELSE)
-- Group related sub-actions under parent steps when logical
+INPUT:
+{input_text[:20000]}
 
-STEP 3: CAPTURE OPERATIONAL DETAILS
-For EVERY step, preserve EXACTLY as written:
-
-1. **Required Data Fields**: ALL specific data points to collect
-   Example: "Officer Name", "Phone Number", "License Plate", "Incident Time"
-
-2. **Specific Actions**: Exact instructions (KEEP BRIEF - one sentence each)
-   Example: "Screenshot any errors", "Send Modica group message", "Begin Lighthouse timeline"
-
-3. **Contact Information**: Phone/email (preserve exactly)
-   Example: "Wilson IT: 0061 8 9415 2888 ext. 8088"
-
-4. **Timelines/SLAs**: Time requirements
-   Example: "Check every 30 minutes", "Respond within 2 hours"
-
-5. **Systems/Tools**: Software, platforms, tools mentioned
-   Example: "Wilsar", "Lighthouse", "Service Hub", "BCP phones"
-
-6. **Decision Criteria**: Conditions for YES/NO
-   Example: "If Wilsar restarted", "If job received by patrol officer"
-
-CRITICAL RULES:
-✅ Extract ALL steps (extract 20-40 if needed)
-✅ If document has 4 decision points, create 4 decision nodes
-✅ If document has separate sections for different teams, create swim lanes
-✅ DO NOT include long text in operational details - keep each action/template to MAX 100 chars
-✅ For email templates: Only include FIRST LINE or TITLE, not full text
-✅ If step says "do A, B, C, D", list all 4 in specificActions BUT keep each under 80 chars
-✅ Group steps into sections/swim lanes when document structure indicates it
-✅ Preserve parallel workflows (onshore AND offshore happening simultaneously)
-
-INPUT TEXT:
-{input_text}
-
-Return ONLY this JSON structure (no markdown, no explanations):
+Return ONLY this JSON (no markdown, no explanations):
 {{
   "processName": "string",
-  "description": "brief description",
+  "description": "brief (max 200 chars)",
   "actors": ["actor1", "actor2"],
   "swimLanes": [
-    {{
-      "id": "lane-1",
-      "name": "Section/Team Name (e.g., Onshore Supervisor, Offshore Actions)",
-      "role": "primary role of this lane",
-      "color": "#6366f1"
-    }}
+    {{"id": "lane-1", "name": "Team Name", "role": "brief", "color": "#6366f1"}}
   ],
   "nodes": [
     {{
       "id": "node-1",
       "type": "trigger",
-      "status": "trigger",
-      "title": "Clear title (max 8 words)",
-      "description": "Brief description",
-      "actors": ["who"],
-      "swimLane": "lane-1",
-      "subSteps": ["step 1", "step 2", "step 3"],
-      "dependencies": [],
-      "parallelWith": [],
-      "failures": [],
-      "blocking": null,
-      "currentState": "brief",
+      "title": "Brief title (max 60 chars)",
+      "actors": ["actor1"],
+      "swimLane": "lane-1"
+    }},
+    {{
+      "id": "node-2",
+      "type": "decision",
+      "title": "Decision question?",
+      "actors": ["actor1"],
+      "swimLane": "lane-1"
+    }}
+  ],
+  "edges": [
+    {{"id": "edge-1", "source": "node-1", "target": "node-2", "label": null}},
+    {{"id": "edge-2", "source": "node-2", "target": "node-3", "label": "YES", "condition": "yes"}},
+    {{"id": "edge-3", "source": "node-2", "target": "node-4", "label": "NO", "condition": "no"}}
+  ]
+}}
+
+RULES:
+- Keep ALL string values under 100 chars
+- NO line breaks in strings
+- Escape quotes with backslash
+- Return valid JSON only"""
       "idealState": "brief",
       "gap": null,
       "impact": "medium",
