@@ -1036,15 +1036,43 @@ CRITICAL JSON FORMATTING RULES:
             message = UserMessage(text=prompt)
             response = await chat.send_message(message)
             
-            # Parse JSON from response
+            # Parse JSON from response with better error handling
             response_text = response.strip()
+            
+            # Remove markdown code blocks if present
             if response_text.startswith('```'):
                 start = response_text.find('{')
                 end = response_text.rfind('}')
                 if start != -1 and end != -1:
                     response_text = response_text[start:end+1]
             
-            parsed = json.loads(response_text)
+            # Try to parse JSON
+            try:
+                parsed = json.loads(response_text)
+            except json.JSONDecodeError as json_err:
+                logger.error(f"JSON decode error: {json_err}")
+                logger.error(f"Response text preview: {response_text[:500]}...")
+                logger.error(f"Response text end: ...{response_text[-500:]}")
+                
+                # Try to fix common JSON issues
+                # 1. Remove trailing commas
+                response_text = re.sub(r',(\s*[}\]])', r'\1', response_text)
+                
+                # Try parsing again
+                try:
+                    parsed = json.loads(response_text)
+                    logger.info("✅ JSON successfully repaired")
+                except json.JSONDecodeError as json_err2:
+                    logger.error(f"JSON still invalid after repair attempt: {json_err2}")
+                    raise HTTPException(
+                        status_code=500, 
+                        detail=f"AI returned invalid JSON. Please try again or simplify the document. Error: {str(json_err2)}"
+                    )
+            
+            # Ensure swimLanes exists
+            if 'swimLanes' not in parsed:
+                parsed['swimLanes'] = []
+            
             return {"multipleProcesses": False, "processes": [parsed]}
             
         except Exception as e:
