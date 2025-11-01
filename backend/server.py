@@ -861,49 +861,94 @@ BE THOROUGH. The preprocessing hints should guide you."""
             raise HTTPException(status_code=500, detail=f"Failed to parse process: {str(e)}")
     
     async def _extract_process_structure(self, input_text: str, input_type: str) -> Dict[str, Any]:
-        """STAGE 1: Extract just the structure - node titles, types, swim lanes, edges"""
+        """STAGE 1: SMART extraction - strategic phases, not micro-steps"""
         try:
             chat = LlmChat(
                 api_key=self.api_key,
                 session_id=f"structure_{uuid.uuid4()}",
-                system_message="You are an expert at extracting process structure. Return ONLY valid JSON."
+                system_message="You are an expert process architect. Extract HIGH-LEVEL strategic phases, not micro-steps. Think like a business consultant simplifying complexity."
             ).with_model("anthropic", "claude-4-sonnet-20250514")
             
-            prompt = f"""Extract ONLY the process structure from this document. Focus on STRUCTURE, not details.
+            prompt = f"""SMART PROCESS EXTRACTION - Strategic Thinking Required
 
-Extract:
-1. Process name and description
-2. All actors/roles involved
-3. Swim lanes (if document has parallel workflows like "Onshore" and "Offshore")
-4. All process steps with: id, type (trigger/process/decision), title (brief), actors
-5. All edges/connections between steps (including YES/NO branches for decisions)
+YOU ARE A BUSINESS CONSULTANT, NOT A TEXT SPLITTER.
 
-For complex documents, extract up to 25 most important steps.
+Your mission: Transform complex procedures into CLEAR, DIGESTIBLE workflows.
 
-INPUT:
+CRITICAL PRINCIPLE: INTELLIGENT GROUPING
+- Group related actions into strategic PHASES (not individual steps)
+- Maximum 8-12 nodes for entire process (less is more)
+- Each node = a meaningful phase that makes sense to a business user
+- Think: "What are the key STAGES someone goes through?"
+
+EXAMPLE OF BAD (Dumb Splitting):
+❌ Node 1: "Open email"
+❌ Node 2: "Type message"
+❌ Node 3: "Add recipient"
+❌ Node 4: "Send email"
+(This is just splitting text - NO VALUE)
+
+EXAMPLE OF GOOD (Smart Grouping):
+✅ Node: "Notify Stakeholders via Email"
+(Grouped intelligently - ADDS VALUE)
+
+INPUT DOCUMENT:
 {input_text[:20000]}
 
-Return ONLY this JSON (no markdown, no explanations):
+STEP 1: IDENTIFY STRATEGIC PHASES
+Ask yourself: "If I had to explain this process in 8 key steps, what would they be?"
+
+Examples of strategic phases:
+- "Identify & Confirm Issue"
+- "Activate Emergency Response"
+- "Execute Contingency Plan"
+- "Monitor Resolution"
+- "Restore Normal Operations"
+
+STEP 2: DETECT PARALLEL WORKFLOWS (Swim Lanes)
+Look for different teams/roles working simultaneously:
+- "Onshore Team Actions"
+- "Offshore Team Actions"
+- "IT Support Team"
+
+STEP 3: IDENTIFY CRITICAL DECISIONS
+Only include decisions that change the workflow significantly:
+- "Issue Confirmed?" → YES: Activate BCP, NO: Resume normal
+- "Services Restored?" → YES: Notify resolution, NO: Continue monitoring
+
+DO NOT create nodes for:
+❌ Individual communication actions (group them)
+❌ Micro-steps within a phase (save for details)
+❌ Documentation tasks (include in phase details)
+
+Return ONLY this JSON:
 {{
-  "processName": "string",
-  "description": "brief (max 200 chars)",
-  "actors": ["actor1", "actor2"],
+  "processName": "string (concise title)",
+  "description": "brief (max 150 chars)",
+  "actors": ["role1", "role2"],
   "swimLanes": [
-    {{"id": "lane-1", "name": "Team Name", "role": "brief", "color": "#6366f1"}}
+    {{
+      "id": "lane-1",
+      "name": "Team/Role Name",
+      "role": "Primary responsibility",
+      "color": "#6366f1"
+    }}
   ],
   "nodes": [
     {{
       "id": "node-1",
       "type": "trigger",
-      "title": "Brief title (max 60 chars)",
-      "actors": ["actor1"],
+      "title": "Strategic Phase Name (4-6 words)",
+      "description": "What this phase achieves (one sentence)",
+      "actors": ["who"],
       "swimLane": "lane-1"
     }},
     {{
       "id": "node-2",
       "type": "decision",
-      "title": "Decision question?",
-      "actors": ["actor1"],
+      "title": "Critical Decision Question?",
+      "description": "What determines the outcome",
+      "actors": ["who"],
       "swimLane": "lane-1"
     }}
   ],
@@ -914,11 +959,14 @@ Return ONLY this JSON (no markdown, no explanations):
   ]
 }}
 
-RULES:
-- Keep ALL string values under 100 chars
-- NO line breaks in strings
-- Escape quotes with backslash
-- Return valid JSON only
+QUALITY CHECKLIST:
+✅ Total nodes: 6-12 (not 20+)
+✅ Each node title makes sense to a business user
+✅ Swim lanes represent actual parallel workflows
+✅ Decisions are strategic (not micro-level)
+✅ NO redundant or repetitive nodes
+
+RETURN VALID JSON ONLY (no markdown, no explanation)
 
 EXAMPLE NODE STRUCTURE:
 {{
