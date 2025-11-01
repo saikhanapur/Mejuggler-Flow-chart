@@ -752,12 +752,25 @@ const FlowchartEditor = ({ theme, readOnly = false, accessLevel = 'owner', proce
                 )}
               </div>
             )}
-          </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Detail Panel - Slides from Right */}
-      {selectedNode && (
+      {/* Operational Details Panel (for swimlane view) */}
+      {showOperationalDetails && operationalDetailsNode && (
+        <OperationalDetailsPanel
+          node={operationalDetailsNode}
+          onClose={() => {
+            setShowOperationalDetails(false);
+            setOperationalDetailsNode(null);
+          }}
+        />
+      )}
+
+      {/* Detail Panel - Slides from Right (for classic view) */}
+      {selectedNode && viewMode === 'classic' && (
         <DetailPanel
           node={selectedNode}
           processId={process.id}
