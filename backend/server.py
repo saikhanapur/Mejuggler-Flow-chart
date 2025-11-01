@@ -146,6 +146,7 @@ class OperationalDetails(BaseModel):
     timeline: Optional[str] = None  # Time-based requirements
     systems: List[str] = []  # Software/tools mentioned
     decisionCriteria: Optional[str] = None  # Conditions for branching
+    emailTemplates: List[str] = []  # Email/message templates or scripts
     sourcePage: Optional[str] = None  # Which page this came from
 
 class SwimLane(BaseModel):
