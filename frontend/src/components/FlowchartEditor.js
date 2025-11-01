@@ -599,11 +599,11 @@ const FlowchartEditor = ({ theme, readOnly = false, accessLevel = 'owner', proce
 
         {/* Canvas - scrollable */}
         <div className="flex-1 overflow-hidden bg-slate-50" data-testid="flowchart-canvas">
-          {/* View Mode Toggle */}
-          {process && process.swimLanes && process.swimLanes.length > 0 && (
+          {/* View Mode Toggle - Only show if swim lanes exist */}
+          {hasSwimLanes && (
             <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
               <div className="text-sm text-gray-600">
-                {viewMode === 'swimlane' ? 'Swim Lane View' : 'Classic View'} · {process.nodes?.length || 0} steps
+                {viewMode === 'swimlane' ? 'Swim Lane View' : 'Classic View'} · {process.nodes?.length || 0} steps · {process.swimLanes?.length || 0} swim lanes
               </div>
               <button
                 onClick={() => setViewMode(viewMode === 'swimlane' ? 'classic' : 'swimlane')}
@@ -614,8 +614,8 @@ const FlowchartEditor = ({ theme, readOnly = false, accessLevel = 'owner', proce
             </div>
           )}
 
-          {/* Swim Lane View (React Flow) */}
-          {viewMode === 'swimlane' && (
+          {/* Swim Lane View (React Flow) - Only if swim lanes exist */}
+          {viewMode === 'swimlane' && hasSwimLanes && (
             <div className="h-full">
               <EnterpriseFlowchart 
                 process={process} 
@@ -624,8 +624,8 @@ const FlowchartEditor = ({ theme, readOnly = false, accessLevel = 'owner', proce
             </div>
           )}
 
-          {/* Classic View (Original Vertical) */}
-          {viewMode === 'classic' && (
+          {/* Classic View (Original Vertical) - Default for non-swim lane processes */}
+          {(viewMode === 'classic' || !hasSwimLanes) && (
             <div className="overflow-auto h-full">
               <div className="max-w-5xl mx-auto p-8">
                 {/* Legend */}
