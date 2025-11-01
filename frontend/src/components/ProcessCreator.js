@@ -119,6 +119,13 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
         corrections
       );
       
+      console.log('Generation result:', result); // Debug log
+      
+      // Check if we have processes
+      if (!result.processes || result.processes.length === 0) {
+        throw new Error('No processes returned from analysis');
+      }
+      
       // Check if multiple processes detected
       if (result.multipleProcesses && result.processes.length > 1) {
         setExtractedData(result);
@@ -129,12 +136,20 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
       
       // Single process - create it
       const process = result.processes[0];
+      
+      // Validate process has required fields
+      if (!process.processName || !process.nodes) {
+        throw new Error('Invalid process structure returned');
+      }
+      
       const processData = {
         ...process,
         workspaceId: selectedWorkspace,
         userId: null, // Will be set by backend if authenticated
         isGuest: isGuestMode
       };
+      
+      console.log('Creating process with data:', processData); // Debug log
       
       const createdProcess = await api.createProcess(processData);
       
@@ -154,7 +169,7 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
       
     } catch (error) {
       console.error('Flowchart generation failed:', error);
-      toast.error('Failed to generate flowchart. Please try again.');
+      toast.error(`Failed to generate flowchart: ${error.message || 'Please try again.'}`);
       setProcessing(false);
     }
   };
