@@ -205,58 +205,39 @@ Quality over brevity."""
 DOCUMENT SECTIONS TO FLOWCHART:
 {section_content}
 
-EXTRACT ALL PROCEDURAL STEPS:
-- Every single action, decision, and waiting point
-- Decision nodes (type: "decision") with YES/NO branches
-- Proper sequence with edges
-- Swimlanes for parallel workflows (onshore/offshore, different teams, etc.)
+YOUR TASK: Extract ALL procedural steps as a clean flowchart structure.
 
-NODE TYPES:
-- "trigger": Starting point
-- "active": Regular procedural step
-- "decision": Decision point (requires decision criteria)
-- "warning": Critical or time-sensitive step
+CRITICAL RULES:
+1. Capture EVERY step - no summarizing
+2. Keep titles SHORT (max 8 words)
+3. Keep descriptions BRIEF (max 20 words)
+4. Identify decision points as type: "decision"
+5. Organize into swimlanes if parallel workflows exist
 
-SWIMLANES (if applicable):
-- Identify parallel workflows (e.g., "Onshore Team" vs "Offshore Team")
-- Assign each node to appropriate swimlane
-- Use different colors per lane
-
-RETURN JSON:
+RETURN ONLY THIS JSON (no extra text):
 {{
-  "processName": "Clear process name",
-  "description": "Brief description",
+  "processName": "Process name (max 8 words)",
+  "description": "Brief overview (max 20 words)",
   "actors": ["Role1", "Role2"],
   "swimLanes": [
-    {{
-      "id": "lane-1",
-      "name": "Team/Role Name",
-      "role": "Responsibility",
-      "color": "#6366f1"
-    }}
+    {{"id": "lane-1", "name": "Team Name", "role": "Brief role", "color": "#6366f1"}}
   ],
   "nodes": [
     {{
       "id": "node-1",
       "type": "trigger|active|decision|warning",
-      "title": "Clear action title (60 chars max)",
-      "description": "What this step does (150 chars max)",
-      "actors": ["Responsible role"],
-      "swimLane": "lane-1",
-      "decisionCriteria": "YES/NO criteria (for decision nodes only)"
+      "title": "Action title (max 8 words)",
+      "description": "What happens (max 20 words)",
+      "actors": ["Role"],
+      "swimLane": "lane-1"
     }}
   ],
   "edges": [
-    {{
-      "id": "edge-1",
-      "source": "node-1",
-      "target": "node-2",
-      "label": "YES|NO|null"
-    }}
+    {{"id": "edge-1", "source": "node-1", "target": "node-2", "label": "YES|NO|null"}}
   ]
 }}
 
-CAPTURE EVERY STEP. Return valid JSON only."""
+IMPORTANT: Keep all text SHORT. Quality over quantity in descriptions."""
             
             message = UserMessage(text=prompt)
             response = await chat.send_message(message)
