@@ -1025,11 +1025,14 @@ RETURN VALID JSON ONLY (no markdown, no explanation)"""
                         detail=f"The document is too complex for AI to parse in one attempt. Please try: 1) Splitting the document into smaller sections, 2) Uploading a simplified version, or 3) Contact support. Error details: {str(json_err2)[:200]}"
                     )
             
-            # Ensure required fields exist
+            # Validate required fields
+            if 'nodes' not in parsed or not parsed['nodes']:
+                logger.error(f"AI returned JSON without nodes. Response: {response_text[:500]}")
+                raise ValueError("AI did not extract any process steps. The document may be too complex or not a valid process document.")
+            
+            # Ensure all required fields
             if 'swimLanes' not in parsed:
                 parsed['swimLanes'] = []
-            if 'nodes' not in parsed:
-                parsed['nodes'] = []
             if 'edges' not in parsed:
                 parsed['edges'] = []
             
