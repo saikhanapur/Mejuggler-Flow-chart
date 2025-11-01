@@ -949,34 +949,34 @@ EXAMPLE NODE STRUCTURE:
     "sourcePage": null
   }}
 }},
-    {{
-      "id": "node-2",
-      "type": "decision",
-      "status": "current",
-      "title": "Question to decide?",
-      "description": "Decision point",
-      "actors": ["who"],
-      "swimLane": "lane-1",
-      "subSteps": [],
-      "dependencies": [],
-      "parallelWith": [],
-      "failures": [],
-      "blocking": null,
-      "currentState": "brief",
-      "idealState": "brief",
-      "gap": null,
-      "impact": "medium",
-      "timeEstimate": null,
-      "operationalDetails": {{
-        "decisionCriteria": "What determines YES vs NO?",
-        "requiredData": [],
-        "specificActions": [],
-        "contactInfo": {{}},
-        "timeline": null,
-        "systems": [],
-        "sourcePage": null
-      }}
-    }}
+{{
+  "id": "node-2",
+  "type": "decision",
+  "status": "current",
+  "title": "Question to decide?",
+  "description": "Decision point",
+  "actors": ["who"],
+  "swimLane": "lane-1",
+  "subSteps": [],
+  "dependencies": [],
+  "parallelWith": [],
+  "failures": [],
+  "blocking": null,
+  "currentState": "brief",
+  "idealState": "brief",
+  "gap": null,
+  "impact": "medium",
+  "timeEstimate": null,
+  "operationalDetails": {{
+    "decisionCriteria": "What determines YES vs NO?",
+    "requiredData": [],
+    "specificActions": [],
+    "contactInfo": {{}},
+    "timeline": null,
+    "systems": [],
+    "sourcePage": null
+  }}
+}}
   ],
   "edges": [
     {{
