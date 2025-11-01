@@ -2368,7 +2368,7 @@ async def parse_process(input_data: ProcessInput):
 @api_router.post("/process/analyze-document")
 async def analyze_document_intelligence(
     input_data: ProcessInput,
-    auth_data: Optional[Dict] = Depends(optional_auth)
+    request: Request
 ):
     """
     STAGE 0: Document Intelligence & Classification
@@ -2379,7 +2379,8 @@ async def analyze_document_intelligence(
     try:
         from superintelligent_ai_service import SuperintelligentAIService
         
-        user_id = auth_data.get("user", {}).get("userId") if auth_data else None
+        user = await get_current_user(request)
+        user_id = user.get("id") if user else None
         
         logger.info(f"🧠 Stage 0: Analyzing document for user {user_id}")
         
@@ -2403,7 +2404,7 @@ async def analyze_document_intelligence(
 @api_router.post("/process/generate-from-analysis")
 async def generate_flowchart_from_analysis(
     request_data: Dict[str, Any],
-    auth_data: Optional[Dict] = Depends(optional_auth)
+    request: Request
 ):
     """
     STAGES 1-3: Generate flowchart from approved document analysis
@@ -2423,7 +2424,8 @@ async def generate_flowchart_from_analysis(
     try:
         from superintelligent_ai_service import SuperintelligentAIService
         
-        user_id = auth_data.get("user", {}).get("userId") if auth_data else None
+        user = await get_current_user(request)
+        user_id = user.get("id") if user else None
         
         logger.info(f"🏗️ Generating flowchart from approved analysis")
         
@@ -2494,7 +2496,7 @@ async def generate_flowchart_from_analysis(
 @api_router.post("/process/bulk-analyze")
 async def bulk_analyze_documents(
     documents: List[Dict[str, str]],
-    auth_data: Optional[Dict] = Depends(optional_auth)
+    request: Request
 ):
     """
     Bulk document analysis for training/learning
@@ -2510,7 +2512,8 @@ async def bulk_analyze_documents(
     try:
         from superintelligent_ai_service import SuperintelligentAIService
         
-        user_id = auth_data.get("user", {}).get("userId") if auth_data else None
+        user = await get_current_user(request)
+        user_id = user.get("id") if user else None
         
         logger.info(f"📚 Bulk analyzing {len(documents)} documents")
         
@@ -2555,7 +2558,7 @@ async def bulk_analyze_documents(
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/learning/insights")
-async def get_learning_insights(auth_data: Optional[Dict] = Depends(optional_auth)):
+async def get_learning_insights(request: Request):
     """
     Get learning system insights
     
