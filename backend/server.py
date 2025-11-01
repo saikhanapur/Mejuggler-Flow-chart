@@ -936,19 +936,19 @@ EXAMPLE NODE STRUCTURE:
   "blocking": null,
   "currentState": "brief",
   "idealState": "brief",
-      "gap": null,
-      "impact": "medium",
-      "timeEstimate": null,
-      "operationalDetails": {{
-        "requiredData": ["specific field 1", "specific field 2"],
-        "specificActions": ["brief action 1 (max 80 chars)", "brief action 2 (max 80 chars)"],
-        "contactInfo": {{"Contact Name": "phone/email"}},
-        "timeline": "time requirement if any",
-        "systems": ["System 1", "System 2"],
-        "decisionCriteria": null,
-        "sourcePage": null
-      }}
-    }},
+  "gap": null,
+  "impact": "medium",
+  "timeEstimate": null,
+  "operationalDetails": {{
+    "requiredData": ["specific field 1", "specific field 2"],
+    "specificActions": ["brief action 1 (max 80 chars)", "brief action 2 (max 80 chars)"],
+    "contactInfo": {{"Contact Name": "phone/email"}},
+    "timeline": "time requirement if any",
+    "systems": ["System 1", "System 2"],
+    "decisionCriteria": null,
+    "sourcePage": null
+  }}
+}},
     {{
       "id": "node-2",
       "type": "decision",
