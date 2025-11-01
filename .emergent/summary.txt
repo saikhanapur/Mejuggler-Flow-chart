@@ -1,34 +1,29 @@
 <analysis>
-The trajectory details a dynamic development process for the SuperHumanly application, starting from an MVP state. Initial efforts addressed critical frontend bugs and introduced a Smart Context Analyzer and Redis caching for AI performance. A significant strategic shift towards Process Intelligence redefined the app's purpose from flowchart creation to identifying and fixing broken business processes, leading to the development of a  and related backend endpoints.
+The trajectory details the evolution of the SuperHumanly application from an MVP. Initial phases included frontend bug fixes, Smart Context Analyzer, and Redis caching. A significant pivot occurred towards Process Intelligence, focusing on identifying and fixing broken business processes, leading to the development of the .
 
-User feedback highlighted the initial intelligence panel's lack of actionable insights, prompting a major iteration to enhance backend intelligence with node-specific issues and better explanations, followed by frontend visual improvements. The conversation then focused on addressing information overload and credibility concerns related to AI-generated cost estimates and benchmarks, leading to multiple rounds of simplification and a segmented control UI for toggling between summary and detailed views. Critical legal and ethical concerns regarding life-safety risks language from the AI were addressed by removing alarmist phrases and adding disclaimers.
+Subsequent work addressed user feedback, enhancing intelligence with node-specific issues and better explanations, and simplifying AI-generated cost estimates. Critical legal/ethical concerns about life-safety risks language were resolved. The Guest Mode feature was implemented to reduce onboarding friction, allowing flowchart creation without signup, while gating saving/sharing.
 
-Finally, the discussion pivoted to the core value proposition and user onboarding, culminating in the decision to implement a Guest Mode allowing users to create one flowchart without signing up, while gating saving, sharing, and advanced features. This aims to reduce friction and leverage product-led growth. The AI engineer is currently implementing the backend for this guest mode.
+Recent development focused on fixing critical bugs (processes disappearing after login, performance issues due to missing database indexes) and iterating on landing page messaging with a Don Draper outcome-based approach. The most recent, pivotal challenge emerged when the user highlighted the **lack of proper decision logic visualization** in flowcharts (currently linear, not branching) and the **loss of critical operational details** from source documents. The AI is now tasked with a comprehensive redesign of the flowchart's visual representation to create an aha! moment for users.
 </analysis>
 
 <product_requirements>
-SuperHumanly aims to simplify complex workflows into interactive, AI-generated flowcharts for enterprise and SME customers. It captures processes via voice, documents, and chat, using the Claude API, featuring an Apple-inspired UI, multi-process detection, Publish functionality with token-based sharing, Workspaces (now Projects) for organization, and manual node editing. Enterprise authentication and legal pages are in place.
+SuperHumanly aims to transform complex workflows into interactive, AI-generated flowcharts, targeting enterprise and SME customers. It ingests processes via voice, documents, and chat, utilizing the Claude API and featuring an Apple-inspired UI. Key features include multi-process detection, token-based sharing, Workspaces (now Projects), manual node editing, enterprise authentication, and legal pages.
 
-Recent development focused on:
-1.  **Dashboard UX:** Streamlining with My Workspace, collapsible Projects, and a clear Create an Interactive Flowchart action.
-2.  **AI Refinement:** Implementing an AI chat/voice interface for iterative flowchart refinement.
-3.  **Quality Control:** Auto-unpublishing published flowcharts after AI refinement for review.
-4.  **Mobile Responsiveness:** Ensuring cross-device functionality.
-5.  **PDF Export:** Accurate on-screen representation without interactive elements.
-6.  **Process Intelligence (New Pivot):** Evolving from a flowchart creator to a platform that identifies, quantifies, and recommends fixes for broken business processes, aiming to provide measurable ROI and become indispensable in enterprise workflows. The latest iteration includes node-specific issue detection, detailed explanations, and clearer AI recommendations, initially targeting TIER 1 issues like missing error handling, bottlenecks, unclear ownership, missing timeouts, and missing handoff documentation.
+The core problem SuperHumanly solves is evolving from a mere flowchart creator to a platform that identifies, quantifies, and recommends fixes for broken business processes. The goal is to provide measurable ROI and become indispensable in enterprise workflows. This involves node-specific issue detection, detailed explanations, and clear AI recommendations, initially targeting TIER 1 issues (missing error handling, bottlenecks, unclear ownership, missing timeouts, missing handoff documentation).
+
+Recent focus has been on:
+1.  **Guest Mode:** Allowing users to create one flowchart without signing up, while gating saving and advanced features, to reduce friction and drive product-led growth.
+2.  **Detailed Process Capture:** Ensuring the AI extracts and presents all granular operational details (e.g., contact info, specific actions, required data fields) from source documents, not just high-level summaries.
+3.  **Accurate Decision Logic Visualization:** Correctly representing decision points (e.g., diamonds) and clear branching paths (YES/NO) in flowcharts to enhance clarity and actionable insights.
+4.  **Customer Confidence:** Developing mechanisms (like a Smart Extraction Preview and AI Coverage Report) to assure users that the AI accurately captures all essential information from their documents.
 </product_requirements>
 
 <key_technical_concepts>
--   **Frontend**: React (Hooks), TailwindCSS, Lucide React, React Flow, Zustand.
+-   **Frontend**: React (Hooks), TailwindCSS, Lucide React, Zustand.
 -   **Backend/AI**: FastAPI, Claude API (Sonnet 4), PyMongo, Pydantic, JWT, Google OAuth, Redis (caching).
--   **Database**: MongoDB (using UUIDs).
--   **Authentication**: JWT, Google OAuth, bcrypt, httpOnly cookies.
--   **Other**: Responsive design, PDF export, backend                          RUNNING   pid 29, uptime 0:00:02
-code-server                      STOPPED   Not started
-frontend                         STOPPING  
-mongodb                          RUNNING   pid 32, uptime 0:00:02
-nginx-code-proxy                 RUNNING   pid 28, uptime 0:00:02
-supervisor> , SSE (Server-Sent Events, temporarily disabled), Progressive Disclosure UX.
+-   **Database**: MongoDB (using UUIDs, with recent addition of indexes).
+-   **Authentication**: JWT, Google OAuth, bcrypt, httpOnly cookies, Guest Mode with optional authentication.
+-   **UI/UX**: Progressive Disclosure, Outcome-based messaging, Visual communication principles.
 </key_technical_concepts>
 
 <code_architecture>
@@ -37,22 +32,46 @@ The application uses a React frontend, a FastAPI backend, and MongoDB for data s
 **Directory Structure:**
 
 -   ****: Main FastAPI application.
-    -   **Summary**: Contains core API routes, authentication logic, and AI integration.
-    -   **Changes**:  was heavily modified to implement TIER 1 issue detection and generate more detailed, less alarmist insights. A new  endpoint was added. The  model was updated to include  and .  was modified for optional auth, and a new  endpoint was created. Logic was added to gate  for guest users.
--   ****: Provides Redis caching.
-    -   **Summary**: Used for intelligent caching to optimize AI model calls and store analysis results.
+    -   **Summary**: Contains core API routes, authentication logic, and AI integration. Heavily modified for Process Intelligence and Guest Mode.
+    -   **Changes**:
+        -    model updated to include  (boolean),  (string),  (dict), and  (list of  objects) to support guest processes and detailed node information/connections.
+        -    modified for optional authentication.
+        -    endpoint added.
+        -    endpoint created for guest process creation.
+        -   Logic added to  endpoint to gate guest users.
+        -   Guest process migration logic added to  and Google OAuth endpoints.
+        -    endpoint updated to correctly retrieve existing user processes by changing the query from  to .
+        -   Database indexes added on  collection for  to improve performance.
+        -   AI prompt within  (and ) modified to explicitly extract and preserve  and detect  for decision points.
+        -    and  Pydantic models added.
+        -   LLM API key usage fixed from  to  in new extraction summary endpoint.
+-   ****: Main React application routing.
+    -   **Summary**: Defines application routes and wraps with .
+    -   **Changes**: Added a guest-accessible route for  to allow unauthenticated flowchart creation.
 -   ****: Centralized API calls.
     -   **Summary**: Handles all frontend-to-backend communication.
     -   **Changes**: Added  for the new backend endpoint.
+-   ****: Application header.
+    -   **Summary**: Displays navigation, user info, and login/signup options.
+    -   **Changes**: Modified to adapt for guest mode, showing Login and Sign Up to Save prompts instead of user-specific options.
+-   ****: Handles process input and initial flowchart generation.
+    -   **Summary**: Users upload documents or provide text to create a process.
+    -   **Changes**: Modified to handle  prop, allowing guest users to create processes without workspace context, and using the guest-specific backend endpoint ().
 -   ****: Flowchart editing interface.
-    -   **Summary**: Displays the flowchart, handles interactions, and integrates various panels.
-    -   **Changes**: Integrated a segmented control toggle for Summary/Detailed view mode for intelligence. Modified to hide  by default, display a subtle badge notification based on process complexity, and pass  and  props to the panel.
+    -   **Summary**: Displays the flowchart, handles interactions, and integrates various panels. Currently uses a custom, vertical rendering approach.
+    -   **Changes**:
+        -   Integrated a segmented control toggle for Summary/Detailed view mode for intelligence.
+        -   Modified to hide  by default, display a subtle badge notification based on process complexity.
+        -   Accepted  and  props for the panel.
+        -   Modified to handle  prop, updated  with guest checks, added a guest signup prompt dialog.
+        -   Wrapped Publish and Share buttons with guest mode checks to hide/disable them for guest users.
+        -   **Current State:** The rendering logic is still a simple vertical layout, which does not support branching decision nodes. A significant redesign is needed.
 -   ****: Displays process intelligence.
     -   **Summary**: Presents health scores, issues, and recommendations.
-    -   **Changes**: Heavily modified to implement progressive disclosure (Summary/Detailed views), handle  for filtered display (limit issues, hide ROI/Health Score/View Toggle), accept  prop and include a close button, and display a prominent AI disclaimer. Critical language in the displayed output was softened.
+    -   **Changes**: Heavily modified for progressive disclosure (Summary/Detailed views), handling , including a close button, and displaying a prominent AI disclaimer. Critical language was softened.
 -   ****: Application landing page.
     -   **Summary**: The entry point for users, showcasing the application's value.
-    -   **Changes**: Underwent multiple iterations to simplify messaging, refocus on the core Upload document, get interactive flowchart value proposition, and reintroduce a SuperHumanly Process Intelligence badge. It was reverted once to a previous, more detailed state, and then refined again for a clearer, action-oriented hero section and outcome-focused feature cards, replacing AI with SuperHumanly.
+    -   **Changes**: Underwent multiple iterations to simplify messaging, refocus on the core Upload document, get interactive flowchart value proposition, and later to an outcome-based Don Draper philosophy (Turn process chaos into clarity. Instantly.) with revised feature cards. The latest iteration implemented Find broken processes. Fix them in minutes. Save thousands every month. but user requested further refinement.
 </code_architecture>
 
 <pending_tasks>
@@ -61,26 +80,32 @@ The application uses a React frontend, a FastAPI backend, and MongoDB for data s
 -   Further polish Workspaces/Projects.
 -   Enhance AI intelligence for chat (RAG and Fine-Tuning).
 -   Re-evaluate and potentially re-implement SSE streaming.
--   Build out the User-Driven Cost Calculator in Phase 2 for the Intelligence Panel.
--   Implement Pattern-Based Insights in Phase 3 for the Intelligence Panel.
--   A/B test the different Process Intelligence summary approaches (Checklist, Comparative Score, Risk-Opportunity Spectrum).
+-   Build out the User-Driven Cost Calculator and Pattern-Based Insights for the Intelligence Panel.
+-   A/B test different Process Intelligence summary approaches.
 -   Implement Customize Estimate feature for intelligence costs.
--   Refine landing page content and layout (parked for now).
+-   Refine landing page content and layout further.
+-   Implement the frontend UI for displaying  in flowchart nodes.
+-   Implement the Smart Extraction Preview and AI Coverage Report features for customer confidence.
 </pending_tasks>
 
 <current_work>
-Immediately prior to this summary, the AI engineer was implementing the **Guest Mode** feature to allow users to create a flowchart without requiring a login. This decision was made to reduce friction and allow users to experience the aha moment quickly, while strategically gating advanced features and saving capabilities behind a signup wall.
+Immediately before this summary request, the AI engineer was addressing a critical core product issue: the application's inability to visually represent decision points and their branching paths in flowcharts. The current rendering system in  uses a simple vertical layout and is not based on a robust flowchart library like React Flow, making it unsuitable for displaying complex, non-linear processes with YES/NO branches.
 
-The implementation is currently focused on the **backend**. The AI engineer has already:
-1.  Modified  in  to support optional authentication, allowing unauthenticated requests for certain actions.
-2.  Created a  utility.
-3.  Introduced a new endpoint  in  specifically for creating processes in guest mode.
-4.  Updated the  Pydantic model in  to include  (boolean) and  (string) fields to properly track guest-created processes.
-5.  Started adding logic to gate the  endpoint, ensuring guest users cannot publish their processes without signing up. The  import was confirmed to be present.
+The backend has been updated to include  in the  model and the AI prompt has been refined in  () to explicitly detect decision points and their associated branches/edges during process generation.
 
-The backend changes are in progress, specifically the  endpoint is being modified to check for guest users.
+The immediate work involved:
+1.  **Backend updates:**
+    *   Modified the  Pydantic model to include an  field for capturing connections between nodes, including decision branches.
+    *   Updated the AI prompt for process parsing to explicitly instruct the LLM to identify decision nodes and their corresponding YES/NO branches, generating the necessary  data.
+    *   Backend restarted to apply these model and AI logic changes.
+
+2.  **Frontend analysis:**
+    *   The AI engineer began examining  to implement the visual changes for decision nodes.
+    *   Discovered that the current flowchart rendering mechanism is custom and fundamentally incapable of handling branching logic and diamond-shaped decision nodes. This necessitates a significant architectural change to the frontend's flowchart visualization.
+
+The current state is that the backend is now capable of *generating* the data for decision nodes and their branches, but the frontend lacks the architecture to *display* this information correctly. The user has emphasized the importance of a visually wow-ing design that creates an aha moment and maintains ease and simplicity, pushing for an unconventional approach if necessary. The AI is about to undertake a comprehensive redesign of the flowchart's visual design.
 </current_work>
 
 <optional_next_step>
-Restart the backend to apply the implemented guest mode changes, then proceed with the frontend implementation of guest mode.
+Research the best visual communication principles and create a comprehensive design system for SuperHumanly flowcharts, focusing on decision logic and visual impact.
 </optional_next_step>
