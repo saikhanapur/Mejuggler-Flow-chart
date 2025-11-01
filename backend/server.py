@@ -863,7 +863,7 @@ Look for separate sections that represent different teams/roles working in paral
 
 STEP 2: EXTRACT ALL STEPS
 For EACH swim lane/section:
-- Extract EVERY step mentioned (not just 5-8, extract ALL steps even if 30+)
+- Extract EVERY step mentioned (extract ALL steps even if 30+)
 - Maintain sequence and hierarchy
 - Identify decision points (IF/THEN/ELSE)
 - Group related sub-actions under parent steps when logical
@@ -874,7 +874,7 @@ For EVERY step, preserve EXACTLY as written:
 1. **Required Data Fields**: ALL specific data points to collect
    Example: "Officer Name", "Phone Number", "License Plate", "Incident Time"
 
-2. **Specific Actions**: Exact instructions (copy verbatim)
+2. **Specific Actions**: Exact instructions (KEEP BRIEF - one sentence each)
    Example: "Screenshot any errors", "Send Modica group message", "Begin Lighthouse timeline"
 
 3. **Contact Information**: Phone/email (preserve exactly)
@@ -889,14 +889,13 @@ For EVERY step, preserve EXACTLY as written:
 6. **Decision Criteria**: Conditions for YES/NO
    Example: "If Wilsar restarted", "If job received by patrol officer"
 
-7. **Email/Message Templates**: Any scripts or template text mentioned
-
 CRITICAL RULES:
-✅ Extract ALL steps (not 5-8, extract 20-40 if needed)
+✅ Extract ALL steps (extract 20-40 if needed)
 ✅ If document has 4 decision points, create 4 decision nodes
 ✅ If document has separate sections for different teams, create swim lanes
-✅ DO NOT summarize operational details - copy them verbatim
-✅ If step says "do A, B, C, D", list all 4 in specificActions
+✅ DO NOT include long text in operational details - keep each action/template to MAX 100 chars
+✅ For email templates: Only include FIRST LINE or TITLE, not full text
+✅ If step says "do A, B, C, D", list all 4 in specificActions BUT keep each under 80 chars
 ✅ Group steps into sections/swim lanes when document structure indicates it
 ✅ Preserve parallel workflows (onshore AND offshore happening simultaneously)
 
