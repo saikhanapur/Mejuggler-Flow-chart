@@ -113,6 +113,13 @@ REFERENCE STRUCTURE (adapt to your content):
 RETURN:
 Complete HTML from <!DOCTYPE html> to </html>
 
+IMPORTANT: 
+- Generate the COMPLETE HTML file
+- Don't truncate or summarize
+- Include ALL sections: header, canvas, nodes, connections, side panel, quick reference
+- If the document is complex, simplify the visual representation but keep it complete
+- Aim for 10-15 key nodes maximum to keep HTML manageable
+
 Make it BEAUTIFUL and FUNCTIONAL. Users should immediately understand the process and find value."""
         
         message = UserMessage(text=prompt)
