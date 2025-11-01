@@ -619,7 +619,7 @@ Return valid JSON only."""
         return header + document_text
     
     def _parse_json_response(self, response: str) -> Dict[str, Any]:
-        """Parse and validate JSON response from AI"""
+        """Parse and validate JSON response from AI with robust error handling"""
         response_text = response.strip()
         
         # Remove markdown code blocks
@@ -637,12 +637,17 @@ Return valid JSON only."""
             parsed = json.loads(response_text)
             return parsed
         except json.JSONDecodeError as e:
-            logger.warning(f"Initial JSON parsing failed: {e}. Attempting repairs...")
+            logger.warning(f"Initial JSON parsing failed at position {e.pos}: {e.msg}")
+            logger.warning(f"Attempting repairs...")
             
             # Repair strategy 1: Remove trailing commas
             response_text = re.sub(r',(\s*[}\]])', r'\1', response_text)
             
-            # Repair strategy 2: Ensure proper closing
+            # Repair strategy 2: Fix missing commas between array/object elements
+            response_text = re.sub(r'}\s*{', '},{', response_text)
+            response_text = re.sub(r']\s*\[', '],[', response_text)
+            
+            # Repair strategy 3: Ensure proper closing
             if not response_text.rstrip().endswith('}'):
                 # Count opening and closing braces
                 open_braces = response_text.count('{')
@@ -650,8 +655,7 @@ Return valid JSON only."""
                 if open_braces > close_braces:
                     response_text = response_text.rstrip() + ('}' * (open_braces - close_braces))
             
-            # Repair strategy 3: Fix common JSON issues
-            # Remove any trailing text after final }
+            # Repair strategy 4: Remove any trailing text after final }
             last_brace = response_text.rfind('}')
             if last_brace != -1:
                 response_text = response_text[:last_brace+1]
@@ -659,29 +663,49 @@ Return valid JSON only."""
             # Try parsing again
             try:
                 parsed = json.loads(response_text)
-                logger.info("✅ JSON repaired successfully")
+                logger.info("✅ JSON repaired successfully with basic fixes")
                 return parsed
             except json.JSONDecodeError as e2:
-                # Log the problematic section
-                error_pos = e2.pos if hasattr(e2, 'pos') else 0
-                context_start = max(0, error_pos - 100)
-                context_end = min(len(response_text), error_pos + 100)
-                logger.error(f"JSON repair failed. Context around error:\n{response_text[context_start:context_end]}")
+                logger.warning(f"Basic repair failed. Attempting advanced repair...")
                 
-                # Last resort: Try to extract valid JSON from the response
-                # Find the first { and last }
+                # Advanced repair: Try to fix the specific error location
+                try:
+                    error_pos = e2.pos if hasattr(e2, 'pos') else 0
+                    
+                    # Extract context around error
+                    context_start = max(0, error_pos - 50)
+                    context_end = min(len(response_text), error_pos + 50)
+                    context = response_text[context_start:context_end]
+                    logger.error(f"Error context: ...{context}...")
+                    
+                    # Try fixing common issues at error position
+                    if error_pos < len(response_text):
+                        # Check if there's a missing comma
+                        if response_text[error_pos:error_pos+1] in ['{', '[', '"']:
+                            # Add comma before this character
+                            response_text = response_text[:error_pos] + ',' + response_text[error_pos:]
+                            parsed = json.loads(response_text)
+                            logger.info("✅ JSON repaired by adding missing comma")
+                            return parsed
+                except:
+                    pass
+                
+                # Last resort: Try to extract valid JSON by truncation
+                logger.warning("Attempting truncation strategy...")
                 first_brace = response_text.find('{')
                 last_brace = response_text.rfind('}')
                 if first_brace != -1 and last_brace != -1 and last_brace > first_brace:
                     truncated = response_text[first_brace:last_brace+1]
                     try:
                         parsed = json.loads(truncated)
-                        logger.warning("✅ JSON extracted by truncation")
+                        logger.warning("✅ JSON extracted by truncation - may be incomplete")
                         return parsed
                     except:
                         pass
                 
-                raise e2
+                # Ultimate fallback: Ask LLM to regenerate with stricter instructions
+                logger.error(f"❌ All JSON repair attempts failed")
+                raise ValueError(f"Failed to parse AI response as JSON after all repair attempts. Original error: {e2}")
     
     def _add_node_defaults(self, node: Dict):
         """Add default fields to a node"""
