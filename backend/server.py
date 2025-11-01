@@ -843,21 +843,18 @@ BE THOROUGH. The preprocessing hints should guide you."""
             return await self._parse_single_process(input_text, input_type)
     
     async def _parse_single_process(self, input_text: str, input_type: str) -> Dict[str, Any]:
-        """Parse a single process using multi-stage pipeline for enterprise reliability"""
+        """Parse a single process using enterprise-grade AI service"""
+        from enterprise_ai_service import EnterpriseAIService
+        
         try:
-            # STAGE 1: Extract high-level structure (nodes, swim lanes, edges)
-            structure = await self._extract_process_structure(input_text, input_type)
-            
-            # STAGE 2: Enrich nodes with operational details (in batches to avoid timeouts)
-            enriched_nodes = await self._enrich_nodes_with_details(input_text, structure['nodes'])
-            
-            # STAGE 3: Assemble final process
-            structure['nodes'] = enriched_nodes
-            
-            return {"multipleProcesses": False, "processes": [structure]}
+            logger.info("🚀 Using Enterprise AI Service for parsing")
+            enterprise_service = EnterpriseAIService(self.api_key)
+            result = await enterprise_service.parse_process(input_text, input_type)
+            logger.info("✅ Enterprise AI parsing complete")
+            return result
             
         except Exception as e:
-            logger.error(f"Error in multi-stage parsing: {e}")
+            logger.error(f"❌ Enterprise AI parsing failed: {e}", exc_info=True)
             raise HTTPException(status_code=500, detail=f"Failed to parse process: {str(e)}")
     
     async def _extract_process_structure(self, input_text: str, input_type: str) -> Dict[str, Any]:
