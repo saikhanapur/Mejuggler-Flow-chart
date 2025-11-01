@@ -171,8 +171,10 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
       toast.success('Flowchart created successfully!');
       
       // Navigate to the flowchart
+      // Use /edit/:id for authenticated users, /guest-edit/:id for guests
+      const editRoute = isGuestMode ? `/guest-edit/${createdProcess.id}` : `/edit/${createdProcess.id}`;
       setTimeout(() => {
-        navigate(`/process/${createdProcess.id}`);
+        navigate(editRoute);
       }, 1500);
       
     } catch (error) {
