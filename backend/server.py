@@ -2363,6 +2363,242 @@ async def parse_process(input_data: ProcessInput):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# ==================== SUPERINTELLIGENT AI ENDPOINTS ====================
+
+@api_router.post("/process/analyze-document")
+async def analyze_document_intelligence(
+    input_data: ProcessInput,
+    auth_data: Optional[Dict] = Depends(optional_auth)
+):
+    """
+    STAGE 0: Document Intelligence & Classification
+    
+    Analyzes document and returns section classifications with reasoning.
+    User can review/approve before flowchart generation.
+    """
+    try:
+        from superintelligent_ai_service import SuperintelligentAIService
+        
+        user_id = auth_data.get("user", {}).get("userId") if auth_data else None
+        
+        logger.info(f"🧠 Stage 0: Analyzing document for user {user_id}")
+        
+        superintelligent_service = SuperintelligentAIService(
+            api_key=os.environ.get("EMERGENT_LLM_KEY"),
+            db_client=client
+        )
+        
+        analysis = await superintelligent_service.analyze_document(
+            document_text=input_data.text,
+            input_type=input_data.inputType,
+            user_id=user_id
+        )
+        
+        return analysis
+        
+    except Exception as e:
+        logger.error(f"❌ Document analysis failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/process/generate-from-analysis")
+async def generate_flowchart_from_analysis(
+    request_data: Dict[str, Any],
+    auth_data: Optional[Dict] = Depends(optional_auth)
+):
+    """
+    STAGES 1-3: Generate flowchart from approved document analysis
+    
+    Request body:
+    {
+        "documentText": "...",
+        "analysisId": "uuid",
+        "approvedSections": ["sec-1", "sec-2"],
+        "userCorrections": [
+            {"sectionId": "sec-3", "from": "reference", "to": "flowchartable", "reasoning": "..."}
+        ]
+    }
+    
+    Returns complete flowchart with coverage report
+    """
+    try:
+        from superintelligent_ai_service import SuperintelligentAIService
+        
+        user_id = auth_data.get("user", {}).get("userId") if auth_data else None
+        
+        logger.info(f"🏗️ Generating flowchart from approved analysis")
+        
+        superintelligent_service = SuperintelligentAIService(
+            api_key=os.environ.get("EMERGENT_LLM_KEY"),
+            db_client=client
+        )
+        
+        # Retrieve analysis
+        learning_db = client.get_database("learning")
+        analysis = await learning_db.document_analyses.find_one({
+            "analysisId": request_data.get("analysisId")
+        })
+        
+        if not analysis:
+            raise HTTPException(status_code=404, detail="Analysis not found")
+        
+        # Store user corrections if provided
+        user_corrections = request_data.get("userCorrections", [])
+        if user_corrections:
+            await superintelligent_service.store_user_feedback(
+                analysis_id=request_data["analysisId"],
+                user_corrections=user_corrections,
+                user_id=user_id
+            )
+            
+            # Update analysis with corrections
+            for correction in user_corrections:
+                section_id = correction.get("sectionId")
+                new_classification = correction.get("to")
+                
+                for section in analysis.get("sections", []):
+                    if section["sectionId"] == section_id:
+                        section["classification"] = new_classification
+                        section["reasoning"] = f"User correction: {correction.get('reasoning', 'Reclassified')}"
+        
+        # Stage 1: Extract Structure
+        structure = await superintelligent_service.extract_structure(
+            document_text=request_data.get("documentText"),
+            approved_sections=request_data.get("approvedSections", []),
+            analysis=analysis
+        )
+        
+        # Stage 2: Enrich Details
+        enriched_structure = await superintelligent_service.enrich_details(
+            document_text=request_data.get("documentText"),
+            structure=structure,
+            analysis=analysis
+        )
+        
+        # Stage 3: Generate Coverage Report
+        coverage_report = await superintelligent_service.generate_coverage_report(
+            structure=enriched_structure,
+            analysis=analysis
+        )
+        
+        return {
+            "multipleProcesses": False,
+            "processes": [enriched_structure],
+            "coverageReport": coverage_report,
+            "analysisId": request_data["analysisId"]
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Flowchart generation failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/process/bulk-analyze")
+async def bulk_analyze_documents(
+    documents: List[Dict[str, str]],
+    auth_data: Optional[Dict] = Depends(optional_auth)
+):
+    """
+    Bulk document analysis for training/learning
+    
+    Request body:
+    [
+        {"text": "...", "inputType": "document", "name": "Doc 1"},
+        {"text": "...", "inputType": "document", "name": "Doc 2"}
+    ]
+    
+    Returns array of analysis results
+    """
+    try:
+        from superintelligent_ai_service import SuperintelligentAIService
+        
+        user_id = auth_data.get("user", {}).get("userId") if auth_data else None
+        
+        logger.info(f"📚 Bulk analyzing {len(documents)} documents")
+        
+        superintelligent_service = SuperintelligentAIService(
+            api_key=os.environ.get("EMERGENT_LLM_KEY"),
+            db_client=client
+        )
+        
+        results = []
+        for i, doc in enumerate(documents[:10]):  # Limit to 10 at a time
+            try:
+                logger.info(f"Processing document {i+1}/{len(documents[:10])}: {doc.get('name', 'Unnamed')}")
+                
+                analysis = await superintelligent_service.analyze_document(
+                    document_text=doc.get("text", ""),
+                    input_type=doc.get("inputType", "document"),
+                    user_id=user_id
+                )
+                
+                results.append({
+                    "name": doc.get("name", f"Document {i+1}"),
+                    "analysis": analysis,
+                    "status": "success"
+                })
+                
+            except Exception as e:
+                logger.error(f"Failed to analyze document {i+1}: {e}")
+                results.append({
+                    "name": doc.get("name", f"Document {i+1}"),
+                    "error": str(e),
+                    "status": "failed"
+                })
+        
+        return {
+            "totalDocuments": len(documents),
+            "processed": len(results),
+            "results": results
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Bulk analysis failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/learning/insights")
+async def get_learning_insights(auth_data: Optional[Dict] = Depends(optional_auth)):
+    """
+    Get learning system insights
+    
+    Returns statistics on:
+    - Total documents analyzed
+    - Patterns learned
+    - User feedback count
+    - Confidence improvements
+    """
+    try:
+        learning_db = client.get_database("learning")
+        
+        total_analyses = await learning_db.document_analyses.count_documents({})
+        validated_analyses = await learning_db.document_analyses.count_documents({"validated": True})
+        total_patterns = await learning_db.document_patterns.count_documents({})
+        total_feedback = await learning_db.user_feedback.count_documents({})
+        
+        # Get top patterns
+        top_patterns = await learning_db.document_patterns.find().sort("confidence", -1).limit(10).to_list(length=10)
+        
+        return {
+            "totalAnalyses": total_analyses,
+            "validatedAnalyses": validated_analyses,
+            "totalPatterns": total_patterns,
+            "totalFeedback": total_feedback,
+            "validationRate": round((validated_analyses / total_analyses * 100) if total_analyses > 0 else 0, 1),
+            "topPatterns": [
+                {
+                    "pattern": p.get("pattern"),
+                    "classification": p.get("classification"),
+                    "confidence": round(p.get("confidence", 0) * 100, 1),
+                    "validationCount": p.get("validationCount", 0)
+                }
+                for p in top_patterns
+            ]
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get learning insights: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== END SUPERINTELLIGENT AI ENDPOINTS ====================
+
 @api_router.post("/process/extract-summary", response_model=ExtractionSummary)
 async def extract_summary(input_data: ProcessInput):
     """
