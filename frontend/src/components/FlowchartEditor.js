@@ -589,10 +589,38 @@ const FlowchartEditor = ({ theme, readOnly = false, accessLevel = 'owner', proce
         )}
 
         {/* Canvas - scrollable */}
-        <div className="flex-1 overflow-auto bg-slate-50" data-testid="flowchart-canvas">
-          <div className="max-w-5xl mx-auto p-8">
-            {/* Legend */}
-            <div className="mb-8 bg-white rounded-2xl p-5 border border-slate-300/50 shadow-md flex flex-wrap gap-5 text-sm">
+        <div className="flex-1 overflow-hidden bg-slate-50" data-testid="flowchart-canvas">
+          {/* View Mode Toggle */}
+          {process && process.swimLanes && process.swimLanes.length > 0 && (
+            <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                {viewMode === 'swimlane' ? 'Swim Lane View' : 'Classic View'} · {process.nodes?.length || 0} steps
+              </div>
+              <button
+                onClick={() => setViewMode(viewMode === 'swimlane' ? 'classic' : 'swimlane')}
+                className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors text-sm font-medium"
+              >
+                Switch to {viewMode === 'swimlane' ? 'Classic' : 'Swim Lane'} View
+              </button>
+            </div>
+          )}
+
+          {/* Swim Lane View (React Flow) */}
+          {viewMode === 'swimlane' && (
+            <div className="h-full">
+              <EnterpriseFlowchart 
+                process={process} 
+                onNodeClick={handleNodeClick}
+              />
+            </div>
+          )}
+
+          {/* Classic View (Original Vertical) */}
+          {viewMode === 'classic' && (
+            <div className="overflow-auto h-full">
+              <div className="max-w-5xl mx-auto p-8">
+                {/* Legend */}
+                <div className="mb-8 bg-white rounded-2xl p-5 border border-slate-300/50 shadow-md flex flex-wrap gap-5 text-sm">
               <div className="flex items-center gap-2.5">
                 <div className="w-5 h-5 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm"></div>
                 <span className="text-slate-700 font-medium">Trigger</span>
