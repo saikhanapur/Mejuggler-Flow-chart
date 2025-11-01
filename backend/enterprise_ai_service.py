@@ -5,7 +5,7 @@ import json
 import re
 import logging
 from typing import Dict, List, Any
-from emergentintegrations.anthropic import LlmChat, UserMessage
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 logger = logging.getLogger(__name__)
 
