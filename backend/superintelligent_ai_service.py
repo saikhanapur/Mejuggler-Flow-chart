@@ -154,12 +154,14 @@ BE THOROUGH. Count all steps. Return valid JSON only."""
         self, 
         document_text: str, 
         approved_sections: List[str],
-        analysis: Dict[str, Any]
+        analysis: Dict[str, Any],
+        retry_count: int = 0
     ) -> Dict[str, Any]:
         """
         STAGE 1: Structure Extraction (ONLY from approved flowchartable sections)
         
         No truncation. Processes full content of flowchartable sections.
+        With automatic retry and simplification on failure.
         
         Returns:
         {
@@ -185,10 +187,19 @@ BE THOROUGH. Count all steps. Return valid JSON only."""
             # Extract content for these sections (NO TRUNCATION)
             section_content = self._extract_section_content(document_text, flowchartable_sections)
             
+            # Check estimated steps - if too many (>40), use ultra-compact mode
+            total_estimated = sum(sec.get('estimatedSteps', 0) for sec in flowchartable_sections)
+            use_ultra_compact = total_estimated > 40 or retry_count > 0
+            
+            if use_ultra_compact:
+                logger.warning(f"⚡ Using ultra-compact mode (estimated {total_estimated} steps, retry {retry_count})")
+            
             chat = LlmChat(
                 api_key=self.api_key,
                 session_id=f"structure_{uuid.uuid4()}",
                 system_message="""You are a process architect extracting flowchart structure.
+
+CRITICAL: Generate VALID JSON ONLY. Keep ALL text ultra-short.""" if use_ultra_compact else """You are a process architect extracting flowchart structure.
 
 CRITICAL RULES:
 1. DO NOT TRUNCATE or summarize - capture EVERY step
@@ -200,7 +211,26 @@ CRITICAL RULES:
 Quality over brevity."""
             ).with_model("anthropic", "claude-4-sonnet-20250514")
             
-            prompt = f"""STRUCTURE EXTRACTION - COMPLETE & ACCURATE
+            if use_ultra_compact:
+                prompt = f"""Extract flowchart structure. KEEP ALL TEXT ULTRA-SHORT.
+
+{section_content[:15000]}
+
+Return ONLY this JSON:
+{{
+  "processName": "Name (4 words max)",
+  "description": "Brief (10 words max)",
+  "actors": ["Role1"],
+  "swimLanes": [{{"id": "lane-1", "name": "Name", "role": "Role", "color": "#6366f1"}}],
+  "nodes": [
+    {{"id": "node-1", "type": "trigger|active|decision", "title": "Action (5 words)", "description": "Brief (10 words)", "actors": ["Role"], "swimLane": "lane-1"}}
+  ],
+  "edges": [{{"id": "edge-1", "source": "node-1", "target": "node-2", "label": null}}]
+}}
+
+CRITICAL: Capture ALL steps but keep text SHORT. Valid JSON only."""
+            else:
+                prompt = f"""STRUCTURE EXTRACTION - COMPLETE & ACCURATE
 
 DOCUMENT SECTIONS TO FLOWCHART:
 {section_content}
@@ -257,6 +287,14 @@ IMPORTANT: Keep all text SHORT. Quality over quantity in descriptions."""
             logger.info(f"✅ Stage 1 complete: {structure['totalSteps']} steps extracted")
             return structure
             
+        except json.JSONDecodeError as e:
+            # Retry with ultra-compact mode if first attempt failed
+            if retry_count == 0:
+                logger.warning(f"⚠️  JSON parsing failed, retrying with ultra-compact mode...")
+                return await self.extract_structure(document_text, approved_sections, analysis, retry_count=1)
+            else:
+                logger.error(f"❌ Stage 1 failed after retry: {e}", exc_info=True)
+                raise
         except Exception as e:
             logger.error(f"❌ Stage 1 failed: {e}", exc_info=True)
             raise
