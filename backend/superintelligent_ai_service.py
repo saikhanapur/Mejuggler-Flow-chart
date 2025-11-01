@@ -97,7 +97,36 @@ Be thorough. Return valid JSON only."""
             message = UserMessage(text=prompt)
             response = await chat.send_message(message)
             
-            analysis = self._parse_json_response(response)
+            try:
+                analysis = self._parse_json_response(response)
+            except ValueError as parse_error:
+                logger.warning(f"⚠️ Complex prompt failed, trying simplified extraction...")
+                
+                # Fallback: Use a simpler prompt with minimal JSON structure
+                simplified_prompt = f"""Analyze this document and extract basic information. Return ONLY a valid JSON object.
+
+Document:
+{document_text[:15000]}
+
+Return this exact JSON structure (no additional text):
+{{
+  "documentSummary": "one sentence summary",
+  "steps": ["step1", "step2", "step3"],
+  "decisions": [],
+  "contacts": {{}},
+  "systems": [],
+  "timings": [],
+  "parallelProcesses": []
+}}
+
+Return ONLY the JSON, nothing else."""
+                
+                message = UserMessage(text=simplified_prompt)
+                response = await chat.send_message(message)
+                analysis = self._parse_json_response(response)
+                analysis['simplified'] = True
+                logger.info("✅ Used simplified extraction mode")
+            
             analysis['analysisId'] = str(uuid.uuid4())
             analysis['timestamp'] = datetime.now(timezone.utc).isoformat()
             analysis['inputType'] = input_type
