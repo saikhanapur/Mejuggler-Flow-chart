@@ -843,12 +843,30 @@ BE THOROUGH. The preprocessing hints should guide you."""
             return await self._parse_single_process(input_text, input_type)
     
     async def _parse_single_process(self, input_text: str, input_type: str) -> Dict[str, Any]:
-        """Parse a single process from input text WITH operational details and swim lane structure"""
+        """Parse a single process using multi-stage pipeline for enterprise reliability"""
+        try:
+            # STAGE 1: Extract high-level structure (nodes, swim lanes, edges)
+            structure = await self._extract_process_structure(input_text, input_type)
+            
+            # STAGE 2: Enrich nodes with operational details (in batches to avoid timeouts)
+            enriched_nodes = await self._enrich_nodes_with_details(input_text, structure['nodes'])
+            
+            # STAGE 3: Assemble final process
+            structure['nodes'] = enriched_nodes
+            
+            return {"multipleProcesses": False, "processes": [structure]}
+            
+        except Exception as e:
+            logger.error(f"Error in multi-stage parsing: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to parse process: {str(e)}")
+    
+    async def _extract_process_structure(self, input_text: str, input_type: str) -> Dict[str, Any]:
+        """STAGE 1: Extract just the structure - node titles, types, swim lanes, edges"""
         try:
             chat = LlmChat(
                 api_key=self.api_key,
-                session_id=f"parse_{uuid.uuid4()}",
-                system_message="You are SuperHumanly AI, an expert at extracting COMPLETE enterprise process workflows with hierarchical structure, swim lanes, and ALL operational details."
+                session_id=f"structure_{uuid.uuid4()}",
+                system_message="You are an expert at extracting process structure. Return ONLY valid JSON."
             ).with_model("anthropic", "claude-4-sonnet-20250514")
             
             prompt = f"""ENTERPRISE PROCESS EXTRACTION - COMPLETE CAPTURE
