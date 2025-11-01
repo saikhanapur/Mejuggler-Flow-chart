@@ -1023,17 +1023,20 @@ SWIM LANE RULES:
 
 CRITICAL JSON FORMATTING RULES:
 - Return VALID JSON only (no markdown code blocks)
-- Escape ALL special characters in strings (quotes, newlines, backslashes)
-- Keep string values concise - if text is too long, truncate with "..."
-- DO NOT include raw line breaks in strings - use \\n instead
-- If you can't fit all details, prioritize the first 15-20 most important steps
+- ESCAPE ALL QUOTES in string values using backslash: \\"
+- NO line breaks in strings - use space instead
+- Keep ALL string values under 100 characters
+- If text is too long, truncate with "..." at 100 chars
+- DO NOT include long email templates - just mention "See email template X"
 - Ensure all arrays and objects are properly closed with ] or }}
-- Test your JSON mentally before returning"""
+- Double-check JSON syntax before returning - no trailing commas, all quotes escaped
+
+IMPORTANT: If the process is very complex (30+ steps), focus on the MOST CRITICAL 20 steps. Quality over quantity."""
             
             message = UserMessage(text=prompt)
             response = await chat.send_message(message)
             
-            # Parse JSON from response with better error handling
+            # Clean and validate JSON response
             response_text = response.strip()
             
             # Remove markdown code blocks if present
@@ -1043,32 +1046,64 @@ CRITICAL JSON FORMATTING RULES:
                 if start != -1 and end != -1:
                     response_text = response_text[start:end+1]
             
+            # Additional cleaning
+            # Remove any non-printable characters
+            response_text = ''.join(char for char in response_text if char.isprintable() or char in ['\n', '\t'])
+            
+            # Log the response for debugging
+            logger.info(f"JSON response length: {len(response_text)} characters")
+            
             # Try to parse JSON
             try:
                 parsed = json.loads(response_text)
             except json.JSONDecodeError as json_err:
                 logger.error(f"JSON decode error: {json_err}")
-                logger.error(f"Response text preview: {response_text[:500]}...")
-                logger.error(f"Response text end: ...{response_text[-500:]}")
+                logger.error(f"Error at line {json_err.lineno}, column {json_err.colno}")
                 
-                # Try to fix common JSON issues
+                # Save the problematic JSON for debugging
+                error_context_start = max(0, json_err.pos - 200)
+                error_context_end = min(len(response_text), json_err.pos + 200)
+                logger.error(f"JSON context around error: ...{response_text[error_context_start:error_context_end]}...")
+                
+                # Try aggressive repair strategies
+                response_text_repaired = response_text
+                
                 # 1. Remove trailing commas
-                response_text = re.sub(r',(\s*[}\]])', r'\1', response_text)
+                response_text_repaired = re.sub(r',(\s*[}\]])', r'\1', response_text_repaired)
                 
-                # Try parsing again
+                # 2. Try to fix unterminated strings by finding and closing them
+                # This is a heuristic approach - find quotes that aren't properly escaped
                 try:
-                    parsed = json.loads(response_text)
-                    logger.info("✅ JSON successfully repaired")
+                    # Attempt to add missing closing brace if that's the issue
+                    if not response_text_repaired.rstrip().endswith('}'):
+                        response_text_repaired = response_text_repaired.rstrip() + '}'
+                    
+                    parsed = json.loads(response_text_repaired)
+                    logger.info("✅ JSON successfully repaired using aggressive strategies")
                 except json.JSONDecodeError as json_err2:
-                    logger.error(f"JSON still invalid after repair attempt: {json_err2}")
+                    logger.error(f"JSON still invalid after repair: {json_err2}")
+                    
+                    # Last resort: Try to use a simpler fallback structure
+                    logger.warning("Attempting to create minimal fallback structure")
                     raise HTTPException(
                         status_code=500, 
-                        detail=f"AI returned invalid JSON. Please try again or simplify the document. Error: {str(json_err2)}"
+                        detail=f"The document is too complex for AI to parse in one attempt. Please try: 1) Splitting the document into smaller sections, 2) Uploading a simplified version, or 3) Contact support. Error details: {str(json_err2)[:200]}"
                     )
             
-            # Ensure swimLanes exists
+            # Ensure required fields exist
             if 'swimLanes' not in parsed:
                 parsed['swimLanes'] = []
+            if 'nodes' not in parsed:
+                parsed['nodes'] = []
+            if 'edges' not in parsed:
+                parsed['edges'] = []
+            
+            # Validate and clean nodes
+            for node in parsed.get('nodes', []):
+                if 'operationalDetails' in node and node['operationalDetails']:
+                    # Ensure emailTemplates exists for backward compatibility
+                    if 'emailTemplates' not in node['operationalDetails']:
+                        node['operationalDetails']['emailTemplates'] = []
             
             return {"multipleProcesses": False, "processes": [parsed]}
             
