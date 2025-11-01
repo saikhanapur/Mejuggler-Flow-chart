@@ -38,29 +38,7 @@ class SuperintelligentAIService:
         """
         STAGE 0: Document Intelligence & Classification
         
-        Returns:
-        {
-            "analysisId": "uuid",
-            "documentSummary": "Brief overview",
-            "totalSections": 5,
-            "sections": [
-                {
-                    "sectionId": "sec-1",
-                    "title": "Section Title",
-                    "classification": "flowchartable|reference|contextual|excluded",
-                    "reasoning": "Why classified this way",
-                    "confidence": "Based on similar documents...",
-                    "estimatedSteps": 15,
-                    "content_preview": "First 200 chars..."
-                }
-            ],
-            "overallAnalysis": {
-                "flowchartableSections": 3,
-                "totalEstimatedSteps": 37,
-                "referenceSections": 2,
-                "complexity": "high|medium|low"
-            }
-        }
+        Now includes EROAD-style enhancement option
         """
         logger.info("🧠 STAGE 0: Document Intelligence & Classification")
         
@@ -71,66 +49,44 @@ class SuperintelligentAIService:
             chat = LlmChat(
                 api_key=self.api_key,
                 session_id=f"analyze_{uuid.uuid4()}",
-                system_message="""You are a document intelligence expert. Your job is to analyze documents and classify their sections BEFORE processing.
+                system_message="""You are a document intelligence expert. Your job is to analyze documents and extract structured data.
 
-Think like a human:
-1. Scan the document structure
-2. Identify what's procedural (needs flowcharting) vs reference material vs context
-3. Explain your reasoning clearly
-4. Estimate complexity
-
-Be honest about what you see."""
+Extract:
+1. All process steps (numbered or bulleted)
+2. Decision points (if/then/else)
+3. Contact information (names, phones, emails)
+4. Systems/tools mentioned
+5. Timing requirements
+6. Parallel processes (things happening simultaneously)"""
             ).with_model("anthropic", "claude-4-sonnet-20250514")
             
-            prompt = f"""DOCUMENT INTELLIGENCE ANALYSIS
+            prompt = f"""EXTRACT STRUCTURED DATA FROM DOCUMENT
 
 {learning_context}
 
-ANALYZE THIS DOCUMENT:
+DOCUMENT:
 {document_text}
 
-YOUR TASK:
-1. Break document into logical sections
-2. For EACH section, classify it:
-   - "flowchartable": Contains procedural steps, decision points, workflows
-   - "reference": Contacts, templates, scripts, supporting info
-   - "contextual": Background, summaries, screenshots, explanations
-   - "excluded": Irrelevant, duplicate, or non-actionable content
-
-3. For each classification, provide:
-   - Clear reasoning WHY you classified it that way
-   - Confidence statement (if you've seen similar patterns)
-   - Estimated step count (for flowchartable sections)
-
-4. Overall assessment:
-   - Total estimated steps across all flowchartable sections
-   - Complexity level (high: 30+ steps, medium: 10-30, low: <10)
+EXTRACT:
+1. **All Steps**: List every procedural step (maintain order)
+2. **Decision Points**: Any if/then/else logic
+3. **Contacts**: Names, phone numbers, emails
+4. **Systems**: Software, tools, platforms mentioned
+5. **Timings**: Time constraints, frequencies
+6. **Parallel Processes**: Steps that happen simultaneously
 
 RETURN JSON:
 {{
-  "documentSummary": "Brief overview of what this document is about",
-  "sections": [
-    {{
-      "sectionId": "sec-1",
-      "title": "Section title",
-      "classification": "flowchartable",
-      "reasoning": "This section contains sequential procedures with decision points...",
-      "confidence": "Similar to standard operating procedures pattern",
-      "estimatedSteps": 15,
-      "content_preview": "First 200 chars of section..."
-    }}
-  ],
-  "overallAnalysis": {{
-    "flowchartableSections": 3,
-    "totalEstimatedSteps": 37,
-    "referenceSections": 2,
-    "contextualSections": 1,
-    "excludedSections": 0,
-    "complexity": "high"
-  }}
+  "documentSummary": "Brief overview",
+  "steps": ["Step 1", "Step 2",...],
+  "decisions": [{{"condition": "...", "ifYes": "...", "ifNo": "..."}}],
+  "contacts": {{"Name": "Phone/Email"}},
+  "systems": ["System1", "System2"],
+  "timings": ["Every 30 minutes", "Within 2 hours"],
+  "parallelProcesses": [["Step A", "Step B"]]
 }}
 
-BE THOROUGH. Count all steps. Return valid JSON only."""
+Be thorough. Return valid JSON only."""
             
             message = UserMessage(text=prompt)
             response = await chat.send_message(message)
@@ -143,7 +99,7 @@ BE THOROUGH. Count all steps. Return valid JSON only."""
             # Store in learning database
             await self._store_document_analysis(analysis, document_text, user_id)
             
-            logger.info(f"✅ Stage 0 complete: {len(analysis.get('sections', []))} sections analyzed")
+            logger.info(f"✅ Stage 0 complete: Extracted {len(analysis.get('steps', []))} steps")
             return analysis
             
         except Exception as e:
