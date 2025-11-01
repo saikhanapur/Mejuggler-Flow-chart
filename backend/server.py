@@ -1263,7 +1263,7 @@ RETURN VALID JSON ONLY"""
                         "timeline": details.get('timeline'),
                         "systems": details.get('systems', []),
                         "decisionCriteria": details.get('decisionCriteria'),
-                        "emailTemplates": [],
+                        "emailTemplates": details.get('communicationTemplates', []),  # Map to emailTemplates for compatibility
                         "sourcePage": None
                     }
                 else:
@@ -1279,7 +1279,7 @@ RETURN VALID JSON ONLY"""
                         "sourcePage": None
                     }
             
-            logger.info(f"✅ Nodes enriched with operational details")
+            logger.info(f"✅ Nodes enriched with VALUE-ADD operational details")
             return nodes
             
         except Exception as e:
