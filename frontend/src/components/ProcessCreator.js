@@ -79,24 +79,27 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
   };
 
   const handleInputComplete = async (input, inputType) => {
-    // For documents, use superintelligent pipeline with document analysis
+    // For documents, use HTML generation (simple, fast, beautiful)
     if (inputType === 'document') {
       setExtractedText(input);
       setProcessing(true);
-      setProcessingStep('Analyzing document intelligence...');
+      setProcessingStep('Generating beautiful flowchart...');
       
       try {
-        // Stage 0: Document Intelligence Analysis
-        const analysis = await api.analyzeDocumentIntelligence(input, inputType);
-        setDocumentAnalysis(analysis);
-        setProcessing(false);
+        // Generate HTML flowchart in one shot
+        const result = await api.generateHTMLFlowchart(input, inputType);
         
-        // Show analysis review modal for user approval
-        setShowAnalysisReview(true);
+        setProcessing(false);
+        toast.success('Flowchart created successfully!');
+        
+        // Navigate to HTML viewer
+        setTimeout(() => {
+          navigate(`/html-flow/${result.processId}`);
+        }, 1000);
         
       } catch (error) {
-        console.error('Document analysis failed:', error);
-        toast.error('Failed to analyze document. Please try again.');
+        console.error('HTML flowchart generation failed:', error);
+        toast.error(`Failed to generate flowchart: ${error.message || 'Please try again.'}`);
         setProcessing(false);
       }
     } else {
