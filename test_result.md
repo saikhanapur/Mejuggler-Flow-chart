@@ -103,6 +103,23 @@
 #====================================================================================================
 
 user_problem_statement: |
+  SuperHumanly - Enterprise-grade workflow-to-flowchart platform with superintelligent AI processing.
+  
+  NEW CHALLENGE (Current Session):
+  User reported AI cannot handle complex SOPs effectively:
+  - BCP SOP document has 37 steps but AI only captured a few
+  - Missed details, oversimplified, no intelligent grouping
+  - Token budget constraints (160K/200K used) causing truncation
+  
+  SOLUTION BEING IMPLEMENTED:
+  Multi-Stage Superintelligent Pipeline:
+  - Stage 0: Document Intelligence & Classification (with reasoning, user approval)
+  - Stage 1: Structure Extraction (no truncation, captures ALL steps)
+  - Stage 2: Detail Enrichment (per batch, full context)
+  - Stage 3: Coverage Report (transparency on what was captured/excluded)
+  - Learning System: Global pattern storage, user feedback integration
+  - Bulk Upload: Train AI on multiple complex documents
+  
   FlowForge AI - Enterprise-grade workflow-to-flowchart platform for paying customers (targeting 1000s of users).
   
   CURRENT STATE:
