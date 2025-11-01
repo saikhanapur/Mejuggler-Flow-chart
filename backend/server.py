@@ -2602,6 +2602,94 @@ async def get_learning_insights(request: Request):
 
 # ==================== END SUPERINTELLIGENT AI ENDPOINTS ====================
 
+# ==================== SIMPLE ONE-SHOT FLOWCHART (WHAT CLAUDE DID) ====================
+
+@api_router.post("/process/simple-generate")
+async def simple_flowchart_generation(
+    input_data: ProcessInput,
+    request: Request
+):
+    """
+    SIMPLE ONE-SHOT GENERATION
+    
+    What Claude did in 5 minutes: One prompt, beautiful flowchart, done.
+    
+    This is what users actually want.
+    """
+    try:
+        from simple_flowchart_generator import SimpleFlowchartGenerator
+        
+        user = await get_current_user(request)
+        user_id = user.get("id") if user else None
+        
+        logger.info(f"🚀 Simple one-shot generation for user {user_id}")
+        
+        generator = SimpleFlowchartGenerator(
+            api_key=os.environ.get("EMERGENT_LLM_KEY")
+        )
+        
+        flowchart = await generator.generate_flowchart(input_data.text)
+        
+        # Map to expected format
+        process = {
+            "name": flowchart.get("processName"),
+            "description": flowchart.get("description"),
+            "nodes": flowchart.get("nodes", []),
+            "edges": flowchart.get("edges", []),
+            "swimLanes": flowchart.get("swimLanes", []),
+            "actors": list(set([
+                actor 
+                for node in flowchart.get("nodes", []) 
+                for actor in node.get("details", {}).get("actors", [])
+            ])),
+            "quickReference": flowchart.get("quickReference", {})
+        }
+        
+        # Add operational details from "details" field
+        for node in process["nodes"]:
+            if "details" in node:
+                node["operationalDetails"] = {
+                    "purpose": node["details"].get("purpose", ""),
+                    "specificActions": node["details"].get("specificActions", []),
+                    "requiredData": [],
+                    "contactInfo": node["details"].get("contacts", {}),
+                    "timeline": node["details"].get("timeline"),
+                    "systems": node["details"].get("systems", []),
+                    "decisionCriteria": node["details"].get("decisionCriteria"),
+                    "emailTemplates": node["details"].get("templates", []),
+                    "currentState": node["details"].get("currentState"),
+                    "idealState": node["details"].get("idealState"),
+                    "gap": node["details"].get("gap"),
+                    "sourcePage": None
+                }
+                # Keep details for frontend
+                # Add defaults
+                node.setdefault("status", "current")
+                node.setdefault("description", node.get("title", ""))
+                node.setdefault("subSteps", [])
+                node.setdefault("dependencies", node["details"].get("dependencies", []))
+                node.setdefault("parallelWith", [])
+                node.setdefault("failures", [])
+                node.setdefault("blocking", None)
+                node.setdefault("impact", "medium")
+                node.setdefault("timeEstimate", None)
+        
+        return {
+            "multipleProcesses": False,
+            "processes": [process],
+            "metadata": {
+                "generationTime": "~10-15 seconds",
+                "approach": "simple-one-shot",
+                "nodeCount": len(process["nodes"])
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Simple generation failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== END SIMPLE ONE-SHOT ====================
+
 @api_router.post("/process/extract-summary", response_model=ExtractionSummary)
 async def extract_summary(input_data: ProcessInput):
     """
