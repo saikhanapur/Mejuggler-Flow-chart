@@ -2699,6 +2699,59 @@ async def get_html_flowchart(process_id: str, request: Request):
 
 # ==================== END HTML FLOWCHART GENERATOR ====================
 
+# ==================== EROAD-STYLE HYBRID APPROACH ====================
+
+@api_router.post("/process/eroad-style")
+async def eroad_style_generation(
+    input_data: ProcessInput,
+    request: Request
+):
+    """
+    OPTION C - HYBRID APPROACH
+    
+    Phase 1: Extract structured data (AI)
+    Phase 2: Enhance with EROAD-style grouping (AI)
+    Phase 3: Render with React (UI)
+    
+    Returns 10-15 nodes with rich PURPOSE, current/ideal state
+    """
+    try:
+        from superintelligent_ai_service import SuperintelligentAIService
+        
+        user = await get_current_user(request)
+        user_id = user.get("id") if user else None
+        
+        logger.info(f"🎨 EROAD-style generation for user {user_id}")
+        
+        service = SuperintelligentAIService(
+            api_key=os.environ.get("EMERGENT_LLM_KEY"),
+            db_client=client
+        )
+        
+        result = await service.generate_eroad_style_flowchart(
+            document_text=input_data.text,
+            input_type=input_data.inputType,
+            user_id=user_id
+        )
+        
+        # Create process in database
+        process = result["processes"][0]
+        process_data = {
+            **process,
+            "workspaceId": None,  # Will be set by frontend
+            "userId": user_id,
+            "isGuest": user is None
+        }
+        
+        # Note: Frontend will create the process
+        return result
+        
+    except Exception as e:
+        logger.error(f"❌ EROAD-style generation failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== END EROAD-STYLE ====================
+
 @api_router.post("/process/simple-generate")
 async def simple_flowchart_generation(
     input_data: ProcessInput,
