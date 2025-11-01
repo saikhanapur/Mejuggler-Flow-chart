@@ -977,37 +977,37 @@ EXAMPLE NODE STRUCTURE:
     "sourcePage": null
   }}
 }}
-  ],
-  "edges": [
-    {{
-      "id": "edge-1",
-      "source": "node-1",
-      "target": "node-2",
-      "label": null
-    }},
-    {{
-      "id": "edge-2",
-      "source": "node-2",
-      "target": "node-3",
-      "label": "YES",
-      "condition": "yes"
-    }},
-    {{
-      "id": "edge-3",
-      "source": "node-2",
-      "target": "node-4",
-      "label": "NO",
-      "condition": "no"
-    }}
-  ],
-  "criticalGaps": ["gap 1"],
-  "improvementOpportunities": [
-    {{
-      "description": "brief",
-      "type": "automation",
-      "estimatedSavings": "time"
-    }}
-  ]
+],
+"edges": [
+  {{
+    "id": "edge-1",
+    "source": "node-1",
+    "target": "node-2",
+    "label": null
+  }},
+  {{
+    "id": "edge-2",
+    "source": "node-2",
+    "target": "node-3",
+    "label": "YES",
+    "condition": "yes"
+  }},
+  {{
+    "id": "edge-3",
+    "source": "node-2",
+    "target": "node-4",
+    "label": "NO",
+    "condition": "no"
+  }}
+],
+"criticalGaps": ["gap 1"],
+"improvementOpportunities": [
+  {{
+    "description": "brief",
+    "type": "automation",
+    "estimatedSavings": "time"
+  }}
+]
 }}
 
 CRITICAL RULES FOR DECISION NODES & EDGES:
