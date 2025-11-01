@@ -918,8 +918,24 @@ RULES:
 - Keep ALL string values under 100 chars
 - NO line breaks in strings
 - Escape quotes with backslash
-- Return valid JSON only"""
-      "idealState": "brief",
+- Return valid JSON only
+
+EXAMPLE NODE STRUCTURE:
+{{
+  "id": "node-1",
+  "type": "trigger",
+  "status": "trigger",
+  "title": "Brief title (max 60 chars)",
+  "description": "Brief description",
+  "actors": ["actor1"],
+  "swimLane": "lane-1",
+  "subSteps": [],
+  "dependencies": [],
+  "parallelWith": [],
+  "failures": [],
+  "blocking": null,
+  "currentState": "brief",
+  "idealState": "brief",
       "gap": null,
       "impact": "medium",
       "timeEstimate": null,
