@@ -14,7 +14,7 @@ import io
 import time
 
 # Configuration
-BASE_URL = "https://process-genius-6.preview.emergentagent.com/api"
+BASE_URL = "https://flowmapper-2.preview.emergentagent.com/api"
 TIMEOUT = 60
 
 class FocusedTester:

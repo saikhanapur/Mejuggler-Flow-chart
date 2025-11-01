@@ -342,7 +342,7 @@ GOOGLE_CLIENT_SECRET=...
 
 #### Frontend (.env)
 ```
-REACT_APP_BACKEND_URL=https://process-genius-6.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://flowmapper-2.preview.emergentagent.com
 WDS_SOCKET_PORT=443
 ```
 
