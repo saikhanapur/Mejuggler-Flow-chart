@@ -48,7 +48,7 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
   const [preloadedAnalysis, setPreloadedAnalysis] = useState(null);
   
   // Superintelligent AI Pipeline
-  const [useSuper intelligent, setUseSuperintelligent] = useState(false);
+  const [useSuperintelligent, setUseSuperintelligent] = useState(false);
   const [documentAnalysis, setDocumentAnalysis] = useState(null);
   const [showAnalysisReview, setShowAnalysisReview] = useState(false);
   const [coverageReport, setCoverageReport] = useState(null);
