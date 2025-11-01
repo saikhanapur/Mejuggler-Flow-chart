@@ -775,6 +775,30 @@ Return valid JSON only."""
         # Clean non-printable chars
         response_text = ''.join(c for c in response_text if c.isprintable() or c in ['\n', '\t'])
         
+        # Pre-parsing fix: Normalize contacts field from malformed array to object
+        # Pattern: "contacts": ["value1", "key": "value2"] -> "contacts": {"item1": "value1", "key": "value2"}
+        contacts_pattern = r'"contacts"\s*:\s*\[(.*?)\]'
+        match = re.search(contacts_pattern, response_text, re.DOTALL)
+        if match:
+            contacts_content = match.group(1)
+            # Check if it contains object-like syntax (has colons)
+            if ':' in contacts_content:
+                # Convert to proper object format
+                # Replace the array brackets with object brackets
+                response_text = re.sub(
+                    r'"contacts"\s*:\s*\[',
+                    '"contacts": {',
+                    response_text,
+                    count=1
+                )
+                response_text = re.sub(
+                    r'\](\s*,?\s*"(?:systems|timings|parallelProcesses|decisions))',
+                    r'}\1',
+                    response_text,
+                    count=1
+                )
+                logger.info("✅ Normalized contacts field from array to object format")
+        
         # Try parsing first
         try:
             parsed = json.loads(response_text)
