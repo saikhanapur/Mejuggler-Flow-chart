@@ -969,7 +969,6 @@ Return ONLY this JSON structure (no markdown, no explanations):
         "contactInfo": {{}},
         "timeline": null,
         "systems": [],
-        "emailTemplates": [],
         "sourcePage": null
       }}
     }}
