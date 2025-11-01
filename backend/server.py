@@ -1021,8 +1021,17 @@ CRITICAL RULES FOR DECISION NODES & EDGES:
 SWIM LANE RULES:
 - If document has sections like "Onshore Actions" + "Offshore Actions", create 2 swim lanes
 - Assign each node to appropriate swim lane via "swimLane" field
-- If no clear swim lanes, put all nodes in one default lane
-- Swim lane colors: use blue (#6366f1), purple (#a855f7), green (#10b981), orange (#f59e0b)"""
+- If no clear swim lanes, leave swimLanes array EMPTY []
+- Swim lane colors: use blue (#6366f1), purple (#a855f7), green (#10b981), orange (#f59e0b)
+
+CRITICAL JSON FORMATTING RULES:
+- Return VALID JSON only (no markdown code blocks)
+- Escape ALL special characters in strings (quotes, newlines, backslashes)
+- Keep string values concise - if text is too long, truncate with "..."
+- DO NOT include raw line breaks in strings - use \\n instead
+- If you can't fit all details, prioritize the first 15-20 most important steps
+- Ensure all arrays and objects are properly closed with ] or }}
+- Test your JSON mentally before returning"""
             
             message = UserMessage(text=prompt)
             response = await chat.send_message(message)
