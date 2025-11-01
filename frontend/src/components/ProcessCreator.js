@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mic, Upload, MessageSquare, ArrowLeft, CheckCircle, AlertCircle, FolderOpen, Sparkles } from 'lucide-react';
+import { Mic, Upload, MessageSquare, ArrowLeft, CheckCircle, AlertCircle, FolderOpen, Sparkles, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,8 @@ import MultiProcessReview from './MultiProcessReview';
 import ContextAdder from './ContextAdder';
 import SmartQuestionPanel from './SmartQuestionPanel';
 import LiveProgressPanel from './LiveProgressPanel';
+import DocumentAnalysisReview from './DocumentAnalysisReview';
+import CoverageReportPanel from './CoverageReportPanel';
 import { api } from '@/utils/api';
 import { streamDocumentAnalysis } from '@/utils/sseClient';
 import { toast } from 'sonner';
@@ -44,6 +46,13 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
   
   // Predictive pre-loading
   const [preloadedAnalysis, setPreloadedAnalysis] = useState(null);
+  
+  // Superintelligent AI Pipeline
+  const [useSuper intelligent, setUseSuperintelligent] = useState(false);
+  const [documentAnalysis, setDocumentAnalysis] = useState(null);
+  const [showAnalysisReview, setShowAnalysisReview] = useState(false);
+  const [coverageReport, setCoverageReport] = useState(null);
+  const [showCoverageReport, setShowCoverageReport] = useState(false);
   
   // Project selection (disabled in guest mode)
   const [workspaces, setWorkspaces] = useState([]);
