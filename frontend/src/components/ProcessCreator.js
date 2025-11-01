@@ -827,6 +827,25 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
           onCancel={() => setMethod(null)}
         />
       )}
+
+      {/* Superintelligent AI: Document Analysis Review Modal */}
+      {showAnalysisReview && documentAnalysis && (
+        <DocumentAnalysisReview
+          analysis={documentAnalysis}
+          onApprove={handleAnalysisApproved}
+          onCancel={handleAnalysisCancelled}
+          isLoading={processing}
+        />
+      )}
+
+      {/* Superintelligent AI: Coverage Report Panel */}
+      {coverageReport && (
+        <CoverageReportPanel
+          coverageReport={coverageReport}
+          isOpen={showCoverageReport}
+          onToggle={() => setShowCoverageReport(!showCoverageReport)}
+        />
+      )}
     </div>
   );
 };
