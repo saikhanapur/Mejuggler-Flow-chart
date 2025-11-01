@@ -79,15 +79,90 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
   };
 
   const handleInputComplete = async (input, inputType) => {
-    // For documents, use fast analysis (non-streaming for speed)
+    // For documents, use superintelligent pipeline with document analysis
     if (inputType === 'document') {
       setExtractedText(input);
-      // Use regular fast API (streaming was adding latency)
-      await analyzeDocument(input, inputType);
+      setProcessing(true);
+      setProcessingStep('Analyzing document intelligence...');
+      
+      try {
+        // Stage 0: Document Intelligence Analysis
+        const analysis = await api.analyzeDocumentIntelligence(input, inputType);
+        setDocumentAnalysis(analysis);
+        setProcessing(false);
+        
+        // Show analysis review modal for user approval
+        setShowAnalysisReview(true);
+        
+      } catch (error) {
+        console.error('Document analysis failed:', error);
+        toast.error('Failed to analyze document. Please try again.');
+        setProcessing(false);
+      }
     } else {
-      // For voice/chat, process directly
+      // For voice/chat, process directly with old flow
       await processWithAI(input, inputType, null, null);
     }
+  };
+
+  const handleAnalysisApproved = async ({ approvedSections, corrections }) => {
+    setShowAnalysisReview(false);
+    setProcessing(true);
+    setProcessingStep('Generating flowchart from approved analysis...');
+    
+    try {
+      // Stages 1-3: Generate flowchart from approved analysis
+      const result = await api.generateFromAnalysis(
+        extractedText,
+        documentAnalysis.analysisId,
+        approvedSections,
+        corrections
+      );
+      
+      // Check if multiple processes detected
+      if (result.multipleProcesses && result.processes.length > 1) {
+        setExtractedData(result);
+        setProcessing(false);
+        // Show multi-process review (existing component)
+        return;
+      }
+      
+      // Single process - create it
+      const process = result.processes[0];
+      const processData = {
+        ...process,
+        workspaceId: selectedWorkspace,
+        userId: null, // Will be set by backend if authenticated
+        isGuest: isGuestMode
+      };
+      
+      const createdProcess = await api.createProcess(processData);
+      
+      // Show coverage report
+      if (result.coverageReport) {
+        setCoverageReport(result.coverageReport);
+        setShowCoverageReport(true);
+      }
+      
+      setProcessing(false);
+      toast.success('Flowchart created successfully!');
+      
+      // Navigate to the flowchart
+      setTimeout(() => {
+        navigate(`/process/${createdProcess.id}`);
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Flowchart generation failed:', error);
+      toast.error('Failed to generate flowchart. Please try again.');
+      setProcessing(false);
+    }
+  };
+
+  const handleAnalysisCancelled = () => {
+    setShowAnalysisReview(false);
+    setDocumentAnalysis(null);
+    setExtractedText(null);
   };
 
   const analyzeDocumentWithStreaming = async (text, inputType) => {
