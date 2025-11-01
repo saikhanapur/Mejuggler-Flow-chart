@@ -138,16 +138,24 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
       const process = result.processes[0];
       
       // Validate process has required fields
-      if (!process.processName || !process.nodes) {
-        throw new Error('Invalid process structure returned');
+      if (!process.processName && !process.name) {
+        throw new Error('Process missing name field');
+      }
+      if (!process.nodes) {
+        throw new Error('Process missing nodes');
       }
       
+      // Map processName to name (backend expects 'name', AI returns 'processName')
       const processData = {
         ...process,
+        name: process.processName || process.name, // Map processName → name
         workspaceId: selectedWorkspace,
         userId: null, // Will be set by backend if authenticated
         isGuest: isGuestMode
       };
+      
+      // Remove processName if it exists (avoid duplicate fields)
+      delete processData.processName;
       
       console.log('Creating process with data:', processData); // Debug log
       
