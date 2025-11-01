@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://diagramgenius.preview.emergentagent.com/api"
+BASE_URL = "https://process-genius-6.preview.emergentagent.com/api"
 TIMEOUT = 30
 
 # Test credentials from review request

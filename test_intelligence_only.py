@@ -8,7 +8,7 @@ import json
 import uuid
 import time
 
-BASE_URL = "https://diagramgenius.preview.emergentagent.com/api"
+BASE_URL = "https://process-genius-6.preview.emergentagent.com/api"
 TIMEOUT = 180
 
 def authenticate():
