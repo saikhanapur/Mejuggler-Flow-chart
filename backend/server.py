@@ -1129,6 +1129,221 @@ IMPORTANT: If the process is very complex (30+ steps), focus on the MOST CRITICA
             logger.error(f"Error parsing single process: {e}")
             raise HTTPException(status_code=500, detail=f"Failed to parse process: {str(e)}")
     
+    async def _extract_process_structure(self, input_text: str, input_type: str) -> Dict[str, Any]:
+        """STAGE 1: Extract just the structure - node titles, types, swim lanes, edges"""
+        try:
+            chat = LlmChat(
+                api_key=self.api_key,
+                session_id=f"structure_{uuid.uuid4()}",
+                system_message="You are an expert at extracting process structure. Return ONLY valid JSON."
+            ).with_model("anthropic", "claude-4-sonnet-20250514")
+            
+            prompt = f"""Extract ONLY the process structure from this document. Focus on STRUCTURE, not details.
+
+Extract:
+1. Process name and description
+2. All actors/roles involved
+3. Swim lanes (if document has parallel workflows like "Onshore" and "Offshore")
+4. All process steps with: id, type (trigger/process/decision), title (brief), actors
+5. All edges/connections between steps (including YES/NO branches for decisions)
+
+For complex documents, extract up to 25 most important steps.
+
+INPUT:
+{input_text[:20000]}
+
+Return ONLY this JSON (no markdown, no explanations):
+{{
+  "processName": "string",
+  "description": "brief (max 200 chars)",
+  "actors": ["actor1", "actor2"],
+  "swimLanes": [
+    {{"id": "lane-1", "name": "Team Name", "role": "brief", "color": "#6366f1"}}
+  ],
+  "nodes": [
+    {{
+      "id": "node-1",
+      "type": "trigger",
+      "title": "Brief title (max 60 chars)",
+      "actors": ["actor1"],
+      "swimLane": "lane-1"
+    }},
+    {{
+      "id": "node-2",
+      "type": "decision",
+      "title": "Decision question?",
+      "actors": ["actor1"],
+      "swimLane": "lane-1"
+    }}
+  ],
+  "edges": [
+    {{"id": "edge-1", "source": "node-1", "target": "node-2", "label": null}},
+    {{"id": "edge-2", "source": "node-2", "target": "node-3", "label": "YES", "condition": "yes"}},
+    {{"id": "edge-3", "source": "node-2", "target": "node-4", "label": "NO", "condition": "no"}}
+  ]
+}}
+
+RULES:
+- Keep ALL string values under 100 chars
+- NO line breaks in strings
+- Escape quotes with backslash
+- Return valid JSON only"""
+            
+            message = UserMessage(text=prompt)
+            response = await chat.send_message(message)
+            
+            # Parse structure JSON
+            response_text = response.strip()
+            if response_text.startswith('```'):
+                start = response_text.find('{')
+                end = response_text.rfind('}')
+                if start != -1 and end != -1:
+                    response_text = response_text[start:end+1]
+            
+            structure = json.loads(response_text)
+            
+            # Ensure all required fields
+            if 'swimLanes' not in structure:
+                structure['swimLanes'] = []
+            if 'edges' not in structure:
+                structure['edges'] = []
+            
+            # Add default fields to nodes
+            for node in structure.get('nodes', []):
+                node.setdefault('status', 'current' if node['type'] != 'trigger' else 'trigger')
+                node.setdefault('description', '')
+                node.setdefault('subSteps', [])
+                node.setdefault('dependencies', [])
+                node.setdefault('parallelWith', [])
+                node.setdefault('failures', [])
+                node.setdefault('blocking', None)
+                node.setdefault('currentState', None)
+                node.setdefault('idealState', None)
+                node.setdefault('gap', None)
+                node.setdefault('impact', 'medium')
+                node.setdefault('timeEstimate', None)
+                node.setdefault('position', {"x": 0, "y": 0})
+                node.setdefault('operationalDetails', None)  # Will be filled in stage 2
+            
+            # Add default fields to process
+            structure.setdefault('criticalGaps', [])
+            structure.setdefault('improvementOpportunities', [])
+            
+            logger.info(f"✅ Structure extracted: {len(structure.get('nodes', []))} nodes, {len(structure.get('swimLanes', []))} swim lanes")
+            return structure
+            
+        except Exception as e:
+            logger.error(f"Error extracting structure: {e}")
+            raise
+    
+    async def _enrich_nodes_with_details(self, input_text: str, nodes: List[Dict]) -> List[Dict]:
+        """STAGE 2: Enrich each node with operational details"""
+        try:
+            # For now, we'll do a batch enrichment to avoid too many API calls
+            logger.info(f"Enriching {len(nodes)} nodes with operational details...")
+            
+            # Create a summary of all nodes for context
+            node_titles = [f"{n['id']}: {n['title']}" for n in nodes[:15]]
+            
+            chat = LlmChat(
+                api_key=self.api_key,
+                session_id=f"enrich_{uuid.uuid4()}",
+                system_message="Extract operational details for process steps. Be concise."
+            ).with_model("anthropic", "claude-4-sonnet-20250514")
+            
+            prompt = f"""For these process steps, extract operational details from the document:
+
+STEPS:
+{chr(10).join(node_titles)}
+
+DOCUMENT EXCERPT:
+{input_text[:15000]}
+
+For EACH step, extract (keep brief - max 80 chars per item):
+- specificActions: List of actions to take
+- requiredData: Data fields to collect  
+- contactInfo: Phone numbers/emails mentioned
+- systems: Software/tools mentioned
+- timeline: Time requirements
+
+Return JSON array matching the step IDs:
+[
+  {{
+    "id": "node-1",
+    "specificActions": ["action 1", "action 2"],
+    "requiredData": ["field1", "field2"],
+    "contactInfo": {{"Name": "phone/email"}},
+    "systems": ["System1"],
+    "timeline": "time requirement",
+    "decisionCriteria": "for decision nodes only"
+  }}
+]
+
+Keep ALL values under 80 chars. Return valid JSON only."""
+            
+            message = UserMessage(text=prompt)
+            response = await chat.send_message(message)
+            
+            # Parse details
+            response_text = response.strip()
+            if response_text.startswith('```'):
+                start = response_text.find('[')
+                end = response_text.rfind(']')
+                if start != -1 and end != -1:
+                    response_text = response_text[start:end+1]
+            
+            details_array = json.loads(response_text)
+            
+            # Map details back to nodes
+            details_map = {d['id']: d for d in details_array if 'id' in d}
+            
+            for node in nodes:
+                node_id = node['id']
+                if node_id in details_map:
+                    details = details_map[node_id]
+                    node['operationalDetails'] = {
+                        "requiredData": details.get('requiredData', []),
+                        "specificActions": details.get('specificActions', []),
+                        "contactInfo": details.get('contactInfo', {}),
+                        "timeline": details.get('timeline'),
+                        "systems": details.get('systems', []),
+                        "decisionCriteria": details.get('decisionCriteria'),
+                        "emailTemplates": [],
+                        "sourcePage": None
+                    }
+                else:
+                    # No details found for this node
+                    node['operationalDetails'] = {
+                        "requiredData": [],
+                        "specificActions": [],
+                        "contactInfo": {},
+                        "timeline": None,
+                        "systems": [],
+                        "decisionCriteria": None,
+                        "emailTemplates": [],
+                        "sourcePage": None
+                    }
+            
+            logger.info(f"✅ Nodes enriched with operational details")
+            return nodes
+            
+        except Exception as e:
+            logger.warning(f"Could not enrich nodes with details: {e}. Proceeding with structure only.")
+            # Return nodes without enrichment if details extraction fails
+            for node in nodes:
+                if not node.get('operationalDetails'):
+                    node['operationalDetails'] = {
+                        "requiredData": [],
+                        "specificActions": [],
+                        "contactInfo": {},
+                        "timeline": None,
+                        "systems": [],
+                        "decisionCriteria": None,
+                        "emailTemplates": [],
+                        "sourcePage": None
+                    }
+            return nodes
+    
     async def _parse_multiple_processes(self, input_text: str, input_type: str, detection_result: Dict) -> Dict[str, Any]:
         """Parse multiple processes from input text - ONE AT A TIME to avoid truncation"""
         try:
