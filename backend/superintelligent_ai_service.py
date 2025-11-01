@@ -775,29 +775,29 @@ Return valid JSON only."""
         # Clean non-printable chars
         response_text = ''.join(c for c in response_text if c.isprintable() or c in ['\n', '\t'])
         
+        # Debug: Log response around character 4457 to see what's malformed
+        if len(response_text) > 4457:
+            logger.warning(f"DEBUG - Response around char 4457: ...{response_text[4400:4500]}...")
+        
         # Pre-parsing fix: Normalize contacts field from malformed array to object
-        # Pattern: "contacts": ["value1", "key": "value2"] -> "contacts": {"item1": "value1", "key": "value2"}
-        contacts_pattern = r'"contacts"\s*:\s*\[(.*?)\]'
-        match = re.search(contacts_pattern, response_text, re.DOTALL)
-        if match:
-            contacts_content = match.group(1)
-            # Check if it contains object-like syntax (has colons)
-            if ':' in contacts_content:
-                # Convert to proper object format
-                # Replace the array brackets with object brackets
-                response_text = re.sub(
-                    r'"contacts"\s*:\s*\[',
-                    '"contacts": {',
-                    response_text,
-                    count=1
-                )
-                response_text = re.sub(
-                    r'\](\s*,?\s*"(?:systems|timings|parallelProcesses|decisions))',
-                    r'}\1',
-                    response_text,
-                    count=1
-                )
-                logger.info("✅ Normalized contacts field from array to object format")
+        # More aggressive pattern to catch various malformed contacts formats
+        try:
+            # Find the contacts field and its content up to the next field
+            contacts_match = re.search(r'"contacts"\s*:\s*\[([^\]]+)\]', response_text, re.DOTALL)
+            if contacts_match:
+                contacts_content = contacts_match.group(1)
+                logger.info(f"DEBUG - Found contacts array: [{contacts_content[:100]}...]")
+                
+                # Check if it contains object-like syntax (has colons outside of quotes)
+                if ':' in contacts_content and not contacts_content.strip().startswith('"'):
+                    # This is malformed - convert array brackets to object brackets
+                    response_text = response_text.replace(
+                        contacts_match.group(0),
+                        '"contacts": {' + contacts_content + '}'
+                    )
+                    logger.info("✅ Normalized contacts field from malformed array to object format")
+        except Exception as e:
+            logger.warning(f"Contacts normalization failed: {e}")
         
         # Try parsing first
         try:
