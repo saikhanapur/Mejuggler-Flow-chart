@@ -373,6 +373,14 @@ const FlowchartEditor = ({ theme, readOnly = false, accessLevel = 'owner', proce
     }
   };
 
+  const handleNodeClick = (nodeData) => {
+    // Open operational details panel for swim lane view
+    setOperationalDetailsNode(nodeData);
+    setShowOperationalDetails(true);
+    // Also update selected node for classic view
+    setSelectedNode(nodeData);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
