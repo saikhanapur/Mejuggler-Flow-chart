@@ -383,7 +383,7 @@ def main():
     analysis = test_stage_0_full_document()
     
     if analysis:
-        input("\n⏸️  Press ENTER to continue to full flowchart generation (Stages 1-3)...")
+        print("\n⏸️  Proceeding to full flowchart generation (Stages 1-3)...\n")
         
         # Stages 1-3: Full Pipeline
         test_full_pipeline(analysis)
