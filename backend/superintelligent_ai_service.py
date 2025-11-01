@@ -154,25 +154,17 @@ BE THOROUGH. Count all steps. Return valid JSON only."""
         self, 
         document_text: str, 
         approved_sections: List[str],
-        analysis: Dict[str, Any],
-        retry_count: int = 0
+        analysis: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
-        STAGE 1: Structure Extraction (ONLY from approved flowchartable sections)
+        STAGE 1: Structure Extraction with Two-Pass Architecture
         
-        No truncation. Processes full content of flowchartable sections.
-        With automatic retry and simplification on failure.
+        Pass 1: Extract skeleton (IDs, titles, edges) - minimal JSON
+        Pass 2: Enrich nodes with descriptions in batches
         
-        Returns:
-        {
-            "processName": "string",
-            "nodes": [...],
-            "edges": [...],
-            "swimLanes": [...],
-            "totalSteps": 37
-        }
+        This approach GUARANTEES success by keeping JSON responses small and manageable.
         """
-        logger.info("🏗️  STAGE 1: Structure Extraction")
+        logger.info("🏗️  STAGE 1: Structure Extraction (Two-Pass Architecture)")
         
         try:
             # Filter to only approved flowchartable sections
@@ -184,120 +176,162 @@ BE THOROUGH. Count all steps. Return valid JSON only."""
             if not flowchartable_sections:
                 raise ValueError("No flowchartable sections approved")
             
-            # Extract content for these sections (NO TRUNCATION)
+            # Extract content for these sections
             section_content = self._extract_section_content(document_text, flowchartable_sections)
             
-            # Check estimated steps - if too many (>40), use ultra-compact mode
-            total_estimated = sum(sec.get('estimatedSteps', 0) for sec in flowchartable_sections)
-            use_ultra_compact = total_estimated > 40 or retry_count > 0
+            # PASS 1: Extract Skeleton (Minimal JSON)
+            logger.info("🔹 Pass 1: Extracting skeleton structure...")
+            skeleton = await self._extract_skeleton(section_content)
             
-            if use_ultra_compact:
-                logger.warning(f"⚡ Using ultra-compact mode (estimated {total_estimated} steps, retry {retry_count})")
+            # PASS 2: Enrich Nodes (Batch Processing)
+            logger.info("🔹 Pass 2: Enriching nodes with descriptions...")
+            enriched_structure = await self._enrich_skeleton(skeleton, section_content)
             
-            chat = LlmChat(
-                api_key=self.api_key,
-                session_id=f"structure_{uuid.uuid4()}",
-                system_message="""You are a process architect extracting flowchart structure.
-
-CRITICAL: Generate VALID JSON ONLY. Keep ALL text ultra-short.""" if use_ultra_compact else """You are a process architect extracting flowchart structure.
-
-CRITICAL RULES:
-1. DO NOT TRUNCATE or summarize - capture EVERY step
-2. DO NOT group too aggressively - maintain granularity
-3. DO identify decision points (diamonds) with YES/NO paths
-4. DO organize into swimlanes (parallel workflows)
-5. DO preserve sequence and dependencies
-
-Quality over brevity."""
-            ).with_model("anthropic", "claude-4-sonnet-20250514")
+            logger.info(f"✅ Stage 1 complete: {len(enriched_structure.get('nodes', []))} steps extracted")
+            return enriched_structure
             
-            if use_ultra_compact:
-                prompt = f"""Extract flowchart structure. KEEP ALL TEXT ULTRA-SHORT.
-
-{section_content[:15000]}
-
-Return ONLY this JSON:
-{{
-  "processName": "Name (4 words max)",
-  "description": "Brief (10 words max)",
-  "actors": ["Role1"],
-  "swimLanes": [{{"id": "lane-1", "name": "Name", "role": "Role", "color": "#6366f1"}}],
-  "nodes": [
-    {{"id": "node-1", "type": "trigger|active|decision", "title": "Action (5 words)", "description": "Brief (10 words)", "actors": ["Role"], "swimLane": "lane-1"}}
-  ],
-  "edges": [{{"id": "edge-1", "source": "node-1", "target": "node-2", "label": null}}]
-}}
-
-CRITICAL: Capture ALL steps but keep text SHORT. Valid JSON only."""
-            else:
-                prompt = f"""STRUCTURE EXTRACTION - COMPLETE & ACCURATE
-
-DOCUMENT SECTIONS TO FLOWCHART:
-{section_content}
-
-YOUR TASK: Extract ALL procedural steps as a clean flowchart structure.
-
-CRITICAL RULES:
-1. Capture EVERY step - no summarizing
-2. Keep titles SHORT (max 8 words)
-3. Keep descriptions BRIEF (max 20 words)
-4. Identify decision points as type: "decision"
-5. Organize into swimlanes if parallel workflows exist
-
-RETURN ONLY THIS JSON (no extra text):
-{{
-  "processName": "Process name (max 8 words)",
-  "description": "Brief overview (max 20 words)",
-  "actors": ["Role1", "Role2"],
-  "swimLanes": [
-    {{"id": "lane-1", "name": "Team Name", "role": "Brief role", "color": "#6366f1"}}
-  ],
-  "nodes": [
-    {{
-      "id": "node-1",
-      "type": "trigger|active|decision|warning",
-      "title": "Action title (max 8 words)",
-      "description": "What happens (max 20 words)",
-      "actors": ["Role"],
-      "swimLane": "lane-1"
-    }}
-  ],
-  "edges": [
-    {{"id": "edge-1", "source": "node-1", "target": "node-2", "label": "YES|NO|null"}}
-  ]
-}}
-
-IMPORTANT: Keep all text SHORT. Quality over quantity in descriptions."""
-            
-            message = UserMessage(text=prompt)
-            response = await chat.send_message(message)
-            
-            structure = self._parse_json_response(response)
-            
-            # Add default fields
-            for node in structure.get('nodes', []):
-                self._add_node_defaults(node)
-            
-            structure.setdefault('swimLanes', [])
-            structure.setdefault('edges', [])
-            structure.setdefault('criticalGaps', [])
-            structure.setdefault('improvementOpportunities', [])
-            structure['totalSteps'] = len(structure.get('nodes', []))
-            
-            logger.info(f"✅ Stage 1 complete: {structure['totalSteps']} steps extracted")
-            return structure
-            
-        except json.JSONDecodeError as e:
-            # Retry with ultra-compact mode if first attempt failed
-            if retry_count == 0:
-                logger.warning(f"⚠️  JSON parsing failed, retrying with ultra-compact mode...")
-                return await self.extract_structure(document_text, approved_sections, analysis, retry_count=1)
-            else:
-                logger.error(f"❌ Stage 1 failed after retry: {e}", exc_info=True)
-                raise
         except Exception as e:
             logger.error(f"❌ Stage 1 failed: {e}", exc_info=True)
             raise
+    
+    async def _extract_skeleton(self, section_content: str) -> Dict[str, Any]:
+        """
+        PASS 1: Extract minimal skeleton structure
+        
+        Returns only: node IDs, titles, types, edges, swimlanes
+        NO descriptions - keeps JSON tiny (~2KB)
+        """
+        chat = LlmChat(
+            api_key=self.api_key,
+            session_id=f"skeleton_{uuid.uuid4()}",
+            system_message="Extract flowchart skeleton. ONLY IDs and titles. NO descriptions."
+        ).with_model("anthropic", "claude-4-sonnet-20250514")
+        
+        prompt = f"""EXTRACT FLOWCHART SKELETON - MINIMAL JSON ONLY
+
+DOCUMENT:
+{section_content[:20000]}
+
+EXTRACT:
+1. Every procedural step as a node (ID + short title ONLY)
+2. Decision points as type: "decision"
+3. All connections (edges)
+4. Swimlanes if parallel workflows exist
+
+RETURN THIS ULTRA-MINIMAL JSON:
+{{
+  "processName": "Name (5 words max)",
+  "actors": ["Role1"],
+  "swimLanes": [{{"id": "lane-1", "name": "Name", "color": "#6366f1"}}],
+  "nodes": [
+    {{"id": "node-1", "type": "trigger|active|decision", "title": "Action (6 words max)", "swimLane": "lane-1"}}
+  ],
+  "edges": [{{"id": "e1", "source": "node-1", "target": "node-2", "label": null}}]
+}}
+
+CRITICAL: 
+- NO descriptions
+- NO extra fields
+- Titles: 6 words MAX
+- Capture EVERY step as a separate node
+- Valid JSON only"""
+        
+        message = UserMessage(text=prompt)
+        response = await chat.send_message(message)
+        
+        skeleton = self._parse_json_response(response)
+        
+        # Validate skeleton
+        if not skeleton.get('nodes'):
+            raise ValueError("Skeleton extraction failed - no nodes")
+        
+        logger.info(f"✅ Skeleton extracted: {len(skeleton.get('nodes', []))} nodes")
+        return skeleton
+    
+    async def _enrich_skeleton(self, skeleton: Dict[str, Any], section_content: str) -> Dict[str, Any]:
+        """
+        PASS 2: Enrich skeleton nodes with descriptions in batches
+        
+        Processes 15 nodes at a time to keep JSON manageable
+        """
+        nodes = skeleton.get('nodes', [])
+        batch_size = 15
+        enriched_nodes = []
+        
+        for i in range(0, len(nodes), batch_size):
+            batch = nodes[i:i+batch_size]
+            node_titles = [f"{n['id']}: {n['title']}" for n in batch]
+            
+            logger.info(f"🔸 Enriching batch {i//batch_size + 1} ({len(batch)} nodes)...")
+            
+            chat = LlmChat(
+                api_key=self.api_key,
+                session_id=f"enrich_{uuid.uuid4()}",
+                system_message="Add descriptions to flowchart nodes. Keep brief."
+            ).with_model("anthropic", "claude-4-sonnet-20250514")
+            
+            prompt = f"""ADD DESCRIPTIONS TO NODES
+
+DOCUMENT CONTEXT:
+{section_content[:15000]}
+
+NODES TO ENRICH:
+{chr(10).join(node_titles)}
+
+For each node, provide:
+- Brief description (15 words max)
+- Actors (who does it)
+
+RETURN JSON ARRAY:
+[
+  {{"id": "node-1", "description": "Brief description", "actors": ["Role"]}}
+]
+
+Keep descriptions SHORT. Valid JSON only."""
+            
+            try:
+                message = UserMessage(text=prompt)
+                response = await chat.send_message(message)
+                
+                descriptions = json.loads(response.strip())
+                desc_map = {d['id']: d for d in descriptions if 'id' in d}
+                
+                # Merge descriptions with skeleton nodes
+                for node in batch:
+                    if node['id'] in desc_map:
+                        node['description'] = desc_map[node['id']].get('description', '')
+                        node['actors'] = desc_map[node['id']].get('actors', [])
+                    else:
+                        node['description'] = ''
+                        node['actors'] = skeleton.get('actors', [])[:1]
+                    
+                    # Add default fields
+                    self._add_node_defaults(node)
+                    enriched_nodes.append(node)
+                    
+            except Exception as e:
+                logger.warning(f"⚠️  Batch enrichment failed, using skeleton only: {e}")
+                # Fallback: use skeleton without descriptions
+                for node in batch:
+                    node['description'] = ''
+                    node['actors'] = skeleton.get('actors', [])[:1]
+                    self._add_node_defaults(node)
+                    enriched_nodes.append(node)
+        
+        # Build final structure
+        structure = {
+            "processName": skeleton.get('processName', 'Untitled Process'),
+            "description": f"Process with {len(enriched_nodes)} steps",
+            "actors": skeleton.get('actors', []),
+            "swimLanes": skeleton.get('swimLanes', []),
+            "nodes": enriched_nodes,
+            "edges": skeleton.get('edges', []),
+            "criticalGaps": [],
+            "improvementOpportunities": [],
+            "totalSteps": len(enriched_nodes)
+        }
+        
+        return structure
     
     async def enrich_details(
         self, 
