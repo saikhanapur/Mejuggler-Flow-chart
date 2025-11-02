@@ -487,7 +487,7 @@ Return valid JSON only."""
                     "contactInfo": details.get('contactInfo', {}),
                     "timeline": details.get('timeline'),
                     "systems": details.get('systems', []),
-                    "decisionCriteria": details.get('decisionCriteria'),
+                    "decisionCriteria": self._validate_decision_criteria(details.get('decisionCriteria'), node.get('isDecisionPoint', False)),
                     "emailTemplates": details.get('communicationTemplates', []),
                     "sourcePage": None
                 }
@@ -495,6 +495,26 @@ Return valid JSON only."""
                 node['operationalDetails'] = self._get_empty_details()
         
         return nodes
+    
+    def _validate_decision_criteria(self, criteria, is_decision_point):
+        """Ensure decisionCriteria is human-readable, not dict/code"""
+        if not is_decision_point:
+            return None
+        
+        # If it's a dict or looks like code, convert to human-readable
+        if isinstance(criteria, dict):
+            logger.warning(f"Decision criteria is dict, converting to readable: {criteria}")
+            return "Decision logic defined but needs human-readable explanation. Please review."
+        
+        if criteria and (criteria.startswith('{') or criteria.startswith('[')):
+            logger.warning(f"Decision criteria looks like code: {criteria}")
+            return "Decision point requires review - logic defined in technical format."
+        
+        # If it's empty or None for a decision point, provide generic guidance
+        if not criteria:
+            return "This is a decision point. Review the document to determine the decision logic."
+        
+        return criteria
     
     async def generate_coverage_report(
         self,
