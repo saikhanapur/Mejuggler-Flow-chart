@@ -195,8 +195,8 @@ const OperationalDetailsPanel = ({ node, onClose }) => {
           </div>
         )}
 
-        {/* Timeline */}
-        {details.timeline && (
+        {/* Timeline - Only if meaningful */}
+        {hasTimeline && (
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
             <h3 className="text-sm font-bold text-orange-900 uppercase tracking-wide mb-2 flex items-center">
               <Clock className="w-4 h-4 mr-2" />
@@ -207,7 +207,7 @@ const OperationalDetailsPanel = ({ node, onClose }) => {
         )}
 
         {/* Email Templates */}
-        {details.emailTemplates && details.emailTemplates.length > 0 && (
+        {hasEmailTemplates && (
           <div>
             <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3 flex items-center">
               <Mail className="w-4 h-4 mr-2 text-indigo-600" />
@@ -225,29 +225,41 @@ const OperationalDetailsPanel = ({ node, onClose }) => {
           </div>
         )}
 
-        {/* Current vs Ideal State */}
-        {(node.currentState || node.idealState) && (
+        {/* Current vs Ideal State - Only if different */}
+        {(hasCurrentState || hasIdealState) && (
           <div className="space-y-3">
-            {node.currentState && (
+            {hasCurrentState && (
               <div>
                 <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-2">
                   Current State
                 </h3>
-                <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-3">
-                  {node.currentState}
+                <p className="text-sm text-gray-700 bg-gray-50 rounded-lg p-3 leading-relaxed">
+                  {details.currentState || node.currentState}
                 </p>
               </div>
             )}
-            {node.idealState && (
+            {hasIdealState && (
               <div>
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-2">
+                <h3 className="text-sm font-bold text-emerald-700 uppercase tracking-wide mb-2">
                   Ideal State
                 </h3>
-                <p className="text-sm text-gray-700 bg-green-50 rounded-lg p-3">
-                  {node.idealState}
+                <p className="text-sm text-emerald-800 bg-emerald-50 rounded-lg p-3 leading-relaxed">
+                  {details.idealState}
                 </p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Gap - Only if meaningful */}
+        {hasMeaningfulGap && (
+          <div className="bg-rose-50 border-l-4 border-rose-500 rounded-lg p-4">
+            <h3 className="text-sm font-bold text-rose-900 uppercase tracking-wide mb-2">
+              Gap Identified
+            </h3>
+            <p className="text-sm text-rose-800 leading-relaxed">{details.gap}</p>
+          </div>
+        )}
           </div>
         )}
 
