@@ -281,30 +281,32 @@ Return ONLY valid JSON."""
                 # This is part of a parallel group
                 parallel_nodes = [node] + [n for n in nodes if n['id'] in parallel_with]
                 
-                # Position parallel nodes side-by-side at same Y with better spacing
+                # Position parallel nodes FAR from center line for visual clarity
+                # Center line is at X=330, nodes are 240px wide
+                # Professional spacing: nodes should NOT overlap center vertical area
                 if len(parallel_nodes) == 2:
-                    parallel_nodes[0]['x'] = 200  # Left (more spacing)
+                    parallel_nodes[0]['x'] = 80   # Far left (node extends 80-320, clears center)
                     parallel_nodes[0]['y'] = y_position
-                    parallel_nodes[1]['x'] = 460  # Right (more spacing)
+                    parallel_nodes[1]['x'] = 580  # Far right (node extends 580-820, clears center)
                     parallel_nodes[1]['y'] = y_position
                 elif len(parallel_nodes) == 3:
-                    parallel_nodes[0]['x'] = 150  # Left
+                    parallel_nodes[0]['x'] = 50   # Far left
                     parallel_nodes[0]['y'] = y_position
-                    parallel_nodes[1]['x'] = 330  # Center
+                    parallel_nodes[1]['x'] = 330  # Center (acceptable for 3 nodes)
                     parallel_nodes[1]['y'] = y_position
-                    parallel_nodes[2]['x'] = 510  # Right
+                    parallel_nodes[2]['x'] = 610  # Far right
                     parallel_nodes[2]['y'] = y_position
                 else:
-                    # More than 3 parallel - use better spacing
+                    # More than 3 parallel - use far spacing
                     for j, pnode in enumerate(parallel_nodes):
-                        pnode['x'] = 200 if j % 2 == 0 else 460
+                        pnode['x'] = 80 if j % 2 == 0 else 580
                         pnode['y'] = y_position
                 
                 # Mark as processed
                 for pnode in parallel_nodes:
                     processed_ids.add(pnode['id'])
                 
-                y_position += 170  # Increased spacing for parallel nodes
+                y_position += 160  # Uniform spacing
             elif is_merge:
                 # This is a merge point - center it and add extra spacing above
                 y_position += 30  # Extra spacing before merge
