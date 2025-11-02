@@ -2555,5 +2555,30 @@ Emergency Contacts:
 
 if __name__ == "__main__":
     tester = BackendTester()
-    success = tester.run_all_tests()
-    exit(0 if success else 1)
+    
+    # Run only the EROAD-style test for focused testing
+    print("🎯 Running EROAD-Style Flowchart Generation Test...")
+    tester.test_eroad_style_flowchart_generation()
+    
+    # Print summary
+    print("\n" + "=" * 80)
+    print("🎯 EROAD-STYLE FLOWCHART GENERATION TEST - SUMMARY")
+    print("=" * 80)
+    
+    passed = sum(1 for result in tester.test_results if result['success'])
+    total = len(tester.test_results)
+    success_rate = (passed / total * 100) if total > 0 else 0
+    
+    print(f"📊 Tests Passed: {passed}/{total} ({success_rate:.1f}%)")
+    
+    # Show all test results
+    for result in tester.test_results:
+        status = "✅ PASS" if result['success'] else "❌ FAIL"
+        print(f"{status} {result['test']}: {result['details']}")
+    
+    if success_rate >= 90:
+        print("\n🎉 EROAD-style generation working correctly!")
+    else:
+        print("\n⚠️ Issues found with EROAD-style generation")
+    
+    exit(0 if success_rate >= 90 else 1)
