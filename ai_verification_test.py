@@ -8,7 +8,7 @@ import requests
 import json
 import time
 
-BASE_URL = "https://sop-genius-2.preview.emergentagent.com/api"
+BASE_URL = "https://flowchart-genius-1.preview.emergentagent.com/api"
 TIMEOUT = 60
 
 def test_ai_quality_and_consistency():
