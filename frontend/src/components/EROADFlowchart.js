@@ -331,9 +331,24 @@ const EROADFlowchart = ({ process, onNodeClick }) => {
     : {};
   // ============ END FIX #4 ============
   
-  // Calculate canvas height based on nodes
-  const maxY = Math.max(...(process.nodes || []).map(n => n.y || 0)) + 200;
+  // Calculate canvas height based on nodes (with safety checks)
+  const nodes = process.nodes || [];
+  const maxY = nodes.length > 0 
+    ? Math.max(...nodes.map(n => n.y || 0)) + 200 
+    : 1800;
   const canvasHeight = Math.max(maxY, 1800);
+  
+  // Safety check - don't render if no nodes
+  if (!nodes || nodes.length === 0) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-white rounded-xl p-12">
+        <div className="text-center">
+          <div className="text-slate-400 text-lg mb-2">No flowchart data available</div>
+          <div className="text-slate-500 text-sm">The process may still be generating...</div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="w-full">
