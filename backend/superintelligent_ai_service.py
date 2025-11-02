@@ -533,6 +533,11 @@ Return valid JSON only."""
                     "systems": details.get('systems', []),
                     "decisionCriteria": self._validate_decision_criteria(details.get('decisionCriteria'), node.get('isDecisionPoint', False)),
                     "emailTemplates": details.get('communicationTemplates', []),
+                    "riskFactors": details.get('riskFactors', []),
+                    "successCriteria": details.get('successCriteria'),
+                    "estimatedDuration": details.get('estimatedDuration'),
+                    "dependencies": details.get('dependencies', []),
+                    "trainingRequired": details.get('trainingRequired'),
                     "sourcePage": None
                 }
             else:
