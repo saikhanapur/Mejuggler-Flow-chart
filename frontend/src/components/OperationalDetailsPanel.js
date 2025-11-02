@@ -13,10 +13,17 @@ const OperationalDetailsPanel = ({ node, onClose }) => {
     details.purpose.toLowerCase() !== 'none';
 
   const hasMeaningfulActions = details.specificActions?.length > 0 &&
-    details.specificActions.some(action => 
-      action.toLowerCase() !== node.title.toLowerCase() &&
-      action.toLowerCase() !== node.description?.toLowerCase()
-    );
+    details.specificActions.some(action => {
+      // Check if action is different from title/description
+      const isDifferentFromTitle = action.toLowerCase() !== node.title.toLowerCase();
+      const isDifferentFromDesc = action.toLowerCase() !== node.description?.toLowerCase();
+      
+      // Check if action is different from substeps
+      const isDifferentFromSubsteps = !node.subSteps || 
+        !node.subSteps.some(substep => substep.toLowerCase() === action.toLowerCase());
+      
+      return isDifferentFromTitle && isDifferentFromDesc && isDifferentFromSubsteps;
+    });
 
   const hasContactInfo = details.contactInfo && Object.keys(details.contactInfo).length > 0;
   const hasSystems = details.systems?.length > 0;
