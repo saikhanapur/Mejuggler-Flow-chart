@@ -107,10 +107,12 @@ const FlowchartCanvas = ({ processData }) => {
                 <ArrowLeft className="w-4 h-4" />
                 Back
               </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-slate-900">{process.name}</h1>
+              <div className="flex-1 max-w-2xl">
+                <h1 className="text-xl font-bold text-slate-900 truncate">{process.name}</h1>
                 {process.description && (
-                  <p className="text-sm text-slate-600 mt-1">{process.description}</p>
+                  <p className="text-xs text-slate-500 mt-1 line-clamp-1">
+                    {process.description}
+                  </p>
                 )}
               </div>
             </div>
