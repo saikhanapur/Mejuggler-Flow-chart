@@ -147,22 +147,29 @@ const FlowchartCanvas = ({ processData }) => {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <FlowchartDisplay 
-          process={process} 
-          onNodeClick={handleNodeClick}
-          selectedNodeId={selectedNode?.id}
-        />
-      </div>
+      {/* Main Content - Side by Side Layout */}
+      <div className="max-w-[1600px] mx-auto px-6 py-8 flex gap-6">
+        {/* Flowchart Panel */}
+        <div className="flex-1">
+          <FlowchartDisplay 
+            process={process} 
+            onNodeClick={handleNodeClick}
+            selectedNodeId={selectedNode?.id}
+          />
+        </div>
 
-      {/* Side Panel for Node Details */}
-      {selectedNode && (
-        <OperationalDetailsPanel
-          node={selectedNode}
-          onClose={() => setSelectedNode(null)}
-        />
-      )}
+        {/* Step Details Panel - Fixed on Right */}
+        {selectedNode && (
+          <div className="w-[400px] flex-shrink-0">
+            <div className="sticky top-24">
+              <OperationalDetailsPanel
+                node={selectedNode}
+                onClose={() => setSelectedNode(null)}
+              />
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* AI Chat Panel */}
       {showAIChat && (
