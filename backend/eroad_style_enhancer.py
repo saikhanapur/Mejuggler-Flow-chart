@@ -104,6 +104,31 @@ TARGET: Create between 8-13 nodes based on input complexity
 OUTPUT STRUCTURE:
 {{
   "processName": "Clear name from document",
+  "progressStages": [
+    {{
+      "title": "IMMEDIATE ACTION",
+      "description": "0-15 minutes",
+      "y": 50
+    }},
+    {{
+      "title": "ONGOING",
+      "description": "30 min intervals",
+      "y": 400
+    }},
+    {{
+      "title": "RECOVERY",
+      "description": "Final steps",
+      "y": 800
+    }}
+  ],
+  "quickReference": {{
+    "criticalActions": ["Action 1", "Action 2"],
+    "keyTimings": ["Every 30 minutes: Status check", "Within 2 hours: Notify stakeholders"],
+    "emergencyContacts": {{
+      "Primary Contact": "Name: 0800-xxx-xxx",
+      "Backup Contact": "Name: 0800-xxx-xxx"
+    }}
+  }},
   "nodes": [
     {{
       "id": "unique_id",
@@ -121,6 +146,7 @@ OUTPUT STRUCTURE:
       "dependencies": ["What must happen first"],
       "parallelWith": ["node_id_if_parallel"],
       "isDecisionPoint": false,
+      "decisionCriteria": "Human readable: If X is true, go to Y. If X is false, go to Z.",
       "decisionOptions": {{"yes": "next_node_id", "no": "alt_node_id"}},
       "isLoop": false,
       "loopBackTo": "node_id_if_loop",
