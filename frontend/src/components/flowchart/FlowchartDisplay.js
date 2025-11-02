@@ -125,7 +125,7 @@ const FlowchartDisplay = ({ process, onNodeClick, selectedNodeId }) => {
       <QuickReference
         criticalActions={criticalActions}
         keyTimings={keyTimings}
-        recoverySteps={normalizedNodes.filter(n => n.status === 'recovery' || n.status === 'verification')}
+        recoverySteps={nodes.filter(n => n.status === 'recovery' || n.status === 'verification')}
       />
 
       {/* Emergency Contacts */}
