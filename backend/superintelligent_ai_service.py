@@ -733,7 +733,11 @@ Return valid JSON only."""
                     "actors": node.get("contacts", []),
                     "subSteps": node.get("actions", []),
                     "dependencies": node.get("dependencies", []),
-                    "parallelWith": [],
+                    "parallelWith": node.get("parallelWith", []),
+                    "isDecisionPoint": node.get("isDecisionPoint", False),
+                    "decisionOptions": node.get("decisionOptions", {}),
+                    "isLoop": node.get("isLoop", False),
+                    "loopBackTo": node.get("loopBackTo"),
                     "failures": [],
                     "blocking": None,
                     "impact": "high" if node.get("status") == "critical" else "medium",
@@ -745,7 +749,7 @@ Return valid JSON only."""
                         "contactInfo": {c.split(":")[0]: c.split(":")[1].strip() if ":" in c else c for c in node.get("contacts", [])},
                         "timeline": node.get("timing"),
                         "systems": node.get("systems", []),
-                        "decisionCriteria": None,
+                        "decisionCriteria": node.get("decisionOptions") if node.get("isDecisionPoint") else None,
                         "emailTemplates": [],
                         "currentState": node.get("currentState"),
                         "idealState": node.get("idealState"),
@@ -765,12 +769,18 @@ Return valid JSON only."""
                 
                 # Create edges
                 for target_id in node.get("connections", []):
-                    process["edges"].append({
+                    edge = {
                         "id": f"e-{node['id']}-{target_id}",
                         "source": node['id'],
                         "target": target_id,
                         "label": None
-                    })
+                    }
+                    
+                    # Mark as dashed if it's a loop
+                    if node.get("isLoop") and target_id == node.get("loopBackTo"):
+                        edge["type"] = "dashed"
+                    
+                    process["edges"].append(edge)
             
             # Add progress stage badges
             if critical_nodes:
