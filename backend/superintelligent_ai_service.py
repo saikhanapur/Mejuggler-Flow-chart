@@ -749,7 +749,7 @@ Return valid JSON only."""
                         "contactInfo": {c.split(":")[0]: c.split(":")[1].strip() if ":" in c else c for c in node.get("contacts", [])},
                         "timeline": node.get("timing"),
                         "systems": node.get("systems", []),
-                        "decisionCriteria": node.get("decisionOptions") if node.get("isDecisionPoint") else None,
+                        "decisionCriteria": str(node.get("decisionOptions")) if node.get("isDecisionPoint") else None,
                         "emailTemplates": [],
                         "currentState": node.get("currentState"),
                         "idealState": node.get("idealState"),
