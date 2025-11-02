@@ -112,47 +112,60 @@ const FlowchartDisplay = ({ process, onNodeClick, selectedNodeId }) => {
       {/* Legend Bar */}
       <Legend statuses={uniqueStatuses} />
 
-      {/* Zoom Controls */}
-      <div className="absolute top-24 right-6 z-30 bg-white rounded-xl shadow-lg border-2 border-slate-200 p-2 flex flex-col gap-2">
-        <button
-          onClick={handleZoomIn}
-          className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-          title="Zoom In"
-        >
-          <svg className="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        </button>
-        <button
-          onClick={handleZoomOut}
-          className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-          title="Zoom Out"
-        >
-          <svg className="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-          </svg>
-        </button>
-        <div className="border-t border-slate-200 my-1"></div>
-        <button
-          onClick={handleFitToScreen}
-          className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-          title="Fit to Screen"
-        >
-          <svg className="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-          </svg>
-        </button>
-        <button
-          onClick={handleResetView}
-          className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-          title="Reset View"
-        >
-          <svg className="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-        </button>
-        <div className="text-xs text-slate-600 text-center mt-1 font-semibold">
-          {Math.round(zoom * 100)}%
+      {/* Zoom Controls - Bottom Right, Elegant Design */}
+      <div className="fixed bottom-8 right-8 z-30 bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+        <div className="flex flex-col">
+          {/* Zoom Display */}
+          <div className="px-4 py-2 bg-slate-50 border-b border-slate-200">
+            <div className="text-xs font-semibold text-slate-600 text-center">
+              Zoom: {Math.round(zoom * 100)}%
+            </div>
+          </div>
+          
+          {/* Control Buttons */}
+          <div className="p-2 flex flex-col gap-1">
+            <button
+              onClick={handleZoomIn}
+              className="p-2.5 hover:bg-slate-100 rounded-lg transition-colors group"
+              title="Zoom In"
+            >
+              <svg className="w-5 h-5 text-slate-600 group-hover:text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+            
+            <button
+              onClick={handleZoomOut}
+              className="p-2.5 hover:bg-slate-100 rounded-lg transition-colors group"
+              title="Zoom Out"
+            >
+              <svg className="w-5 h-5 text-slate-600 group-hover:text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" />
+              </svg>
+            </button>
+            
+            <div className="h-px bg-slate-200 my-1"></div>
+            
+            <button
+              onClick={handleFitToScreen}
+              className="p-2.5 hover:bg-slate-100 rounded-lg transition-colors group"
+              title="Fit to Screen"
+            >
+              <svg className="w-5 h-5 text-slate-600 group-hover:text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+              </svg>
+            </button>
+            
+            <button
+              onClick={handleResetView}
+              className="p-2.5 hover:bg-slate-100 rounded-lg transition-colors group"
+              title="Reset View (100%)"
+            >
+              <svg className="w-5 h-5 text-slate-600 group-hover:text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 
