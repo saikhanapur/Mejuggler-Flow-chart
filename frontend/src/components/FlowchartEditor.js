@@ -587,41 +587,15 @@ const FlowchartEditor = ({ theme, readOnly = false, accessLevel = 'owner', proce
         {/* Canvas - scrollable */}
         <div className="flex-1 overflow-hidden bg-slate-50" data-testid="flowchart-canvas">
           {/* View Mode Toggle - Only show if swim lanes exist */}
-          {hasSwimLanes && (
-            <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
-              <div className="text-sm text-gray-600">
-                {viewMode === 'swimlane' ? 'Swim Lane View' : 'Classic View'} · {process.nodes?.length || 0} steps · {process.swimLanes?.length || 0} swim lanes
-              </div>
-              <button
-                onClick={() => setViewMode(viewMode === 'swimlane' ? 'classic' : 'swimlane')}
-                className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors text-sm font-medium"
-              >
-                Switch to {viewMode === 'swimlane' ? 'Classic' : 'Swim Lane'} View
-              </button>
-            </div>
-          )}
-
-          {/* Swim Lane View (React Flow) - Only if swim lanes exist */}
-          {viewMode === 'swimlane' && hasSwimLanes && (
-            <div className="h-full">
-              <EnterpriseFlowchart 
+          {/* EROAD Flowchart - Single Rendering Path */}
+          <div className="overflow-auto h-full">
+            <div className="max-w-7xl mx-auto p-8">
+              <EROADFlowchart 
                 process={process} 
                 onNodeClick={handleNodeClick}
               />
             </div>
-          )}
-
-          {/* Classic View (EROAD Style) - Default for non-swim lane processes */}
-          {(viewMode === 'classic' || !hasSwimLanes) && (
-            <div className="overflow-auto h-full">
-              <div className="max-w-7xl mx-auto p-8">
-                <EROADFlowchart 
-                  process={process} 
-                  onNodeClick={handleNodeClick}
-                />
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
 
@@ -636,8 +610,8 @@ const FlowchartEditor = ({ theme, readOnly = false, accessLevel = 'owner', proce
         />
       )}
 
-      {/* Detail Panel - Slides from Right (for classic view) */}
-      {selectedNode && viewMode === 'classic' && (
+      {/* Detail Panel - Slides from Right */}
+      {selectedNode && (
         <DetailPanel
           node={selectedNode}
           processId={process.id}
