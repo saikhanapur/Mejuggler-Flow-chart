@@ -138,13 +138,14 @@ CURRENT vs IDEAL STATE RULES:
 Don't force it. Some steps are fine as-is (no ideal state needed).
 
 POSITIONING GUIDE:
-- X coordinates: Center=330, Left=0, Right=660
-- Y coordinates: Start at 0, increment by 150 for each sequential step
-- Parallel processes: Same Y, different X
+- All nodes in single vertical flow (X coordinate: 330 for center alignment)
+- Y coordinates: Start at 0, increment by 150 for each step
+- For parallel processes: Use slightly different X (300, 360) but keep Y spacing
 
-TARGET: Create between 10-15 nodes. 
-- If fewer than 10: You've over-grouped
-- If more than 15: Combine related steps
+TARGET: Create between 10-13 nodes (matching EROAD best practices)
+- Focus on strategic simplification
+- Each node should represent a meaningful milestone or phase
+- Combine granular steps into logical groups
 
 Return ONLY valid JSON."""
         
