@@ -1,19 +1,7 @@
 import React, { useState } from 'react';
 
-/**
- * EROAD-Style Flowchart Component
- * Matches the reference design: https://saikhanapur.github.io/Complex-SOP/
- * 
- * Features:
- * - Absolute positioned nodes (no Reactflow)
- * - Color-coded status badges
- * - Connection lines with arrows
- * - Progress stage indicators
- * - Quick Reference panels at bottom
- */
-
-// Status color mappings matching reference design
-const STATUS_COLORS = {
+// Status color configurations
+const STATUS_STYLES = {
   critical: {
     bg: 'bg-gradient-to-br from-red-500 to-red-600',
     border: 'border-red-400',
