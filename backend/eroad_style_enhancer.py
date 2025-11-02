@@ -205,12 +205,56 @@ Return ONLY valid JSON."""
         # Parse response
         enhanced = self._parse_json_response(response)
         
-        # ============ FIX #1: FORCE CONSISTENT POSITIONING ============
-        # Normalize all node coordinates to ensure visual consistency
-        # X = 330 (center alignment), Y = index * 150 (vertical spacing)
-        for i, node in enumerate(enhanced.get('nodes', [])):
-            node['x'] = 330  # Force center alignment
-            node['y'] = i * 150  # Consistent vertical spacing (150px between nodes)
+        # ============ FIX #1: SMART POSITIONING WITH PARALLEL SUPPORT ============
+        # Position nodes intelligently:
+        # - Sequential: X=330, Y increments by 150
+        # - Parallel: X=250/330/410, same Y for parallel group
+        
+        nodes = enhanced.get('nodes', [])
+        y_position = 0
+        processed_ids = set()
+        
+        for i, node in enumerate(nodes):
+            if node['id'] in processed_ids:
+                continue
+            
+            # Check if this node has parallel companions
+            parallel_with = node.get('parallelWith', [])
+            
+            if parallel_with:
+                # This is part of a parallel group
+                parallel_nodes = [node] + [n for n in nodes if n['id'] in parallel_with]
+                
+                # Position parallel nodes side-by-side at same Y
+                if len(parallel_nodes) == 2:
+                    parallel_nodes[0]['x'] = 250  # Left
+                    parallel_nodes[0]['y'] = y_position
+                    parallel_nodes[1]['x'] = 410  # Right
+                    parallel_nodes[1]['y'] = y_position
+                elif len(parallel_nodes) == 3:
+                    parallel_nodes[0]['x'] = 180  # Left
+                    parallel_nodes[0]['y'] = y_position
+                    parallel_nodes[1]['x'] = 330  # Center
+                    parallel_nodes[1]['y'] = y_position
+                    parallel_nodes[2]['x'] = 480  # Right
+                    parallel_nodes[2]['y'] = y_position
+                else:
+                    # More than 3 parallel - just use left/right
+                    for j, pnode in enumerate(parallel_nodes):
+                        pnode['x'] = 250 if j % 2 == 0 else 410
+                        pnode['y'] = y_position
+                
+                # Mark as processed
+                for pnode in parallel_nodes:
+                    processed_ids.add(pnode['id'])
+                
+                y_position += 150  # Move down for next node
+            else:
+                # Sequential node - center it
+                node['x'] = 330
+                node['y'] = y_position
+                processed_ids.add(node['id'])
+                y_position += 150
         # ============ END FIX #1 ============
         
         # Validate
