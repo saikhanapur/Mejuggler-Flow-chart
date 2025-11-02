@@ -97,12 +97,24 @@ const FlowchartDisplay = ({ process, onNodeClick, selectedNodeId }) => {
           
           if (!fromNode || !toNode) return null;
           
+          // Determine label for decision branches
+          let label = null;
+          if (fromNode.isDecisionPoint && fromNode.decisionOptions) {
+            // Check if this edge is a YES or NO path
+            if (fromNode.decisionOptions.yes === toNode.id) {
+              label = 'YES';
+            } else if (fromNode.decisionOptions.no === toNode.id) {
+              label = 'NO';
+            }
+          }
+          
           return (
             <ConnectionLine
               key={edge.id}
               from={fromNode}
               to={toNode}
               type={edge.type || 'solid'}
+              label={label}
             />
           );
         })}
