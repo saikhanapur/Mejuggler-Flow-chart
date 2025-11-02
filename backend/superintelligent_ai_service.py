@@ -811,17 +811,17 @@ Return valid JSON only."""
             raise
     
     def _map_status_to_type(self, status: str) -> str:
-        """Map EROAD status to node type"""
+        """Map EROAD status to node type - preserve all status distinctions"""
         mapping = {
-            "critical": "warning",
-            "action": "active",
-            "communication": "active",
-            "operational": "active",
-            "monitoring": "active",
-            "verification": "active",
-            "recovery": "active"
+            "critical": "critical",      # RED gradient - urgent action
+            "action": "action",          # BLUE border - action required
+            "communication": "communication",  # PURPLE border - stakeholder comms
+            "operational": "operational",     # EMERALD border - operational task
+            "monitoring": "monitoring",  # AMBER border - monitoring/checking
+            "verification": "verification",  # TEAL border - verification step
+            "recovery": "recovery"       # GREEN border - recovery/restoration
         }
-        return mapping.get(status, "active")
+        return mapping.get(status, "operational")  # Default to operational if unknown
     
     def _extract_section_content(self, document_text: str, sections: List[Dict]) -> str:
         """Extract content for specified sections from document"""
