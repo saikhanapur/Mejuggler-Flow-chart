@@ -105,13 +105,29 @@
 user_problem_statement: |
   SuperHumanly - Enterprise-grade workflow-to-flowchart platform with superintelligent AI processing.
   
-  NEW CHALLENGE (Current Session):
+  CURRENT ISSUE (Latest Session):
+  User reported critical flowchart design issues for operational use:
+  1. Parallel nodes (e.g., "Maintain during outage," "Generator fuel monitoring") too close to central connector line causing visual confusion
+  2. Non-uniform connection line lengths between nodes - inconsistent spacing, some excessively long
+  
+  FIX BEING IMPLEMENTED:
+  Fix #1: Increase Parallel Node Spacing
+  - Backend: Moved parallel nodes further from center (X=40 left, X=620 right vs previous X=80, X=580)
+  - Provides 50px clearance from center line (330px) vs previous 10px
+  - Uses available whitespace more intelligently with equal spacing on both sides
+  
+  Fix #2: Uniform Connection Line Distance
+  - Backend: Standardized ALL Y spacing to exactly 150px (was inconsistent: 150px, 160px, +30px for merges)
+  - Removed extra 30px spacing before merge points for consistency
+  - Results in uniform visual distance between all sequential nodes
+  
+  PREVIOUS CHALLENGE:
   User reported AI cannot handle complex SOPs effectively:
   - BCP SOP document has 37 steps but AI only captured a few
   - Missed details, oversimplified, no intelligent grouping
   - Token budget constraints (160K/200K used) causing truncation
   
-  SOLUTION BEING IMPLEMENTED:
+  PREVIOUS SOLUTION (COMPLETED):
   Multi-Stage Superintelligent Pipeline:
   - Stage 0: Document Intelligence & Classification (with reasoning, user approval)
   - Stage 1: Structure Extraction (no truncation, captures ALL steps)
