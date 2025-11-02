@@ -338,6 +338,14 @@ const EROADFlowchart = ({ process, onNodeClick }) => {
     : 1800;
   const canvasHeight = Math.max(maxY, 1800);
   
+  // DEBUG: Log node coordinates
+  console.log('🎨 EROAD Flowchart Rendering:', {
+    nodeCount: nodes.length,
+    canvasHeight,
+    maxY,
+    nodes: nodes.map(n => ({ id: n.id, title: n.title, x: n.x, y: n.y }))
+  });
+  
   // Safety check - don't render if no nodes
   if (!nodes || nodes.length === 0) {
     return (
