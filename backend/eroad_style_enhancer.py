@@ -328,6 +328,42 @@ Return ONLY valid JSON."""
                 # Position badges on the right side at specified Y
                 stage['x'] = 630  # Right side of main flow
         
+        # ============ FIX #2: CONNECTION VALIDATION ============
+        # Ensure all non-terminal nodes have outgoing connections
+        # Terminal nodes: recovery, complete, final, end
+        terminal_keywords = ['recovery', 'complete', 'resume', 'close', 'end', 'final', 'return to normal']
+        
+        for i, node in enumerate(nodes):
+            # Check if this is a terminal node
+            is_terminal = any(keyword in node.get('title', '').lower() for keyword in terminal_keywords)
+            
+            # Skip if it's the last node or a terminal node
+            if is_terminal or i == len(nodes) - 1:
+                continue
+            
+            # Check if node has connections
+            connections = node.get('connections', [])
+            if not connections or len(connections) == 0:
+                logger.warning(f"⚠️ Node '{node.get('title')}' ({node.get('id')}) has no outgoing connections!")
+                
+                # Auto-fix strategy:
+                # 1. If node is part of parallel group, connect to merge point
+                if node.get('parallelWith'):
+                    # Find the merge point (next non-parallel node)
+                    for j in range(i + 1, len(nodes)):
+                        future_node = nodes[j]
+                        if not future_node.get('parallelWith'):
+                            node['connections'] = [future_node['id']]
+                            logger.info(f"✅ Auto-connected parallel node '{node.get('title')}' → '{future_node.get('title')}'")
+                            break
+                else:
+                    # 2. Otherwise, connect to immediate next node
+                    if i + 1 < len(nodes):
+                        next_node = nodes[i + 1]
+                        node['connections'] = [next_node['id']]
+                        logger.info(f"✅ Auto-connected sequential node '{node.get('title')}' → '{next_node.get('title')}'")
+        # ============ END FIX #2 ============
+        
         # Validate
         if not enhanced.get('nodes'):
             raise ValueError("No nodes generated in enhancement")
