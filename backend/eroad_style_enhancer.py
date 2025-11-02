@@ -246,18 +246,33 @@ Return ONLY valid JSON."""
         # Parse response
         enhanced = self._parse_json_response(response)
         
-        # ============ FIX #1: SMART POSITIONING WITH PARALLEL SUPPORT ============
-        # Position nodes intelligently:
+        # ============ FIX #1: SMART POSITIONING WITH MERGE POINT DETECTION ============
+        # Enhanced positioning with:
         # - Sequential: X=330, Y increments by 150
-        # - Parallel: X=250/330/410, same Y for parallel group
+        # - Parallel: X=200/460 (2 nodes) or X=150/330/510 (3 nodes), same Y
+        # - Merge points: Detected when multiple nodes connect to same target
         
         nodes = enhanced.get('nodes', [])
         y_position = 40  # Start with top padding so first node isn't at edge
         processed_ids = set()
         
+        # Step 1: Detect merge points (nodes with multiple incoming connections)
+        incoming_connections = {}
+        for node in nodes:
+            for target_id in node.get('connections', []):
+                if target_id not in incoming_connections:
+                    incoming_connections[target_id] = []
+                incoming_connections[target_id].append(node['id'])
+        
+        merge_points = {node_id: sources for node_id, sources in incoming_connections.items() if len(sources) > 1}
+        
+        # Step 2: Position nodes with awareness of structure
         for i, node in enumerate(nodes):
             if node['id'] in processed_ids:
                 continue
+            
+            # Check if this node is a merge point
+            is_merge = node['id'] in merge_points
             
             # Check if this node has parallel companions
             parallel_with = node.get('parallelWith', [])
@@ -290,6 +305,14 @@ Return ONLY valid JSON."""
                     processed_ids.add(pnode['id'])
                 
                 y_position += 170  # Increased spacing for parallel nodes
+            elif is_merge:
+                # This is a merge point - center it and add extra spacing above
+                y_position += 30  # Extra spacing before merge
+                node['x'] = 330  # Center merge points
+                node['y'] = y_position
+                node['isMergePoint'] = True  # Mark for frontend
+                processed_ids.add(node['id'])
+                y_position += 150
             else:
                 # Sequential node - center it
                 node['x'] = 330
