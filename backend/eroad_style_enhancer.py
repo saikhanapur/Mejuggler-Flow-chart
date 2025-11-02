@@ -213,7 +213,7 @@ Return ONLY valid JSON."""
         # - Parallel: X=250/330/410, same Y for parallel group
         
         nodes = enhanced.get('nodes', [])
-        y_position = 0
+        y_position = 40  # Start with top padding so first node isn't at edge
         processed_ids = set()
         
         for i, node in enumerate(nodes):
