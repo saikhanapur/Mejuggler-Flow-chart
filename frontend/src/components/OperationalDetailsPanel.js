@@ -255,6 +255,73 @@ const OperationalDetailsPanel = ({ node, onClose }) => {
           </div>
         )}
 
+        {/* Estimated Duration - NEW! */}
+        {details.estimatedDuration && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 className="text-sm font-bold text-blue-900 uppercase tracking-wide mb-2 flex items-center">
+              <Clock className="w-4 h-4 mr-2" />
+              Estimated Duration
+            </h3>
+            <p className="text-sm text-blue-800 font-medium">{details.estimatedDuration}</p>
+          </div>
+        )}
+
+        {/* Dependencies - NEW! */}
+        {details.dependencies && details.dependencies.length > 0 && (
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-3">
+              Prerequisites & Dependencies
+            </h3>
+            <ul className="space-y-2">
+              {details.dependencies.map((dep, i) => (
+                <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
+                  <span className="text-slate-500 font-bold mt-0.5">•</span>
+                  {dep}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Risk Factors - NEW! */}
+        {details.riskFactors && details.riskFactors.length > 0 && (
+          <div className="bg-amber-50 border-l-4 border-amber-500 rounded-lg p-4">
+            <h3 className="text-sm font-bold text-amber-900 uppercase tracking-wide mb-3 flex items-center">
+              <AlertTriangle className="w-4 h-4 mr-2" />
+              Risk Factors
+            </h3>
+            <ul className="space-y-2">
+              {details.riskFactors.map((risk, i) => (
+                <li key={i} className="text-sm text-amber-800 flex items-start gap-2">
+                  <span className="text-amber-600 font-bold mt-0.5">⚠</span>
+                  {risk}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Success Criteria - NEW! */}
+        {details.successCriteria && (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+            <h3 className="text-sm font-bold text-emerald-900 uppercase tracking-wide mb-2 flex items-center">
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Success Criteria
+            </h3>
+            <p className="text-sm text-emerald-800 leading-relaxed">{details.successCriteria}</p>
+          </div>
+        )}
+
+        {/* Training Required - NEW! */}
+        {details.trainingRequired && (
+          <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+            <h3 className="text-sm font-bold text-indigo-900 uppercase tracking-wide mb-2">
+              Training Required
+            </h3>
+            <p className="text-sm text-indigo-800 leading-relaxed">{details.trainingRequired}</p>
+          </div>
+        )}
+
         {/* Current vs Ideal State - Only if different */}
         {(hasCurrentState || hasIdealState) && (
           <div className="space-y-3">
