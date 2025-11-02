@@ -73,17 +73,20 @@ const FlowchartDisplay = ({ process, onNodeClick, selectedNodeId }) => {
 
         {/* Connection Lines - Render below nodes */}
         <div className="absolute inset-0" style={{ zIndex: 1 }}>
-          {normalizedNodes.map((node, index) => {
-            if (index === normalizedNodes.length - 1) return null;
-            const nextNode = normalizedNodes[index + 1];
+          {process.edges && process.edges.map((edge) => {
+            const fromNode = nodes.find(n => n.id === edge.source);
+            const toNode = nodes.find(n => n.id === edge.target);
+            
+            if (!fromNode || !toNode) return null;
             
             return (
               <ConnectionLine
-                key={`line-${node.id}-${nextNode.id}`}
-                from={node}
-                to={nextNode}
-                fromStatus={node.status}
-                toStatus={nextNode.status}
+                key={edge.id}
+                from={fromNode}
+                to={toNode}
+                fromStatus={fromNode.status}
+                toStatus={toNode.status}
+                dashed={edge.type === 'dashed'}
               />
             );
           })}
@@ -91,7 +94,7 @@ const FlowchartDisplay = ({ process, onNodeClick, selectedNodeId }) => {
 
         {/* Nodes - Render above lines */}
         <div className="absolute inset-0" style={{ zIndex: 2 }}>
-          {normalizedNodes.map((node) => (
+          {nodes.map((node) => (
             <FlowNode
               key={node.id}
               node={node}
