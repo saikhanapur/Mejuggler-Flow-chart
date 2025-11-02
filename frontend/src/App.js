@@ -118,7 +118,7 @@ const AppContent = () => {
                 isGuest={true}
               />
             )}
-            <FlowchartEditor theme={theme} isGuestMode={!isAuthenticated} />
+            <FlowchartCanvas theme={theme} isGuestMode={!isAuthenticated} />
           </>
         } />
         
