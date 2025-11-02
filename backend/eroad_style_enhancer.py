@@ -33,9 +33,12 @@ class EROADStyleEnhancer:
         Transform extracted data into visualization-ready format
         
         Input: Raw extracted data (steps, contacts, systems, etc.)
-        Output: 10-15 enriched nodes with PURPOSE, current/ideal state
+        Output: 8-13 enriched nodes with PURPOSE, current/ideal state
         """
         logger.info("🎨 EROAD-Style Enhancement Layer")
+        
+        input_step_count = len(extracted_data.get('steps', []))
+        logger.info(f"📊 Input: {input_step_count} steps to enhance")
         
         chat = LlmChat(
             api_key=self.api_key,
