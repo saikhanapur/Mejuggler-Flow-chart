@@ -113,6 +113,72 @@ const FlowNode = ({ node, onClick, isSelected }) => {
   const x = node.x || node.position?.x || 0;
   const y = node.y || node.position?.y || 0;
 
+  // Check if this is a decision point
+  const isDecision = node.isDecisionPoint || false;
+
+  if (isDecision) {
+    // Render as diamond for decision nodes
+    return (
+      <div
+        data-testid={`flow-node-${node.id}`}
+        className="absolute"
+        style={{
+          left: `${x}px`,
+          top: `${y}px`,
+          width: '200px',
+          height: '200px',
+          zIndex: 10,
+        }}
+        onClick={onClick}
+      >
+        {/* Diamond shape using SVG */}
+        <svg 
+          width="200" 
+          height="200" 
+          className="cursor-pointer transition-all duration-300 hover:scale-105"
+          style={{ filter: isSelected ? 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.8))' : 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))' }}
+        >
+          {/* Diamond path */}
+          <path
+            d="M 100 10 L 190 100 L 100 190 L 10 100 Z"
+            fill="url(#yellowGradient)"
+            stroke="#f59e0b"
+            strokeWidth="3"
+            className="transition-all duration-300"
+          />
+          <defs>
+            <linearGradient id="yellowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#fbbf24" />
+              <stop offset="100%" stopColor="#f59e0b" />
+            </linearGradient>
+          </defs>
+          
+          {/* Icon */}
+          <g transform="translate(80, 80)">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+              <path d="M9 18l6-6-6-6" />
+              <path d="M15 18l6-6-6-6" />
+            </svg>
+          </g>
+          
+          {/* Text */}
+          <text
+            x="100"
+            y="120"
+            textAnchor="middle"
+            fill="white"
+            fontSize="13"
+            fontWeight="600"
+            fontFamily="Inter, sans-serif"
+          >
+            {node.title.length > 25 ? node.title.substring(0, 25) + '...' : node.title}
+          </text>
+        </svg>
+      </div>
+    );
+  }
+
+  // Regular rectangular node
   return (
     <div
       data-testid={`flow-node-${node.id}`}
