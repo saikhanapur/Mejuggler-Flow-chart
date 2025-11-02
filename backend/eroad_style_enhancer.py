@@ -105,9 +105,6 @@ OUTPUT STRUCTURE:
       "y": 0,
       "connections": ["next_node_id"]
     }}
-  ],
-  "swimLanes": [
-    {{"id": "lane-1", "name": "Team/Phase", "nodeIds": ["node-1", "node-2"]}}
   ]
 }}
 
