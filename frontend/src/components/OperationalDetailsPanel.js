@@ -118,7 +118,20 @@ const OperationalDetailsPanel = ({ node, onClose }) => {
               <AlertTriangle className="w-4 h-4 mr-2" />
               Decision Criteria
             </h3>
-            <p className="text-sm text-yellow-800">{details.decisionCriteria}</p>
+            {typeof details.decisionCriteria === 'string' ? (
+              <p className="text-sm text-yellow-800">{details.decisionCriteria}</p>
+            ) : typeof details.decisionCriteria === 'object' ? (
+              <div className="space-y-2 text-sm text-yellow-800">
+                {Object.entries(details.decisionCriteria).map(([key, value]) => (
+                  <div key={key} className="flex items-start gap-2">
+                    <span className="font-semibold capitalize">{key}:</span>
+                    <span>{String(value)}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-yellow-800">{String(details.decisionCriteria)}</p>
+            )}
           </div>
         )}
 
