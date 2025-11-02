@@ -437,10 +437,11 @@ FOR EACH NODE, EXTRACT:
 4. **systems**: Software, tools, platforms mentioned
 5. **timeline**: Time limits, frequencies ("every 30 minutes", "within 2 hours")
 6. **communicationTemplates**: Email scripts, message templates (reference by name)
+
 **7. decisionCriteria (CRITICAL - HUMAN READABLE!):**
 For decision nodes, provide a PLAIN ENGLISH explanation of the decision logic.
-❌ WRONG: {"yes": "node_id", "no": "other_id"}
-❌ WRONG: {"yes": "start_documentation", "no": "emergency_relocation"}
+❌ WRONG: {{"yes": "node_id", "no": "other_id"}}
+❌ WRONG: {{"yes": "start_documentation", "no": "emergency_relocation"}}
 ✅ CORRECT: "If the user is safe and can communicate, proceed with documentation. If the user cannot speak or is in immediate danger, initiate emergency relocation protocol."
 ✅ CORRECT: "Check if system is restored. If GDS responds within 15 minutes, resume normal operations. If no response after 15 minutes, continue manual operations."
 
@@ -449,6 +450,44 @@ The decision criteria should be a SENTENCE or PARAGRAPH explaining:
 - What happens in the YES case
 - What happens in the NO case
 - Any time limits or thresholds
+
+**8. riskFactors (NEW - HIGH VALUE!):**
+Identify what could go wrong with this step.
+Examples:
+- "Single point of failure - only supervisor can authorize"
+- "No backup if primary contact unavailable"
+- "Manual process prone to human error"
+- "Time-critical - delays compound downstream"
+
+**9. successCriteria (NEW - HIGH VALUE!):**
+How do we know this step succeeded?
+Examples:
+- "Email sent confirmation received"
+- "All stakeholders acknowledged receipt"
+- "System status shows 'restored'"
+- "No errors reported within 30 minutes"
+
+**10. estimatedDuration (NEW - HIGH VALUE!):**
+Based on document clues, estimate how long this step takes.
+Examples:
+- "2-5 minutes" (for simple email)
+- "15-30 minutes" (for complex coordination)
+- "Ongoing - check every 30 minutes" (for monitoring)
+- "1-2 hours" (for system restoration)
+
+**11. dependencies (NEW - HIGH VALUE!):**
+What MUST happen before this step?
+Examples:
+- "Requires: Outage confirmed, IT team notified"
+- "Depends on: Manager approval received"
+- "Prerequisites: System credentials, access to dashboard"
+
+**12. trainingRequired (NEW - HIGH VALUE!):**
+What skills/knowledge does someone need?
+Examples:
+- "Basic: Email, phone"
+- "Intermediate: System access, incident procedures"
+- "Advanced: Technical troubleshooting, escalation protocols"
 
 CRITICAL: specificActions must be DIFFERENT and MORE DETAILED than what's already in the node title/description.
 If the node is simple and has no substeps, leave specificActions as empty array [].
@@ -465,7 +504,12 @@ RETURN JSON ARRAY:
     "systems": ["System name"],
     "timeline": "Specific timeframe",
     "communicationTemplates": ["Template reference"],
-    "decisionCriteria": "YES: condition | NO: condition"
+    "decisionCriteria": "YES: condition | NO: condition",
+    "riskFactors": ["Risk 1", "Risk 2"],
+    "successCriteria": "How to verify success",
+    "estimatedDuration": "Time estimate",
+    "dependencies": ["Prerequisite 1", "Prerequisite 2"],
+    "trainingRequired": "Skill level description"
   }}
 ]
 
