@@ -183,9 +183,11 @@ CURRENT vs IDEAL STATE RULES:
 Don't force it. Some steps are fine as-is (no ideal state needed).
 
 POSITIONING GUIDE:
-- All nodes in single vertical flow (X coordinate: 330 for center alignment)
-- Y coordinates: Start at 0, increment by 150 for each step
-- For parallel processes: Use slightly different X (300, 360) but keep Y spacing
+- Initial X/Y coordinates will be calculated automatically based on your flow structure
+- For sequential flow: Suggest parallelWith=[] (will be centered automatically)
+- For parallel processes: Specify parallelWith=["node_id"] (will be positioned side-by-side)
+- For decision branches: Mark isDecisionPoint=true (branching will be handled)
+- You can suggest initial x, y values but they may be adjusted for optimal layout
 
 TARGET NODE COUNT (BASED ON INPUT):
 - 5-10 original steps → Generate 5-8 nodes
