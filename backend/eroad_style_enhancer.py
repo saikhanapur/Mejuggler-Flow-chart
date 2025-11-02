@@ -180,12 +180,18 @@ Return ONLY valid JSON."""
             raise ValueError("No nodes generated in enhancement")
         
         node_count = len(enhanced['nodes'])
-        if node_count < 8:
-            logger.warning(f"Only {node_count} nodes - may be over-grouped")
-        elif node_count > 20:
-            logger.warning(f"{node_count} nodes - may need more grouping")
+        input_step_count = len(extracted_data.get('steps', []))
         
-        logger.info(f"✅ Enhanced to {node_count} nodes with rich details")
+        # Strict validation against over-grouping
+        if node_count < 5:
+            logger.error(f"CRITICAL: Only {node_count} nodes from {input_step_count} input steps - SEVERE OVER-GROUPING!")
+            raise ValueError(f"Over-grouped: Generated only {node_count} nodes from {input_step_count} steps. Minimum 5 nodes required.")
+        elif node_count < input_step_count * 0.6:
+            logger.warning(f"⚠️ Possible over-grouping: {node_count} nodes from {input_step_count} input steps")
+        elif node_count > 20:
+            logger.warning(f"⚠️ {node_count} nodes - may need more grouping")
+        
+        logger.info(f"✅ Enhanced {input_step_count} steps to {node_count} nodes with rich details")
         
         return enhanced
     
