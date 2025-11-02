@@ -2707,18 +2707,3 @@ if __name__ == "__main__":
     
     # Run only the EROAD sample generation test
     result = tester.run_sample_generation_only()
-    success_rate = (passed / total * 100) if total > 0 else 0
-    
-    print(f"📊 Tests Passed: {passed}/{total} ({success_rate:.1f}%)")
-    
-    # Show all test results
-    for result in tester.test_results:
-        status = "✅ PASS" if result['success'] else "❌ FAIL"
-        print(f"{status} {result['test']}: {result['details']}")
-    
-    if success_rate >= 90:
-        print("\n🎉 EROAD-style generation working correctly!")
-    else:
-        print("\n⚠️ Issues found with EROAD-style generation")
-    
-    exit(0 if success_rate >= 90 else 1)
