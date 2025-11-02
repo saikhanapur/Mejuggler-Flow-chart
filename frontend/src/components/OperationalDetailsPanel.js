@@ -5,13 +5,42 @@ const OperationalDetailsPanel = ({ node, onClose }) => {
   if (!node) return null;
 
   const details = node.operationalDetails || {};
+  
+  // Intelligent filtering: Only show details that add value
+  const hasMeaningfulPurpose = details.purpose && 
+    details.purpose !== node.title && 
+    details.purpose !== node.description &&
+    details.purpose.toLowerCase() !== 'none';
+
+  const hasMeaningfulActions = details.specificActions?.length > 0 &&
+    details.specificActions.some(action => 
+      action.toLowerCase() !== node.title.toLowerCase() &&
+      action.toLowerCase() !== node.description?.toLowerCase()
+    );
+
+  const hasContactInfo = details.contactInfo && Object.keys(details.contactInfo).length > 0;
+  const hasSystems = details.systems?.length > 0;
+  const hasTimeline = details.timeline && details.timeline.toLowerCase() !== 'none';
+  const hasEmailTemplates = details.emailTemplates?.length > 0;
+  
+  const hasMeaningfulGap = details.gap && 
+    details.gap.toLowerCase() !== 'none' && 
+    details.gap.toLowerCase() !== 'no gap';
+
+  const hasCurrentState = details.currentState;
+  const hasIdealState = details.idealState && details.idealState !== details.currentState;
+
   const hasAnyDetails = 
-    details.specificActions?.length > 0 ||
+    hasMeaningfulPurpose ||
+    hasMeaningfulActions ||
     details.requiredData?.length > 0 ||
-    (details.contactInfo && Object.keys(details.contactInfo).length > 0) ||
-    details.systems?.length > 0 ||
-    details.timeline ||
-    details.emailTemplates?.length > 0;
+    hasContactInfo ||
+    hasSystems ||
+    hasTimeline ||
+    hasEmailTemplates ||
+    hasMeaningfulGap ||
+    hasCurrentState ||
+    hasIdealState;
 
   return (
     <div className="fixed right-0 top-0 h-full w-96 bg-white shadow-2xl z-50 overflow-y-auto border-l border-gray-200">
