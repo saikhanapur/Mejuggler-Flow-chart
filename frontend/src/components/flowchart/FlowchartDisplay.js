@@ -31,16 +31,13 @@ const FlowchartDisplay = ({ process, onNodeClick, selectedNodeId }) => {
     );
   }
 
-  // Normalize nodes to force consistent positioning
-  const normalizedNodes = process.nodes.map((node, index) => ({
-    ...node,
-    x: 330, // Fixed center X
-    y: index * 150, // Sequential Y spacing
-  }));
-
-  // Calculate canvas height
-  const maxY = normalizedNodes.length > 0 
-    ? Math.max(...normalizedNodes.map(n => n.y || 0)) + 300 
+  // Don't force positioning - use backend coordinates
+  // Backend now handles parallel/sequential intelligently
+  const nodes = process.nodes || [];
+  
+  // Calculate canvas height based on actual positions
+  const maxY = nodes.length > 0 
+    ? Math.max(...nodes.map(n => n.y || 0)) + 300 
     : 1000;
   const canvasHeight = Math.max(maxY, 1200);
 
