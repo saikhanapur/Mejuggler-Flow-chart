@@ -399,14 +399,20 @@ const EROADFlowchart = ({ process, onNodeClick }) => {
           
           if (!fromNode || !toNode) return null;
           
+          // Normalize coordinates for connection lines too
+          const fromX = (fromNode.x && fromNode.x > 0) ? fromNode.x : 330;
+          const fromY = (fromNode.y !== undefined && fromNode.y >= 0) ? fromNode.y : 0;
+          const toX = (toNode.x && toNode.x > 0) ? toNode.x : 330;
+          const toY = (toNode.y !== undefined && toNode.y >= 0) ? toNode.y : 0;
+          
           const color = STATUS_COLORS[toNode.status]?.line || 'rgb(148, 163, 184)';
           const dashed = edge.type === 'dashed';
           
           return (
             <ConnectionLine
               key={idx}
-              from={{ x: fromNode.x, y: fromNode.y }}
-              to={{ x: toNode.x, y: toNode.y }}
+              from={{ x: fromX, y: fromY }}
+              to={{ x: toX, y: toY }}
               color={color}
               dashed={dashed}
             />
