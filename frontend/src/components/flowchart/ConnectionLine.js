@@ -13,16 +13,19 @@ const STATUS_COLORS = {
   warning: 'rgb(251, 191, 36)',       // amber-400
 };
 
-const ConnectionLine = ({ from, to, type = 'solid' }) => {
+const ConnectionLine = ({ from, to, type = 'solid', label = null }) => {
   // Get coordinates
   const x1 = from.x || from.position?.x || 0;
   const y1 = from.y || from.position?.y || 0;
   const x2 = to.x || to.position?.x || 0;
   const y2 = to.y || to.position?.y || 0;
 
-  // Center of 240px wide node
-  const fromX = x1 + 120;
-  const fromY = y1 + 80; // Bottom of from node
+  // Check if from node is a decision
+  const isFromDecision = from.isDecisionPoint || false;
+
+  // Center of 240px wide node (or 200px for diamond)
+  const fromX = isFromDecision ? x1 + 100 : x1 + 120;
+  const fromY = isFromDecision ? y1 + 190 : y1 + 80; // Bottom of from node
   const toX = x2 + 120;
   const toY = y2; // Top of to node
 
@@ -65,6 +68,20 @@ const ConnectionLine = ({ from, to, type = 'solid' }) => {
             borderTop: `8px solid ${color}`,
           }}
         />
+        {/* Label for decision branches */}
+        {label && (
+          <div
+            className="absolute bg-white px-2 py-1 rounded text-xs font-bold shadow-sm border"
+            style={{
+              left: `${fromX + 10}px`,
+              top: `${fromY + height / 2 - 10}px`,
+              color: color,
+              borderColor: color,
+            }}
+          >
+            {label}
+          </div>
+        )}
       </>
     );
   }
@@ -135,6 +152,21 @@ const ConnectionLine = ({ from, to, type = 'solid' }) => {
           borderTop: `8px solid ${color}`,
         }}
       />
+
+      {/* Label for decision branches */}
+      {label && (
+        <div
+          className="absolute bg-white px-2 py-1 rounded text-xs font-bold shadow-sm border"
+          style={{
+            left: horizontalWidth > 0 ? `${fromX + Math.abs(horizontalWidth) / 2 - 15}px` : `${toX + Math.abs(horizontalWidth) / 2 - 15}px`,
+            top: `${midY - 20}px`,
+            color: color,
+            borderColor: color,
+          }}
+        >
+          {label}
+        </div>
+      )}
     </>
   );
 };
