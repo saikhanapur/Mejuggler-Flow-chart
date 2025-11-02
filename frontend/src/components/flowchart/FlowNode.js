@@ -116,9 +116,10 @@ const FlowNode = ({ node, onClick, isSelected }) => {
   // Check node type
   const isDecision = node.isDecisionPoint || false;
   const isMerge = node.isMergePoint || false;
+  const isCritical = node.status === 'critical' || node.status === 'trigger';
 
+  // Decision nodes still render as diamonds
   if (isDecision) {
-    // Render as diamond for decision nodes
     return (
       <div
         data-testid={`flow-node-${node.id}`}
@@ -179,15 +180,19 @@ const FlowNode = ({ node, onClick, isSelected }) => {
     );
   }
 
-  // Regular rectangular node (with merge indicator if applicable)
+  // ALL other nodes use consistent rounded rectangle shape
+  // Differentiate by: border thickness, shadow size, colors
+  const borderStyle = isCritical ? 'border-4' : 'border-2';
+  const shadowStyle = isCritical ? 'shadow-2xl' : 'shadow-lg';
+  
   return (
     <div
       data-testid={`flow-node-${node.id}`}
       className={`absolute transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer rounded-xl p-4 ${
         config.container
-      } ${config.pulse ? 'animate-pulse-glow' : ''} ${isSelected ? 'ring-4 ring-blue-400' : ''} ${
-        isMerge ? 'ring-2 ring-purple-400 ring-offset-2' : ''
-      }`}
+      } ${borderStyle} ${shadowStyle} ${config.pulse ? 'animate-pulse-glow' : ''} ${
+        isSelected ? 'ring-4 ring-blue-400 ring-offset-2' : ''
+      } ${isMerge ? 'ring-2 ring-purple-400 ring-offset-2' : ''}`}
       style={{
         left: `${x}px`,
         top: `${y}px`,
@@ -204,11 +209,19 @@ const FlowNode = ({ node, onClick, isSelected }) => {
         </div>
       )}
       
+      {/* Time estimate badge - if available */}
+      {node.operationalDetails?.estimatedDuration && (
+        <div className="absolute -top-2 -right-2 bg-slate-100 text-slate-700 text-xs font-semibold px-2 py-1 rounded-full border border-slate-300 shadow-sm flex items-center gap-1">
+          <span>⏱️</span>
+          <span>{node.operationalDetails.estimatedDuration}</span>
+        </div>
+      )}
+      
       <div className="flex items-start gap-3">
-        <div className="mt-0.5">
+        <div className="mt-0.5 flex-shrink-0">
           <StatusIcon status={node.status} />
         </div>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <h3 
             className="font-semibold text-sm leading-tight break-words"
             style={{ fontFamily: 'Inter, sans-serif' }}
