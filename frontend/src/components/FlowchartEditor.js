@@ -11,14 +11,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import FlowNode from './FlowNode';
 import DetailPanel from './DetailPanel';
 import IdealStateModal from './IdealStateModal';
 import ExportModal from './ExportModal';
 import ShareModal from './ShareModal';
 import AIRefineChat from './AIRefineChat';
 import ProcessIntelligencePanel from './ProcessIntelligencePanel';
-import EnterpriseFlowchart from './EnterpriseFlowchart';
 import OperationalDetailsPanel from './OperationalDetailsPanel';
 import EROADFlowchart from './EROADFlowchart';
 import { api } from '@/utils/api';
