@@ -227,30 +227,30 @@ Return ONLY valid JSON."""
                 # This is part of a parallel group
                 parallel_nodes = [node] + [n for n in nodes if n['id'] in parallel_with]
                 
-                # Position parallel nodes side-by-side at same Y
+                # Position parallel nodes side-by-side at same Y with better spacing
                 if len(parallel_nodes) == 2:
-                    parallel_nodes[0]['x'] = 250  # Left
+                    parallel_nodes[0]['x'] = 200  # Left (more spacing)
                     parallel_nodes[0]['y'] = y_position
-                    parallel_nodes[1]['x'] = 410  # Right
+                    parallel_nodes[1]['x'] = 460  # Right (more spacing)
                     parallel_nodes[1]['y'] = y_position
                 elif len(parallel_nodes) == 3:
-                    parallel_nodes[0]['x'] = 180  # Left
+                    parallel_nodes[0]['x'] = 150  # Left
                     parallel_nodes[0]['y'] = y_position
                     parallel_nodes[1]['x'] = 330  # Center
                     parallel_nodes[1]['y'] = y_position
-                    parallel_nodes[2]['x'] = 480  # Right
+                    parallel_nodes[2]['x'] = 510  # Right
                     parallel_nodes[2]['y'] = y_position
                 else:
-                    # More than 3 parallel - just use left/right
+                    # More than 3 parallel - use better spacing
                     for j, pnode in enumerate(parallel_nodes):
-                        pnode['x'] = 250 if j % 2 == 0 else 410
+                        pnode['x'] = 200 if j % 2 == 0 else 460
                         pnode['y'] = y_position
                 
                 # Mark as processed
                 for pnode in parallel_nodes:
                     processed_ids.add(pnode['id'])
                 
-                y_position += 150  # Move down for next node
+                y_position += 170  # Increased spacing for parallel nodes
             else:
                 # Sequential node - center it
                 node['x'] = 330
