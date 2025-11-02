@@ -20,6 +20,7 @@ import AIRefineChat from './AIRefineChat';
 import ProcessIntelligencePanel from './ProcessIntelligencePanel';
 import EnterpriseFlowchart from './EnterpriseFlowchart';
 import OperationalDetailsPanel from './OperationalDetailsPanel';
+import EROADFlowchart from './EROADFlowchart';
 import { api } from '@/utils/api';
 import { toast } from 'sonner';
 
