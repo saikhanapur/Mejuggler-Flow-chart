@@ -62,18 +62,6 @@ const FlowchartEditor = ({ theme, readOnly = false, accessLevel = 'owner', proce
   const [showOperationalDetails, setShowOperationalDetails] = useState(false);
   const [operationalDetailsNode, setOperationalDetailsNode] = useState(null);
 
-  // Auto-detect view mode based on swim lanes
-  const hasSwimLanes = process?.swimLanes && process.swimLanes.length > 0;
-  const [viewMode, setViewMode] = useState(hasSwimLanes ? 'swimlane' : 'classic');
-
-  // Update view mode when process changes
-  useEffect(() => {
-    if (process) {
-      const shouldShowSwimLanes = process.swimLanes && process.swimLanes.length > 0;
-      setViewMode(shouldShowSwimLanes ? 'swimlane' : 'classic');
-    }
-  }, [process]);
-
   useEffect(() => {
     if (!processData) {
       loadProcess();
