@@ -1400,6 +1400,188 @@ class BackendTester:
         except Exception as e:
             self.log_result("Voice Transcription (Missing File)", False, f"Error: {str(e)}")
 
+    def test_eroad_style_flowchart_generation(self):
+        """Test EROAD-style flowchart generation endpoint with sample document"""
+        print("\n🎨 Testing EROAD-Style Flowchart Generation...")
+        
+        # Sample document from the review request
+        sample_document = """Business Continuity Procedure: System Outage Response
+
+1. Identify the outage - Check monitoring systems
+2. Notify supervisor - Call on-duty manager immediately
+3. Setup BCP tracking - Create incident timeline in system
+4. Contact stakeholders - Email all affected teams
+5. Begin manual operations - Switch to backup procedures
+6. Monitor status - Check every 30 minutes for restoration
+7. Test system - Verify services are operational
+8. Notify restoration - Inform all parties systems are back
+9. Resume normal operations - Return to standard workflows
+
+Emergency Contacts:
+- IT Support: 0800 123 456
+- On-call Manager: 0800 789 012"""
+        
+        try:
+            payload = {
+                "text": sample_document,
+                "inputType": "text"
+            }
+            
+            response = self.session.post(f"{self.base_url}/process/eroad-style", 
+                                       json=payload, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Verify response structure
+                if 'processes' not in result:
+                    self.log_result("EROAD-Style Generation (Structure)", False, 
+                                  "Response missing 'processes' array")
+                    return
+                
+                processes = result.get('processes', [])
+                if not processes or len(processes) == 0:
+                    self.log_result("EROAD-Style Generation (Structure)", False, 
+                                  "No processes found in response")
+                    return
+                
+                process = processes[0]
+                
+                # Test 1: Verify process structure
+                required_fields = ['nodes', 'edges', 'quickReference', 'progressStages', 'swimLanes']
+                missing_fields = [field for field in required_fields if field not in process]
+                
+                if missing_fields:
+                    self.log_result("EROAD-Style Generation (Process Structure)", False, 
+                                  f"Missing required fields: {missing_fields}")
+                    return
+                else:
+                    self.log_result("EROAD-Style Generation (Process Structure)", True, 
+                                  "Process contains all required fields")
+                
+                # Test 2: Verify nodes structure and count
+                nodes = process.get('nodes', [])
+                node_count = len(nodes)
+                
+                if 10 <= node_count <= 13:
+                    self.log_result("EROAD-Style Generation (Node Count)", True, 
+                                  f"Generated {node_count} nodes (within expected range 10-13)")
+                else:
+                    self.log_result("EROAD-Style Generation (Node Count)", False, 
+                                  f"Generated {node_count} nodes (expected 10-13)")
+                
+                # Test 3: Verify node structure
+                if nodes:
+                    sample_node = nodes[0]
+                    required_node_fields = ['id', 'title', 'status', 'x', 'y', 'description']
+                    missing_node_fields = [field for field in required_node_fields if field not in sample_node]
+                    
+                    if missing_node_fields:
+                        self.log_result("EROAD-Style Generation (Node Structure)", False, 
+                                      f"Nodes missing required fields: {missing_node_fields}")
+                    else:
+                        self.log_result("EROAD-Style Generation (Node Structure)", True, 
+                                      "Nodes contain all required fields")
+                
+                # Test 4: Verify node positioning
+                x_coordinates = [node.get('x', 0) for node in nodes]
+                y_coordinates = [node.get('y', 0) for node in nodes]
+                
+                # Check X coordinates are around 330
+                x_around_330 = all(300 <= x <= 360 for x in x_coordinates if x > 0)
+                if x_around_330:
+                    self.log_result("EROAD-Style Generation (X Coordinates)", True, 
+                                  f"X coordinates properly centered around 330: {x_coordinates[:3]}...")
+                else:
+                    self.log_result("EROAD-Style Generation (X Coordinates)", False, 
+                                  f"X coordinates not centered around 330: {x_coordinates[:3]}...")
+                
+                # Check Y coordinates increment by ~150
+                if len(y_coordinates) > 1:
+                    y_sorted = sorted([y for y in y_coordinates if y > 0])
+                    if len(y_sorted) > 1:
+                        y_increments = [y_sorted[i+1] - y_sorted[i] for i in range(len(y_sorted)-1)]
+                        avg_increment = sum(y_increments) / len(y_increments) if y_increments else 0
+                        
+                        if 120 <= avg_increment <= 180:  # Allow some variance around 150
+                            self.log_result("EROAD-Style Generation (Y Coordinates)", True, 
+                                          f"Y coordinates increment appropriately (avg: {avg_increment:.0f})")
+                        else:
+                            self.log_result("EROAD-Style Generation (Y Coordinates)", False, 
+                                          f"Y coordinates increment incorrectly (avg: {avg_increment:.0f}, expected ~150)")
+                
+                # Test 5: Verify node statuses are properly classified
+                node_statuses = [node.get('status') for node in nodes]
+                expected_statuses = ['critical', 'action', 'communication', 'operational', 'monitoring', 'verification', 'recovery']
+                valid_statuses = [status for status in node_statuses if status in expected_statuses]
+                
+                if len(valid_statuses) >= len(node_statuses) * 0.8:  # At least 80% should have valid statuses
+                    self.log_result("EROAD-Style Generation (Node Statuses)", True, 
+                                  f"Node statuses properly classified: {set(valid_statuses)}")
+                else:
+                    self.log_result("EROAD-Style Generation (Node Statuses)", False, 
+                                  f"Invalid node statuses found: {set(node_statuses) - set(expected_statuses)}")
+                
+                # Test 6: Verify edges structure
+                edges = process.get('edges', [])
+                if edges:
+                    sample_edge = edges[0]
+                    required_edge_fields = ['id', 'source', 'target']
+                    missing_edge_fields = [field for field in required_edge_fields if field not in sample_edge]
+                    
+                    if missing_edge_fields:
+                        self.log_result("EROAD-Style Generation (Edge Structure)", False, 
+                                      f"Edges missing required fields: {missing_edge_fields}")
+                    else:
+                        self.log_result("EROAD-Style Generation (Edge Structure)", True, 
+                                      f"Edges properly structured ({len(edges)} edges)")
+                
+                # Test 7: Verify quickReference structure
+                quick_ref = process.get('quickReference', {})
+                required_qr_fields = ['criticalActions', 'keyTimings', 'emergencyContacts']
+                missing_qr_fields = [field for field in required_qr_fields if field not in quick_ref]
+                
+                if missing_qr_fields:
+                    self.log_result("EROAD-Style Generation (Quick Reference)", False, 
+                                  f"QuickReference missing fields: {missing_qr_fields}")
+                else:
+                    self.log_result("EROAD-Style Generation (Quick Reference)", True, 
+                                  "QuickReference contains all required fields")
+                
+                # Test 8: Verify swimLanes is empty array
+                swim_lanes = process.get('swimLanes', [])
+                if isinstance(swim_lanes, list) and len(swim_lanes) == 0:
+                    self.log_result("EROAD-Style Generation (Swim Lanes)", True, 
+                                  "SwimLanes is empty array as expected")
+                else:
+                    self.log_result("EROAD-Style Generation (Swim Lanes)", False, 
+                                  f"SwimLanes should be empty array, got: {swim_lanes}")
+                
+                # Test 9: Verify progressStages structure
+                progress_stages = process.get('progressStages', [])
+                if isinstance(progress_stages, list):
+                    self.log_result("EROAD-Style Generation (Progress Stages)", True, 
+                                  f"Progress stages array present ({len(progress_stages)} stages)")
+                else:
+                    self.log_result("EROAD-Style Generation (Progress Stages)", False, 
+                                  f"Progress stages should be array, got: {type(progress_stages)}")
+                
+                # Overall success
+                self.log_result("EROAD-Style Generation (Overall)", True, 
+                              f"Successfully generated EROAD-style flowchart with {node_count} nodes")
+                
+            else:
+                error_detail = response.text
+                if "budget" in error_detail.lower() or "credit" in error_detail.lower():
+                    self.log_result("EROAD-Style Generation", False, 
+                                  f"AI Budget/Credit Issue: {error_detail}")
+                else:
+                    self.log_result("EROAD-Style Generation", False, 
+                                  f"HTTP {response.status_code}: {error_detail}")
+                
+        except Exception as e:
+            self.log_result("EROAD-Style Generation", False, f"Error: {str(e)}")
+
     def test_enhanced_process_intelligence(self):
         """Test ENHANCED PROCESS INTELLIGENCE - TIER 1 Detection Backend"""
         print("\n🧠 Testing Enhanced Process Intelligence - TIER 1 Detection...")
