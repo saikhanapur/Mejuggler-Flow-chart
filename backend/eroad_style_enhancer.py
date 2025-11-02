@@ -119,12 +119,32 @@ OUTPUT STRUCTURE:
       "systems": ["Tool/platform names"],
       "timing": "When/how long (if specified)",
       "dependencies": ["What must happen first"],
+      "parallelWith": ["node_id_if_parallel"],
+      "isDecisionPoint": false,
+      "decisionOptions": {{"yes": "next_node_id", "no": "alt_node_id"}},
+      "isLoop": false,
+      "loopBackTo": "node_id_if_loop",
       "x": 330,
       "y": 0,
       "connections": ["next_node_id"]
     }}
   ]
 }}
+
+PARALLEL PROCESS DETECTION:
+- Look for phrases: "meanwhile", "at the same time", "simultaneously", "in parallel", "both teams"
+- Example: "Onshore team sets up tracking" + "Offshore team sets up tracking" = PARALLEL
+- Mark both nodes with: "parallelWith": ["other_node_id"]
+
+DECISION POINT DETECTION:
+- Look for: "if", "check if", "verify whether", "has X happened?", "is Y true?"
+- Example: "Check if Wilsar restored" → YES path / NO path
+- Mark as: "isDecisionPoint": true, "decisionOptions": {{"yes": "node_restored", "no": "node_keep_monitoring"}}
+
+LOOP DETECTION:
+- Look for: "repeat until", "check every X minutes", "continue monitoring", "loop back"
+- Example: "Check every 30 minutes" loops back to "Monitor Status"
+- Mark as: "isLoop": true, "loopBackTo": "monitor_node_id"
 
 STATUS CLASSIFICATION GUIDE (CRITICAL - Choose Carefully):
 - **critical**: Urgent, time-sensitive, high-impact failures (e.g., "Emergency Response", "System Down", "Call 111")
@@ -134,15 +154,6 @@ STATUS CLASSIFICATION GUIDE (CRITICAL - Choose Carefully):
 - **monitoring**: Checking, tracking, or monitoring status (e.g., "Check Every 30 Min", "Track Progress", "Monitor Systems")
 - **verification**: Testing, confirming, or verifying (e.g., "Test Systems", "Verify Resolution", "Confirm Restoration")
 - **recovery**: Final restoration or return to normal (e.g., "Resume Operations", "Close Incident", "Return to BAU")
-      "dependencies": ["What must happen first"],
-      "x": 330,
-      "y": 0,
-      "connections": ["next_node_id"]
-    }}
-  ]
-}}
-
-STATUS CLASSIFICATION GUIDE:
 - **critical**: Emergencies, outages, system down, immediate action required
 - **action**: Tasks, setup, configuration, operational work
 - **communication**: Emails, calls, notifications, stakeholder updates
