@@ -70,18 +70,22 @@ Decision Points: {decisions}
 YOUR TASK:
 Transform this into 10-15 workflow nodes for an interactive flowchart.
 
-GROUPING RULES:
+GROUPING RULES (AGGRESSIVE SIMPLIFICATION):
 1. **Combine sequential steps** that serve the same purpose
    Example: "Email councils", "Email MCs", "Send Modica" → "Stakeholder Communications"
 
-2. **Parallel processes** (happening simultaneously) → Separate nodes with same Y coordinate
-   Example: "Onshore response" and "Offshore response" happen at same time
+2. **Group setup activities** into single initialization nodes
+   Example: "Onshore setup", "Offshore setup", "Lighthouse setup" → "BCP Setup & Tracking"
 
-3. **Decision points** → Keep as distinct nodes
-   Example: "Has Wilsar outaged?" YES/NO branches
+3. **Consolidate repetitive monitoring** into single loop nodes
+   Example: "Check every 30 minutes" → "Ongoing Status Monitoring"
 
-4. **Repetitive actions** (loops) → Single node with loop indicator
-   Example: "Check every 30 minutes" → "30-Minute Update Cycle"
+4. **Decision points** → Keep as distinct nodes ONLY if they branch the flow significantly
+
+5. **Final activities** → Group cleanup, documentation, reporting into single nodes
+   Example: "Create jobs", "Reallocate tasks", "Resume BAU" → "Return to Normal Operations"
+
+CRITICAL: Aim for 10-13 nodes maximum. Each node = strategic phase, not granular task.
 
 OUTPUT STRUCTURE:
 {{
