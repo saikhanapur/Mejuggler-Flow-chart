@@ -1627,63 +1627,6 @@ Contacts:
                               f"HTTP {response.status_code}: {response.text}")
         except Exception as e:
             self.log_result("EROAD Coordinate Enforcement", False, f"Error: {str(e)}")
-                if edges:
-                    sample_edge = edges[0]
-                    required_edge_fields = ['id', 'source', 'target']
-                    missing_edge_fields = [field for field in required_edge_fields if field not in sample_edge]
-                    
-                    if missing_edge_fields:
-                        self.log_result("EROAD-Style Generation (Edge Structure)", False, 
-                                      f"Edges missing required fields: {missing_edge_fields}")
-                    else:
-                        self.log_result("EROAD-Style Generation (Edge Structure)", True, 
-                                      f"Edges properly structured ({len(edges)} edges)")
-                
-                # Test 7: Verify quickReference structure
-                quick_ref = process.get('quickReference', {})
-                required_qr_fields = ['criticalActions', 'keyTimings', 'emergencyContacts']
-                missing_qr_fields = [field for field in required_qr_fields if field not in quick_ref]
-                
-                if missing_qr_fields:
-                    self.log_result("EROAD-Style Generation (Quick Reference)", False, 
-                                  f"QuickReference missing fields: {missing_qr_fields}")
-                else:
-                    self.log_result("EROAD-Style Generation (Quick Reference)", True, 
-                                  "QuickReference contains all required fields")
-                
-                # Test 8: Verify swimLanes is empty array
-                swim_lanes = process.get('swimLanes', [])
-                if isinstance(swim_lanes, list) and len(swim_lanes) == 0:
-                    self.log_result("EROAD-Style Generation (Swim Lanes)", True, 
-                                  "SwimLanes is empty array as expected")
-                else:
-                    self.log_result("EROAD-Style Generation (Swim Lanes)", False, 
-                                  f"SwimLanes should be empty array, got: {swim_lanes}")
-                
-                # Test 9: Verify progressStages structure
-                progress_stages = process.get('progressStages', [])
-                if isinstance(progress_stages, list):
-                    self.log_result("EROAD-Style Generation (Progress Stages)", True, 
-                                  f"Progress stages array present ({len(progress_stages)} stages)")
-                else:
-                    self.log_result("EROAD-Style Generation (Progress Stages)", False, 
-                                  f"Progress stages should be array, got: {type(progress_stages)}")
-                
-                # Overall success
-                self.log_result("EROAD-Style Generation (Overall)", True, 
-                              f"Successfully generated EROAD-style flowchart with {node_count} nodes")
-                
-            else:
-                error_detail = response.text
-                if "budget" in error_detail.lower() or "credit" in error_detail.lower():
-                    self.log_result("EROAD-Style Generation", False, 
-                                  f"AI Budget/Credit Issue: {error_detail}")
-                else:
-                    self.log_result("EROAD-Style Generation", False, 
-                                  f"HTTP {response.status_code}: {error_detail}")
-                
-        except Exception as e:
-            self.log_result("EROAD-Style Generation", False, f"Error: {str(e)}")
 
     def test_enhanced_process_intelligence(self):
         """Test ENHANCED PROCESS INTELLIGENCE - TIER 1 Detection Backend"""
