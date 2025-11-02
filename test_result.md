@@ -572,6 +572,18 @@ frontend:
         agent: "main"
         comment: "Updated Dashboard UI based on user feedback: 1) Added prominent 'Create an Interactive Flowchart' button in header 2) Removed 'Select' and 'New Workspace' buttons for cleaner UI 3) Simplified action bar to only Search + Filters 4) Updated all terminology from 'Create a process' to 'Create an Interactive Flowchart' 5) Added 'Coming Soon' banner to Templates page. Need to verify: Dashboard layout, button functionality, Templates page display, no broken features from removed buttons."
 
+  - task: "Flowchart Visual Layout Fixes - Parallel Node Spacing & Uniform Line Distance"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/eroad_style_enhancer.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "FIX #1 & #2 IMPLEMENTED: User reported overlapping parallel nodes and non-uniform connection lines. Backend changes in eroad_style_enhancer.py: 1) PARALLEL NODE SPACING: Moved nodes further from center (X=40 left, X=620 right vs X=80/X=580). Provides 50px clearance from center line vs 10px. 2) UNIFORM SPACING: Standardized ALL Y increments to 150px (was 150px, 160px, +30px for merges). Removed extra merge spacing for consistency. Need testing: Generate flowchart with parallel nodes, verify visual spacing, verify uniform line lengths."
+  
   - task: "EROAD-Style Flowchart Generation Endpoint"
     implemented: true
     working: true
