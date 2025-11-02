@@ -1425,8 +1425,8 @@ Emergency Contacts:
         
         try:
             payload = {
-                "text": sample_document,
-                "inputType": "text"
+                "text": test_document,
+                "inputType": "document"
             }
             
             response = self.session.post(f"{self.base_url}/process/eroad-style", 
