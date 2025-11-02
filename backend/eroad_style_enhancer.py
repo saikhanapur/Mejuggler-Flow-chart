@@ -157,10 +157,15 @@ POSITIONING GUIDE:
 - Y coordinates: Start at 0, increment by 150 for each step
 - For parallel processes: Use slightly different X (300, 360) but keep Y spacing
 
-TARGET: Create between 10-13 nodes (matching EROAD best practices)
-- Focus on strategic simplification
-- Each node should represent a meaningful milestone or phase
-- Combine granular steps into logical groups
+TARGET NODE COUNT (BASED ON INPUT):
+- 5-10 original steps → Generate 5-8 nodes
+- 11-20 original steps → Generate 9-13 nodes
+- 20+ original steps → Generate 12-15 nodes
+
+CRITICAL: PREVENT OVER-GROUPING
+- If you receive 9 distinct steps, you should return AT LEAST 7-9 nodes
+- Each major phase/stage must be its own node
+- Only combine steps that happen simultaneously or are sub-tasks of the same action
 
 Return ONLY valid JSON."""
         
