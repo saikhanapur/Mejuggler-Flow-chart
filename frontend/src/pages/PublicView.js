@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Sparkles, ExternalLink, AlertCircle, Clock, Eye, MessageSquare, Edit3, ShieldAlert } from 'lucide-react';
-import FlowchartEditor from '../components/FlowchartEditor';
+import FlowchartCanvas from '../components/flowchart/FlowchartCanvas';
 import { Button } from '@/components/ui/button';
 import { api } from '../utils/api';
 
