@@ -262,9 +262,6 @@ const ConnectionLine = ({ from, to, color, dashed = false }) => {
   // If nodes are horizontally offset (deltaX >= 50px), use L-shaped branch
   return <DecisionBranchLine from={from} to={to} color={color} dashed={dashed} />;
 };
-    </>
-  );
-};
 
 // Progress Stage Badge Component
 const ProgressBadge = ({ type, x, y, title, description }) => {
