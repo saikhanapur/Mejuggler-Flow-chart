@@ -221,7 +221,7 @@ const PublicView = () => {
 
       {/* Flowchart Viewer (Read-only with access level) */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <FlowchartEditor 
+        <FlowchartCanvas 
           theme="minimalist" 
           readOnly={true}
           accessLevel={accessLevel}
