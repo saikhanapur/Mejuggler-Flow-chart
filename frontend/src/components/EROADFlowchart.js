@@ -117,8 +117,26 @@ const FlowNode = ({ node, onClick, isSelected }) => {
   
   // ============ FIX #3: NORMALIZE COORDINATES (DEFENSE IN DEPTH) ============
   // Ensure valid positioning even if backend sends incorrect coordinates
-  const normalizedX = (node.x && node.x > 0) ? node.x : 330;
-  const normalizedY = (node.y !== undefined && node.y >= 0) ? node.y : 0;
+  // Check both flat (node.x) and nested (node.position.x) formats
+  const nodeX = node.x !== undefined ? node.x : (node.position?.x || 330);
+  const nodeY = node.y !== undefined ? node.y : (node.position?.y || 0);
+  
+  const normalizedX = (nodeX !== null && nodeX >= 0) ? nodeX : 330;
+  const normalizedY = (nodeY !== null && nodeY >= 0) ? nodeY : 0;
+  
+  // DEBUG
+  if (normalizedX !== 330 || normalizedY < 0 || normalizedY > 2000) {
+    console.warn('⚠️ Node positioning issue:', { 
+      id: node.id, 
+      title: node.title,
+      nodeX, 
+      nodeY, 
+      normalizedX, 
+      normalizedY,
+      hasX: node.x !== undefined,
+      hasPosition: !!node.position
+    });
+  }
   // ============ END FIX #3 ============
   
   return (
