@@ -50,7 +50,7 @@ const FlowchartDisplay = ({ process, onNodeClick, selectedNodeId }) => {
     : {};
 
   // Get unique statuses for legend
-  const uniqueStatuses = [...new Set(normalizedNodes.map(n => n.status))];
+  const uniqueStatuses = [...new Set(nodes.map(n => n.status))];
 
   return (
     <div className="w-full">
