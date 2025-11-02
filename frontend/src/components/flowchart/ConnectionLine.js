@@ -1,135 +1,140 @@
 import React from 'react';
 
 // Status to color mapping
-const STATUS_LINE_COLORS = {
-  critical: '#ef4444',    // red-500
-  action: '#3b82f6',      // blue-500
-  communication: '#a855f7', // purple-500
-  operational: '#10b981',  // emerald-500
-  monitoring: '#f59e0b',   // amber-500
-  verification: '#14b8a6', // teal-500
-  recovery: '#22c55e',     // green-500
+const STATUS_COLORS = {
+  trigger: 'rgb(96, 165, 250)',      // blue-400
+  critical: 'rgb(244, 63, 94)',      // rose-500
+  action: 'rgb(96, 165, 250)',       // blue-400
+  communication: 'rgb(168, 85, 247)', // purple-500
+  operational: 'rgb(52, 211, 153)',   // emerald-400
+  monitoring: 'rgb(251, 191, 36)',    // amber-400
+  verification: 'rgb(20, 184, 166)',  // teal-400
+  recovery: 'rgb(34, 197, 94)',       // green-500
+  warning: 'rgb(251, 191, 36)',       // amber-400
 };
 
-const ConnectionLine = ({ from, to, fromStatus, toStatus, dashed = false }) => {
-  // Use target node's status color
-  const color = STATUS_LINE_COLORS[toStatus] || STATUS_LINE_COLORS.action;
-  
-  // Calculate positions (center of 240px wide node)
-  const fromX = from.x + 120;
-  const fromY = from.y + 80; // Approximate bottom of node
-  const toX = to.x + 120;
-  const toY = to.y;
-  
+const ConnectionLine = ({ from, to, type = 'solid' }) => {
+  // Get coordinates
+  const x1 = from.x || from.position?.x || 0;
+  const y1 = from.y || from.position?.y || 0;
+  const x2 = to.x || to.position?.x || 0;
+  const y2 = to.y || to.position?.y || 0;
+
+  // Center of 240px wide node
+  const fromX = x1 + 120;
+  const fromY = y1 + 80; // Bottom of from node
+  const toX = x2 + 120;
+  const toY = y2; // Top of to node
+
+  // Use target node's status for color
+  const color = STATUS_COLORS[to.status] || STATUS_COLORS.operational;
+  const isDashed = type === 'dashed' || to.status === 'warning' || to.status === 'critical';
+
   const deltaX = Math.abs(toX - fromX);
-  const height = toY - fromY - 10; // Leave small gap before next node
-  
-  if (height <= 0) return null;
-  
-  // If nodes are vertically aligned (same X), draw simple vertical line
-  if (deltaX < 50) {
+  const isVertical = deltaX < 50;
+
+  // Vertical line (nodes aligned)
+  if (isVertical) {
+    const height = toY - fromY;
+    if (height <= 0) return null;
+
     return (
       <>
         {/* Vertical line */}
         <div
-          className="absolute"
+          className="absolute pointer-events-none"
           style={{
-            left: `${fromX}px`,
+            left: `${fromX - 1}px`,
             top: `${fromY}px`,
-            width: '3px', // Thicker for visibility
+            width: '2px',
             height: `${height}px`,
-            backgroundColor: dashed ? 'transparent' : color,
-            backgroundImage: dashed 
-              ? `repeating-linear-gradient(transparent, transparent 8px, ${color} 8px, ${color} 16px)`
+            backgroundColor: isDashed ? 'transparent' : color,
+            backgroundImage: isDashed
+              ? `repeating-linear-gradient(${color} 0, ${color} 4px, transparent 4px, transparent 8px)`
               : 'none',
           }}
         />
-        {/* Arrow - Larger */}
-        {!dashed && (
-          <div
-            className="absolute"
-            style={{
-              left: `${fromX - 6}px`,
-              top: `${toY - 12}px`,
-              width: 0,
-              height: 0,
-              borderLeft: '6px solid transparent',
-              borderRight: '6px solid transparent',
-              borderTop: `12px solid ${color}`,
-            }}
-          />
-        )}
+        {/* Arrow */}
+        <div
+          className="absolute w-0 h-0"
+          style={{
+            left: `${toX - 4}px`,
+            top: `${toY - 8}px`,
+            borderLeft: '4px solid transparent',
+            borderRight: '4px solid transparent',
+            borderTop: `8px solid ${color}`,
+          }}
+        />
       </>
     );
   }
-  
-  // For parallel branches or decision points, draw L-shaped connection
-  const midY = fromY + 40;
+
+  // L-shaped line (parallel/decision branches)
+  const midY = (fromY + toY) / 2;
+  const verticalHeight1 = midY - fromY;
   const horizontalWidth = toX - fromX;
-  const verticalHeight = toY - midY;
-  
+  const verticalHeight2 = toY - midY;
+
+  if (verticalHeight1 < 0 || verticalHeight2 < 0) return null;
+
   return (
     <>
       {/* Vertical segment 1 */}
       <div
-        className="absolute"
+        className="absolute pointer-events-none"
         style={{
-          left: `${fromX}px`,
+          left: `${fromX - 1}px`,
           top: `${fromY}px`,
-          width: '3px',
-          height: `${midY - fromY}px`,
-          backgroundColor: dashed ? 'transparent' : color,
-          backgroundImage: dashed 
-            ? `repeating-linear-gradient(transparent, transparent 8px, ${color} 8px, ${color} 16px)`
+          width: '2px',
+          height: `${verticalHeight1}px`,
+          backgroundColor: isDashed ? 'transparent' : color,
+          backgroundImage: isDashed
+            ? `repeating-linear-gradient(${color} 0, ${color} 4px, transparent 4px, transparent 8px)`
             : 'none',
         }}
       />
-      
+
       {/* Horizontal segment */}
       <div
-        className="absolute"
+        className="absolute pointer-events-none"
         style={{
           left: horizontalWidth > 0 ? `${fromX}px` : `${toX}px`,
-          top: `${midY}px`,
+          top: `${midY - 1}px`,
           width: `${Math.abs(horizontalWidth)}px`,
-          height: '3px',
-          backgroundColor: dashed ? 'transparent' : color,
-          backgroundImage: dashed 
-            ? `repeating-linear-gradient(to right, transparent, transparent 8px, ${color} 8px, ${color} 16px)`
+          height: '2px',
+          backgroundColor: isDashed ? 'transparent' : color,
+          backgroundImage: isDashed
+            ? `repeating-linear-gradient(to right, ${color} 0, ${color} 4px, transparent 4px, transparent 8px)`
             : 'none',
         }}
       />
-      
+
       {/* Vertical segment 2 */}
       <div
-        className="absolute"
+        className="absolute pointer-events-none"
         style={{
-          left: `${toX}px`,
+          left: `${toX - 1}px`,
           top: `${midY}px`,
-          width: '3px',
-          height: `${verticalHeight}px`,
-          backgroundColor: dashed ? 'transparent' : color,
-          backgroundImage: dashed 
-            ? `repeating-linear-gradient(transparent, transparent 8px, ${color} 8px, ${color} 16px)`
+          width: '2px',
+          height: `${verticalHeight2}px`,
+          backgroundColor: isDashed ? 'transparent' : color,
+          backgroundImage: isDashed
+            ? `repeating-linear-gradient(${color} 0, ${color} 4px, transparent 4px, transparent 8px)`
             : 'none',
         }}
       />
-      
-      {/* Arrow - Larger */}
-      {!dashed && (
-        <div
-          className="absolute"
-          style={{
-            left: `${toX - 6}px`,
-            top: `${toY - 12}px`,
-            width: 0,
-            height: 0,
-            borderLeft: '6px solid transparent',
-            borderRight: '6px solid transparent',
-            borderTop: `12px solid ${color}`,
-          }}
-        />
-      )}
+
+      {/* Arrow */}
+      <div
+        className="absolute w-0 h-0"
+        style={{
+          left: `${toX - 4}px`,
+          top: `${toY - 8}px`,
+          borderLeft: '4px solid transparent',
+          borderRight: '4px solid transparent',
+          borderTop: `8px solid ${color}`,
+        }}
+      />
     </>
   );
 };

@@ -1,43 +1,45 @@
 import React from 'react';
 
 const BADGE_STYLES = {
-  immediate: {
-    bg: 'bg-red-50',
-    border: 'border-red-300',
-    titleColor: 'text-red-900',
-    textColor: 'text-red-800',
-    emoji: '⚠️',
+  'IMMEDIATE ACTION': {
+    bg: 'bg-rose-100',
+    text: 'text-rose-800',
+    border: 'border-rose-300',
   },
-  ongoing: {
-    bg: 'bg-amber-50',
+  'ONGOING': {
+    bg: 'bg-amber-100',
+    text: 'text-amber-800',
     border: 'border-amber-300',
-    titleColor: 'text-amber-900',
-    textColor: 'text-amber-800',
-    emoji: '🔄',
   },
-  complete: {
-    bg: 'bg-green-50',
-    border: 'border-green-300',
-    titleColor: 'text-green-900',
-    textColor: 'text-green-800',
-    emoji: '✅',
+  'RECOVERY COMPLETE': {
+    bg: 'bg-emerald-100',
+    text: 'text-emerald-800',
+    border: 'border-emerald-300',
   },
 };
 
-const ProgressBadge = ({ type, x, y, title, description }) => {
-  const style = BADGE_STYLES[type] || BADGE_STYLES.immediate;
-  
+const ProgressBadge = ({ stage }) => {
+  if (!stage || !stage.title) return null;
+
+  const style = BADGE_STYLES[stage.title] || BADGE_STYLES['ONGOING'];
+  const x = stage.x || 630;
+  const y = stage.y || 0;
+
   return (
     <div
-      className={`absolute ${style.bg} border-2 ${style.border} rounded-lg p-3 shadow-sm`}
-      style={{ left: `${x}px`, top: `${y}px`, width: '200px' }}
+      className={`absolute px-4 py-2 rounded-lg font-semibold text-xs border-2 ${style.bg} ${style.text} ${style.border} shadow-md`}
+      style={{
+        left: `${x}px`,
+        top: `${y}px`,
+        zIndex: 20,
+      }}
     >
-      <div className={`text-xs font-bold ${style.titleColor} mb-1`}>
-        {style.emoji} {title}
-      </div>
-      <div className={`text-xs ${style.textColor}`}>
-        {description}
-      </div>
+      {stage.title}
+      {stage.description && (
+        <div className="text-xs font-normal mt-1 opacity-75">
+          {stage.description}
+        </div>
+      )}
     </div>
   );
 };

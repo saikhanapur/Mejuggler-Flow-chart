@@ -1,132 +1,144 @@
 import React from 'react';
 
 // Status configurations matching reference design
-const STATUS_STYLES = {
-  critical: {
-    bg: 'bg-gradient-to-br from-red-500 to-red-600',
-    text: 'text-white',
+const STATUS_CONFIG = {
+  trigger: {
+    container: 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/50',
     icon: 'text-white',
-    pulseClass: 'critical-highlight',
+    pulse: true,
+  },
+  critical: {
+    container: 'bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-lg shadow-rose-500/50',
+    icon: 'text-white',
+    pulse: true,
   },
   action: {
-    bg: 'bg-white',
-    border: 'border-blue-400',
-    text: 'text-slate-800',
-    icon: 'text-blue-600',
+    container: 'bg-white border-2 border-blue-400 shadow-md hover:border-blue-500',
+    icon: 'text-blue-500',
   },
   communication: {
-    bg: 'bg-white',
-    border: 'border-purple-400',
-    text: 'text-slate-800',
-    icon: 'text-purple-600',
+    container: 'bg-white border-2 border-purple-400 shadow-md hover:border-purple-500',
+    icon: 'text-purple-500',
   },
   operational: {
-    bg: 'bg-white',
-    border: 'border-emerald-400',
-    text: 'text-slate-800',
-    icon: 'text-emerald-600',
+    container: 'bg-white border-2 border-emerald-400 shadow-md hover:border-emerald-500',
+    icon: 'text-emerald-500',
   },
   monitoring: {
-    bg: 'bg-white',
-    border: 'border-amber-400',
-    text: 'text-slate-800',
-    icon: 'text-amber-600',
+    container: 'bg-white border-2 border-amber-400 shadow-md hover:border-amber-500',
+    icon: 'text-amber-500',
   },
   verification: {
-    bg: 'bg-white',
-    border: 'border-teal-400',
-    text: 'text-slate-800',
-    icon: 'text-teal-600',
+    container: 'bg-white border-2 border-teal-400 shadow-md hover:border-teal-500',
+    icon: 'text-teal-500',
   },
   recovery: {
-    bg: 'bg-white',
-    border: 'border-green-400',
-    text: 'text-slate-800',
-    icon: 'text-green-600',
+    container: 'bg-white border-2 border-green-400 shadow-md hover:border-green-500',
+    icon: 'text-green-500',
+  },
+  warning: {
+    container: 'bg-white border-2 border-amber-400 shadow-md hover:border-amber-500',
+    icon: 'text-amber-500',
   },
 };
 
 // Status icons
 const StatusIcon = ({ status }) => {
-  const style = STATUS_STYLES[status] || STATUS_STYLES.action;
-  const className = `w-5 h-5 ${style.icon}`;
+  const config = STATUS_CONFIG[status] || STATUS_CONFIG.operational;
+  const className = `w-5 h-5 ${config.icon}`;
 
-  const icons = {
-    critical: (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-      </svg>
-    ),
-    action: (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-      </svg>
-    ),
-    communication: (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ),
-    operational: (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-    monitoring: (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-    verification: (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-    recovery: (
-      <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-      </svg>
-    ),
-  };
-
-  return icons[status] || icons.action;
+  switch (status) {
+    case 'trigger':
+      return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      );
+    case 'critical':
+      return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      );
+    case 'action':
+      return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      );
+    case 'communication':
+      return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      );
+    case 'operational':
+      return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      );
+    case 'monitoring':
+    case 'warning':
+      return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      );
+    case 'verification':
+      return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+        </svg>
+      );
+    case 'recovery':
+      return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+      );
+    default:
+      return (
+        <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      );
+  }
 };
 
 const FlowNode = ({ node, onClick, isSelected }) => {
-  const style = STATUS_STYLES[node.status] || STATUS_STYLES.action;
-  const isCritical = node.status === 'critical';
-
-  // Build class string
-  const baseClasses = 'absolute transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer rounded-xl p-4';
-  const statusClasses = isCritical 
-    ? `${style.bg} ${style.text} shadow-lg ${style.pulseClass}` 
-    : `${style.bg} border-2 ${style.border} shadow-md`;
-  const selectedClass = isSelected ? 'ring-4 ring-blue-400' : '';
+  const config = STATUS_CONFIG[node.status] || STATUS_CONFIG.operational;
+  
+  // Get coordinates from node (backend provides these)
+  const x = node.x || node.position?.x || 0;
+  const y = node.y || node.position?.y || 0;
 
   return (
     <div
-      className={`${baseClasses} ${statusClasses} ${selectedClass}`}
+      data-testid={`flow-node-${node.id}`}
+      className={`absolute transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer rounded-xl p-4 ${
+        config.container
+      } ${config.pulse ? 'animate-pulse-glow' : ''} ${isSelected ? 'ring-4 ring-blue-400' : ''}`}
       style={{
-        left: `${node.x}px`,
-        top: `${node.y}px`,
+        left: `${x}px`,
+        top: `${y}px`,
         width: '240px',
         minHeight: '80px',
+        zIndex: 10,
       }}
       onClick={onClick}
     >
       <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 mt-0.5">
+        <div className="mt-0.5">
           <StatusIcon status={node.status} />
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className={`font-semibold text-sm leading-tight mb-1 ${isCritical ? 'text-white' : style.text}`}>
+        <div className="flex-1">
+          <h3 
+            className="font-semibold text-sm leading-tight break-words"
+            style={{ fontFamily: 'Inter, sans-serif' }}
+          >
             {node.title}
           </h3>
-          {node.description && (
-            <p className={`text-xs leading-relaxed ${isCritical ? 'text-white opacity-90' : 'text-slate-600'}`}>
-              {node.description.length > 100 ? `${node.description.substring(0, 100)}...` : node.description}
-            </p>
-          )}
         </div>
       </div>
     </div>
