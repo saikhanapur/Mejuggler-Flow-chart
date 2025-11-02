@@ -200,53 +200,143 @@ const DetailPanel = ({ node, processId, onClose, onUpdate, readOnly = false, acc
           )}
         </div>
 
-        {/* Sub-steps */}
-        {node.subSteps && node.subSteps.length > 0 && (
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Process Steps</label>
-            <ul className="space-y-2">
-              {node.subSteps.map((step, idx) => (
-                <li key={idx} className="text-sm text-slate-700 flex items-start gap-2 leading-relaxed">
-                  <span className="text-blue-600 font-bold mt-0.5">→</span>
-                  {step}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Current vs Ideal State */}
-        {(node.currentState || node.idealState) && (
+        {/* Operational Details - Intelligent, Non-Repetitive */}
+        {node.operationalDetails && (
           <div className="space-y-4">
-            {node.currentState && (
-              <div className="bg-slate-50 rounded-lg p-4">
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Current State</label>
-                <div className="text-sm text-slate-700 leading-relaxed">{node.currentState}</div>
+            {/* Purpose - Only if different from title/description */}
+            {node.operationalDetails.purpose && 
+             node.operationalDetails.purpose !== node.title && 
+             node.operationalDetails.purpose !== node.description && (
+              <div className="bg-blue-50 rounded-lg p-4">
+                <label className="block text-xs font-semibold text-blue-700 uppercase tracking-wide mb-2">Purpose</label>
+                <div className="text-sm text-blue-800 leading-relaxed">{node.operationalDetails.purpose}</div>
               </div>
             )}
-            
-            {node.idealState && (
-              <div className="bg-emerald-50 rounded-lg p-4">
-                <label className="block text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-2">Ideal State</label>
-                <div className="text-sm text-emerald-800 leading-relaxed">{node.idealState}</div>
+
+            {/* Specific Actions - Only if provides new information */}
+            {node.operationalDetails.specificActions && 
+             node.operationalDetails.specificActions.length > 0 && (
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Specific Actions</label>
+                <ul className="space-y-2">
+                  {node.operationalDetails.specificActions.map((action, idx) => (
+                    <li key={idx} className="text-sm text-slate-700 flex items-start gap-2 leading-relaxed">
+                      <span className="text-blue-600 font-bold mt-0.5">→</span>
+                      {action}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Contact Info - Only if provided */}
+            {node.operationalDetails.contactInfo && 
+             Object.keys(node.operationalDetails.contactInfo).length > 0 && (
+              <div className="bg-slate-50 rounded-lg p-4">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-3">Contact Information</label>
+                <div className="space-y-2 text-sm">
+                  {Object.entries(node.operationalDetails.contactInfo).map(([key, value]) => (
+                    <div key={key} className="flex justify-between">
+                      <span className="text-slate-600 font-medium">{key}:</span>
+                      <span className="text-slate-800">{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Timeline - Only if specified */}
+            {node.operationalDetails.timeline && (
+              <div className="bg-amber-50 rounded-lg p-4">
+                <label className="block text-xs font-semibold text-amber-700 uppercase tracking-wide mb-2">Timeline</label>
+                <div className="text-sm text-amber-800 leading-relaxed">{node.operationalDetails.timeline}</div>
+              </div>
+            )}
+
+            {/* Gap Analysis - Only if meaningful */}
+            {node.operationalDetails.gap && 
+             node.operationalDetails.gap.toLowerCase() !== 'none' && 
+             node.operationalDetails.gap.toLowerCase() !== 'no gap' && (
+              <div className="bg-rose-50 border-l-4 border-rose-500 rounded-lg p-4">
+                <label className="block text-xs font-semibold text-rose-900 uppercase tracking-wide mb-2">Gap Identified</label>
+                <div className="text-sm text-rose-800 leading-relaxed">{node.operationalDetails.gap}</div>
+              </div>
+            )}
+
+            {/* Current vs Ideal State - Only if different */}
+            {(node.operationalDetails.currentState || node.operationalDetails.idealState) && (
+              <div className="space-y-3">
+                {node.operationalDetails.currentState && (
+                  <div className="bg-slate-50 rounded-lg p-4">
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Current State</label>
+                    <div className="text-sm text-slate-700 leading-relaxed">{node.operationalDetails.currentState}</div>
+                  </div>
+                )}
+                
+                {node.operationalDetails.idealState && 
+                 node.operationalDetails.idealState !== node.operationalDetails.currentState && (
+                  <div className="bg-emerald-50 rounded-lg p-4">
+                    <label className="block text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-2">Ideal State</label>
+                    <div className="text-sm text-emerald-800 leading-relaxed">{node.operationalDetails.idealState}</div>
+                  </div>
+                )}
               </div>
             )}
           </div>
         )}
 
-        {/* Gap */}
-        {node.gap && (
-          <div className="bg-rose-50 border-l-4 border-rose-500 rounded-lg p-4">
-            <label className="block text-xs font-semibold text-rose-900 uppercase tracking-wide mb-2">Gap Identified</label>
-            <div className="text-sm text-rose-800 leading-relaxed">{node.gap}</div>
-            {node.impact && (
-              <div className="mt-3">
-                <Badge variant="destructive" className="text-xs">
-                  Impact: {node.impact}
-                </Badge>
+        {/* Fallback: Legacy fields for backward compatibility */}
+        {!node.operationalDetails && (
+          <>
+            {/* Sub-steps */}
+            {node.subSteps && node.subSteps.length > 0 && (
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Process Steps</label>
+                <ul className="space-y-2">
+                  {node.subSteps.map((step, idx) => (
+                    <li key={idx} className="text-sm text-slate-700 flex items-start gap-2 leading-relaxed">
+                      <span className="text-blue-600 font-bold mt-0.5">→</span>
+                      {step}
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
-          </div>
+
+            {/* Current vs Ideal State */}
+            {(node.currentState || node.idealState) && (
+              <div className="space-y-4">
+                {node.currentState && (
+                  <div className="bg-slate-50 rounded-lg p-4">
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Current State</label>
+                    <div className="text-sm text-slate-700 leading-relaxed">{node.currentState}</div>
+                  </div>
+                )}
+                
+                {node.idealState && (
+                  <div className="bg-emerald-50 rounded-lg p-4">
+                    <label className="block text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-2">Ideal State</label>
+                    <div className="text-sm text-emerald-800 leading-relaxed">{node.idealState}</div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Gap */}
+            {node.gap && (
+              <div className="bg-rose-50 border-l-4 border-rose-500 rounded-lg p-4">
+                <label className="block text-xs font-semibold text-rose-900 uppercase tracking-wide mb-2">Gap Identified</label>
+                <div className="text-sm text-rose-800 leading-relaxed">{node.gap}</div>
+                {node.impact && (
+                  <div className="mt-3">
+                    <Badge variant="destructive" className="text-xs">
+                      Impact: {node.impact}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         )}
 
         {/* Edit/Save Button */}
