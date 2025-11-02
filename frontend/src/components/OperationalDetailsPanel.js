@@ -260,8 +260,6 @@ const OperationalDetailsPanel = ({ node, onClose }) => {
             <p className="text-sm text-rose-800 leading-relaxed">{details.gap}</p>
           </div>
         )}
-          </div>
-        )}
 
         {/* No details message */}
         {!hasAnyDetails && (
