@@ -1042,6 +1042,120 @@ class BackendTester:
         except Exception as e:
             self.log_result("Error Handling (Missing Fields)", False, f"Error: {str(e)}")
 
+    def test_eroad_flowchart_coordinate_enforcement(self):
+        """Test EROAD-Style Flowchart Coordinate Enforcement after Fix #1"""
+        print("\n🎯 CRITICAL: Testing EROAD Flowchart Coordinate Enforcement...")
+        
+        # Use the exact 9-step document from the review request
+        test_document = """Business Continuity: System Outage Response
+
+1. Identify Outage - Monitor systems and detect failures
+2. Notify Supervisor - Call on-duty manager immediately  
+3. Setup BCP Tracking - Create incident timeline
+4. Contact Stakeholders - Email all affected teams
+5. Begin Manual Operations - Switch to backup procedures
+6. Monitor Status - Check every 30 minutes
+7. Test Restoration - Verify services operational
+8. Notify Restoration - Inform all parties
+9. Resume Operations - Return to normal workflows
+
+Contacts:
+- IT Support: 0800 123 456
+- Manager: 0800 789 012"""
+        
+        try:
+            payload = {
+                "text": test_document,
+                "inputType": "document"
+            }
+            
+            response = self.session.post(f"{self.base_url}/process/eroad-style", 
+                                       json=payload, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Verification Checklist from review request:
+                
+                # 1. Verify response contains processes array
+                if 'processes' not in result or not result['processes']:
+                    self.log_result("EROAD Coordinate Enforcement", False, 
+                                  "Response missing 'processes' array")
+                    return
+                
+                process = result['processes'][0]
+                nodes = process.get('nodes', [])
+                
+                # 2. Verify response contains 7-9 nodes (not 1!)
+                node_count = len(nodes)
+                if node_count < 7 or node_count > 9:
+                    self.log_result("EROAD Coordinate Enforcement", False, 
+                                  f"Expected 7-9 nodes, got {node_count} nodes")
+                    return
+                
+                # 3. CRITICAL: Check ALL nodes have EXACTLY x=330
+                x_coordinate_issues = []
+                for i, node in enumerate(nodes):
+                    x_coord = node.get('x')
+                    if x_coord != 330:
+                        x_coordinate_issues.append(f"Node {i}: x={x_coord} (expected 330)")
+                
+                if x_coordinate_issues:
+                    self.log_result("EROAD Coordinate Enforcement", False, 
+                                  f"X coordinate violations: {x_coordinate_issues}")
+                    return
+                
+                # 4. CRITICAL: Check Y coordinates are 0, 150, 300, 450, 600, 750, 900, 1050, 1200
+                expected_y_coords = [i * 150 for i in range(node_count)]  # 0, 150, 300, etc.
+                y_coordinate_issues = []
+                for i, node in enumerate(nodes):
+                    y_coord = node.get('y')
+                    expected_y = expected_y_coords[i]
+                    if y_coord != expected_y:
+                        y_coordinate_issues.append(f"Node {i}: y={y_coord} (expected {expected_y})")
+                
+                if y_coordinate_issues:
+                    self.log_result("EROAD Coordinate Enforcement", False, 
+                                  f"Y coordinate violations: {y_coordinate_issues}")
+                    return
+                
+                # 5. Verify no X variance (no 230px, 360px, etc.)
+                unique_x_coords = set(node.get('x') for node in nodes)
+                if len(unique_x_coords) != 1 or 330 not in unique_x_coords:
+                    self.log_result("EROAD Coordinate Enforcement", False, 
+                                  f"X coordinate variance detected: {unique_x_coords}")
+                    return
+                
+                # 6. Confirm quickReference structure present
+                quick_ref = process.get('quickReference')
+                if not quick_ref:
+                    self.log_result("EROAD Coordinate Enforcement", False, 
+                                  "Missing quickReference structure")
+                    return
+                
+                # 7. Confirm progressStages generated
+                progress_stages = process.get('progressStages')
+                if not progress_stages:
+                    self.log_result("EROAD Coordinate Enforcement", False, 
+                                  "Missing progressStages structure")
+                    return
+                
+                # All checks passed!
+                self.log_result("EROAD Coordinate Enforcement", True, 
+                              f"✅ ALL CRITICAL CHECKS PASSED: {node_count} nodes, all x=330, Y spacing=150, quickReference & progressStages present")
+                
+                # Log detailed coordinate verification for transparency
+                coord_summary = []
+                for i, node in enumerate(nodes):
+                    coord_summary.append(f"Node {i}: ({node.get('x')}, {node.get('y')})")
+                print(f"   📍 Coordinate Verification: {', '.join(coord_summary)}")
+                
+            else:
+                self.log_result("EROAD Coordinate Enforcement", False, 
+                              f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("EROAD Coordinate Enforcement", False, f"Error: {str(e)}")
+
     def test_edge_cases_ai_processing(self):
         """Test AI Processing with Edge Cases"""
         print("\n🎯 Testing AI Processing Edge Cases...")
