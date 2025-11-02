@@ -788,6 +788,14 @@ Return valid JSON only."""
                     if node.get("isLoop") and target_id == node.get("loopBackTo"):
                         edge["type"] = "dashed"
                     
+                    # Add label for decision branches
+                    if node.get("isDecisionPoint") and node.get("decisionOptions"):
+                        decision_opts = node.get("decisionOptions", {})
+                        if decision_opts.get("yes") == target_id:
+                            edge["label"] = "YES"
+                        elif decision_opts.get("no") == target_id:
+                            edge["label"] = "NO"
+                    
                     process["edges"].append(edge)
             
             # Add progress stage badges
