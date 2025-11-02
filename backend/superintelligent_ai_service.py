@@ -428,13 +428,21 @@ FULL DOCUMENT CONTEXT (for cross-reference):
 {document_text[:25000]}
 
 FOR EACH NODE, EXTRACT:
-1. **specificActions**: Concrete sub-steps (what exactly to do)
+1. **specificActions**: DETAILED HOW-TO STEPS (break down the action into specific instructions)
+   - Example: Instead of "Send notifications", provide ["Open email client", "Use template XYZ", "Send to distribution list ABC"]
+   - These should be MORE detailed than the node title
+   - If the node says "Notify stakeholders", actions should be "Draft email using template", "Send to council distribution list", "CC manager"
 2. **requiredData**: Input fields, information needed
 3. **contactInfo**: Names, phone numbers, emails (from reference section)
 4. **systems**: Software, tools, platforms mentioned
 5. **timeline**: Time limits, frequencies ("every 30 minutes", "within 2 hours")
 6. **communicationTemplates**: Email scripts, message templates (reference by name)
-7. **decisionCriteria**: For decision nodes, the YES/NO logic
+7. **decisionCriteria**: For decision nodes, provide human-readable explanation (not code!)
+   - ❌ BAD: {{"yes": "next_id", "no": "other_id"}}
+   - ✅ GOOD: "If GDS is confirmed down (no response for 15 minutes), proceed to BCP. Otherwise, resume normal operations."
+
+CRITICAL: specificActions must be DIFFERENT and MORE DETAILED than what's already in the node title/description.
+If the node is simple and has no substeps, leave specificActions as empty array [].
 
 BE SPECIFIC. Extract actual values from document, not placeholders.
 
