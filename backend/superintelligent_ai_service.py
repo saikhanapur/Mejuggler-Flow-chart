@@ -437,9 +437,18 @@ FOR EACH NODE, EXTRACT:
 4. **systems**: Software, tools, platforms mentioned
 5. **timeline**: Time limits, frequencies ("every 30 minutes", "within 2 hours")
 6. **communicationTemplates**: Email scripts, message templates (reference by name)
-7. **decisionCriteria**: For decision nodes, provide human-readable explanation (not code!)
-   - ❌ BAD: {{"yes": "next_id", "no": "other_id"}}
-   - ✅ GOOD: "If GDS is confirmed down (no response for 15 minutes), proceed to BCP. Otherwise, resume normal operations."
+**7. decisionCriteria (CRITICAL - HUMAN READABLE!):**
+For decision nodes, provide a PLAIN ENGLISH explanation of the decision logic.
+❌ WRONG: {"yes": "node_id", "no": "other_id"}
+❌ WRONG: {"yes": "start_documentation", "no": "emergency_relocation"}
+✅ CORRECT: "If the user is safe and can communicate, proceed with documentation. If the user cannot speak or is in immediate danger, initiate emergency relocation protocol."
+✅ CORRECT: "Check if system is restored. If GDS responds within 15 minutes, resume normal operations. If no response after 15 minutes, continue manual operations."
+
+The decision criteria should be a SENTENCE or PARAGRAPH explaining:
+- What condition is being checked
+- What happens in the YES case
+- What happens in the NO case
+- Any time limits or thresholds
 
 CRITICAL: specificActions must be DIFFERENT and MORE DETAILED than what's already in the node title/description.
 If the node is simple and has no substeps, leave specificActions as empty array [].
