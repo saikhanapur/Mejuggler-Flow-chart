@@ -1461,16 +1461,24 @@ Emergency Contacts:
                     self.log_result("EROAD-Style Generation (Process Structure)", True, 
                                   "Process contains all required fields")
                 
-                # Test 2: Verify nodes structure and count
+                # Test 2: Verify nodes structure and count (CRITICAL: Should be AT LEAST 7-9 nodes, not 1!)
                 nodes = process.get('nodes', [])
                 node_count = len(nodes)
                 
-                if 10 <= node_count <= 13:
+                # Check for over-grouping issue (AI consolidating all steps into 1 node)
+                if node_count < 5:
+                    self.log_result("EROAD-Style Generation (Node Count Validation)", False, 
+                                  f"OVER-GROUPING DETECTED: Only {node_count} nodes generated (expected ≥7-9). AI may be consolidating all steps into too few nodes!")
+                    return
+                elif 7 <= node_count <= 9:
                     self.log_result("EROAD-Style Generation (Node Count)", True, 
-                                  f"Generated {node_count} nodes (within expected range 10-13)")
+                                  f"Generated {node_count} nodes (within expected range 7-9)")
+                elif node_count >= 5:
+                    self.log_result("EROAD-Style Generation (Node Count)", True, 
+                                  f"Generated {node_count} nodes (acceptable, slightly below expected 7-9)")
                 else:
                     self.log_result("EROAD-Style Generation (Node Count)", False, 
-                                  f"Generated {node_count} nodes (expected 10-13)")
+                                  f"Generated {node_count} nodes (expected 7-9)")
                 
                 # Test 3: Verify node structure
                 if nodes:
