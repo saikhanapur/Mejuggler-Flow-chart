@@ -126,6 +126,22 @@ OUTPUT STRUCTURE:
   ]
 }}
 
+STATUS CLASSIFICATION GUIDE (CRITICAL - Choose Carefully):
+- **critical**: Urgent, time-sensitive, high-impact failures (e.g., "Emergency Response", "System Down", "Call 111")
+- **action**: Steps requiring immediate action/decision (e.g., "Notify Manager", "Initiate BCP", "Contact Stakeholders")
+- **communication**: Sending information to stakeholders (e.g., "Email Teams", "Broadcast Alert", "Update Status")
+- **operational**: Standard operational tasks (e.g., "Manual Dispatch", "Create Jobs", "Update Records")
+- **monitoring**: Checking, tracking, or monitoring status (e.g., "Check Every 30 Min", "Track Progress", "Monitor Systems")
+- **verification**: Testing, confirming, or verifying (e.g., "Test Systems", "Verify Resolution", "Confirm Restoration")
+- **recovery**: Final restoration or return to normal (e.g., "Resume Operations", "Close Incident", "Return to BAU")
+      "dependencies": ["What must happen first"],
+      "x": 330,
+      "y": 0,
+      "connections": ["next_node_id"]
+    }}
+  ]
+}}
+
 STATUS CLASSIFICATION GUIDE:
 - **critical**: Emergencies, outages, system down, immediate action required
 - **action**: Tasks, setup, configuration, operational work
