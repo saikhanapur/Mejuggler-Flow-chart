@@ -2436,6 +2436,9 @@ Emergency Contacts:
         print("\n🆕 NEW FEATURES - Voice Transcription API...")
         self.test_voice_transcription_api()
         
+        print("\n🎨 NEW FEATURES - EROAD-Style Flowchart Generation...")
+        self.test_eroad_style_flowchart_generation()
+        
         print("\n📢 NEW FEATURES - Publish/Unpublish Workflow...")
         self.test_publish_unpublish_workflow()
         
