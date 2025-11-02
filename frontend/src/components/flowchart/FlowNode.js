@@ -113,8 +113,9 @@ const FlowNode = ({ node, onClick, isSelected }) => {
   const x = node.x || node.position?.x || 0;
   const y = node.y || node.position?.y || 0;
 
-  // Check if this is a decision point
+  // Check node type
   const isDecision = node.isDecisionPoint || false;
+  const isMerge = node.isMergePoint || false;
 
   if (isDecision) {
     // Render as diamond for decision nodes
@@ -178,13 +179,15 @@ const FlowNode = ({ node, onClick, isSelected }) => {
     );
   }
 
-  // Regular rectangular node
+  // Regular rectangular node (with merge indicator if applicable)
   return (
     <div
       data-testid={`flow-node-${node.id}`}
       className={`absolute transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer rounded-xl p-4 ${
         config.container
-      } ${config.pulse ? 'animate-pulse-glow' : ''} ${isSelected ? 'ring-4 ring-blue-400' : ''}`}
+      } ${config.pulse ? 'animate-pulse-glow' : ''} ${isSelected ? 'ring-4 ring-blue-400' : ''} ${
+        isMerge ? 'ring-2 ring-purple-400 ring-offset-2' : ''
+      }`}
       style={{
         left: `${x}px`,
         top: `${y}px`,
@@ -194,6 +197,13 @@ const FlowNode = ({ node, onClick, isSelected }) => {
       }}
       onClick={onClick}
     >
+      {/* Merge indicator badge */}
+      {isMerge && (
+        <div className="absolute -top-3 -right-3 bg-purple-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
+          MERGE
+        </div>
+      )}
+      
       <div className="flex items-start gap-3">
         <div className="mt-0.5">
           <StatusIcon status={node.status} />
