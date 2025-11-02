@@ -70,22 +70,33 @@ Decision Points: {decisions}
 YOUR TASK:
 Transform this into 10-15 workflow nodes for an interactive flowchart.
 
-GROUPING RULES (AGGRESSIVE SIMPLIFICATION):
-1. **Combine sequential steps** that serve the same purpose
+GROUPING RULES (STRATEGIC SIMPLIFICATION - NOT OVER-CONSOLIDATION):
+1. **Combine ONLY closely related sequential steps** that serve the same immediate purpose
    Example: "Email councils", "Email MCs", "Send Modica" → "Stakeholder Communications"
+   WRONG: Don't combine "Setup", "Execute", "Monitor", "Close" into one node
 
-2. **Group setup activities** into single initialization nodes
-   Example: "Onshore setup", "Offshore setup", "Lighthouse setup" → "BCP Setup & Tracking"
+2. **Group PARALLEL setup activities** into single initialization nodes
+   Example: "Onshore setup", "Offshore setup" → "Dual-Site BCP Setup"
+   BUT: Keep them separate if they're sequential or have different actors
 
-3. **Consolidate repetitive monitoring** into single loop nodes
-   Example: "Check every 30 minutes" → "Ongoing Status Monitoring"
+3. **Consolidate ONLY repetitive monitoring loops**
+   Example: "Check every 30 minutes until resolved" → "Ongoing Status Monitoring"
 
-4. **Decision points** → Keep as distinct nodes ONLY if they branch the flow significantly
+4. **KEEP decision points as separate nodes** if they branch the flow
 
-5. **Final activities** → Group cleanup, documentation, reporting into single nodes
+5. **Final activities can be grouped** if they're truly cleanup steps
    Example: "Create jobs", "Reallocate tasks", "Resume BAU" → "Return to Normal Operations"
 
-CRITICAL: Aim for 10-13 nodes maximum. Each node = strategic phase, not granular task.
+CRITICAL RULES TO PREVENT OVER-GROUPING:
+- If the original document has 9 distinct steps → Target 8-11 nodes (not 1!)
+- NEVER combine more than 3 original steps into one node
+- Each phase of the process should be a separate node (Setup, Execution, Monitoring, Recovery)
+- When in doubt, KEEP IT SEPARATE
+
+TARGET: Create between 8-13 nodes based on input complexity
+- 5-10 original steps → 5-8 nodes
+- 11-20 original steps → 9-13 nodes
+- Always maintain the logical flow and phases
 
 OUTPUT STRUCTURE:
 {{
