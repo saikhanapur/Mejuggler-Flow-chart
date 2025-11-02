@@ -81,6 +81,16 @@ const OperationalDetailsPanel = ({ node, onClose }) => {
 
       {/* Content */}
       <div className="p-6 space-y-6">
+        {/* Purpose - Only if provides new insight */}
+        {hasMeaningfulPurpose && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 className="text-sm font-bold text-blue-900 uppercase tracking-wide mb-2">
+              Purpose
+            </h3>
+            <p className="text-sm text-blue-800 leading-relaxed">{details.purpose}</p>
+          </div>
+        )}
+
         {/* Sub-steps */}
         {node.subSteps && node.subSteps.length > 0 && (
           <div>
@@ -112,8 +122,8 @@ const OperationalDetailsPanel = ({ node, onClose }) => {
           </div>
         )}
 
-        {/* Specific Actions */}
-        {details.specificActions && details.specificActions.length > 0 && (
+        {/* Specific Actions - Only if different from title/description */}
+        {hasMeaningfulActions && (
           <div>
             <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3">
               Specific Actions Required
