@@ -178,6 +178,14 @@ Return ONLY valid JSON."""
         # Parse response
         enhanced = self._parse_json_response(response)
         
+        # ============ FIX #1: FORCE CONSISTENT POSITIONING ============
+        # Normalize all node coordinates to ensure visual consistency
+        # X = 330 (center alignment), Y = index * 150 (vertical spacing)
+        for i, node in enumerate(enhanced.get('nodes', [])):
+            node['x'] = 330  # Force center alignment
+            node['y'] = i * 150  # Consistent vertical spacing (150px between nodes)
+        # ============ END FIX #1 ============
+        
         # Validate
         if not enhanced.get('nodes'):
             raise ValueError("No nodes generated in enhancement")
