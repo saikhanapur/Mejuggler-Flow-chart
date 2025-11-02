@@ -320,11 +320,19 @@ const EROADFlowchart = ({ process, onNodeClick }) => {
     }
   };
   
-  // Extract quick reference data
+  // ============ FIX #4: VALIDATE QUICK REFERENCE DATA ============
+  // Defensive validation to prevent rendering errors with missing/malformed data
   const quickRef = process.quickReference || {};
-  const criticalActions = quickRef.criticalActions || [];
-  const keyTimings = quickRef.keyTimings || [];
-  const emergencyContacts = quickRef.emergencyContacts || {};
+  const criticalActions = Array.isArray(quickRef.criticalActions) 
+    ? quickRef.criticalActions 
+    : [];
+  const keyTimings = Array.isArray(quickRef.keyTimings)
+    ? quickRef.keyTimings
+    : [];
+  const emergencyContacts = (typeof quickRef.emergencyContacts === 'object' && quickRef.emergencyContacts !== null && !Array.isArray(quickRef.emergencyContacts))
+    ? quickRef.emergencyContacts
+    : {};
+  // ============ END FIX #4 ============
   
   // Calculate canvas height based on nodes
   const maxY = Math.max(...(process.nodes || []).map(n => n.y || 0)) + 200;
