@@ -147,14 +147,15 @@ const FlowNode = ({ node, onClick, isSelected }) => {
   );
 };
 
-// Connection Line Component
-const ConnectionLine = ({ from, to, color, dashed = false }) => {
-  // Simple vertical line with arrow
+// Connection Line Components - Smart Routing
+const SimpleVerticalLine = ({ from, to, color, dashed }) => {
+  const height = to.y - from.y - 60;
+  
   const lineStyle = {
     left: `${from.x + 120}px`, // Center of 240px wide node
-    top: `${from.y + 60}px`, // Bottom of node (assuming ~60px height)
+    top: `${from.y + 60}px`,
     width: '2px',
-    height: `${to.y - from.y - 60}px`,
+    height: `${height}px`,
     backgroundColor: dashed ? 'transparent' : color,
     backgroundImage: dashed 
       ? `repeating-linear-gradient(${color} 0px, ${color} 4px, transparent 4px, transparent 8px)`
@@ -173,6 +174,94 @@ const ConnectionLine = ({ from, to, color, dashed = false }) => {
     <>
       <div className="absolute" style={lineStyle} />
       {!dashed && <div className="absolute w-0 h-0" style={arrowStyle} />}
+    </>
+  );
+};
+
+const DecisionBranchLine = ({ from, to, color, dashed }) => {
+  // L-shaped connection: vertical down, horizontal across, vertical down to target
+  const midY = from.y + 80;
+  const verticalHeight1 = midY - from.y - 60;
+  const horizontalWidth = Math.abs(to.x - from.x);
+  const verticalHeight2 = to.y - midY;
+  
+  const isLeftBranch = to.x < from.x;
+  
+  return (
+    <>
+      {/* Vertical segment 1: from source node down */}
+      <div 
+        className="absolute" 
+        style={{
+          left: `${from.x + 120}px`,
+          top: `${from.y + 60}px`,
+          width: '2px',
+          height: `${verticalHeight1}px`,
+          backgroundColor: dashed ? 'transparent' : color,
+          backgroundImage: dashed 
+            ? `repeating-linear-gradient(${color} 0px, ${color} 4px, transparent 4px, transparent 8px)`
+            : 'none',
+        }}
+      />
+      
+      {/* Horizontal segment: across */}
+      <div 
+        className="absolute" 
+        style={{
+          left: isLeftBranch ? `${to.x + 120}px` : `${from.x + 120}px`,
+          top: `${midY}px`,
+          width: `${horizontalWidth}px`,
+          height: '2px',
+          backgroundColor: dashed ? 'transparent' : color,
+          backgroundImage: dashed 
+            ? `repeating-linear-gradient(to right, ${color} 0px, ${color} 4px, transparent 4px, transparent 8px)`
+            : 'none',
+        }}
+      />
+      
+      {/* Vertical segment 2: down to target */}
+      <div 
+        className="absolute" 
+        style={{
+          left: `${to.x + 120}px`,
+          top: `${midY}px`,
+          width: '2px',
+          height: `${verticalHeight2}px`,
+          backgroundColor: dashed ? 'transparent' : color,
+          backgroundImage: dashed 
+            ? `repeating-linear-gradient(${color} 0px, ${color} 4px, transparent 4px, transparent 8px)`
+            : 'none',
+        }}
+      />
+      
+      {/* Arrow at target */}
+      {!dashed && (
+        <div 
+          className="absolute w-0 h-0" 
+          style={{
+            left: `${to.x + 117}px`,
+            top: `${to.y - 10}px`,
+            borderLeft: '4px solid transparent',
+            borderRight: '4px solid transparent',
+            borderTop: `8px solid ${color}`,
+          }}
+        />
+      )}
+    </>
+  );
+};
+
+const ConnectionLine = ({ from, to, color, dashed = false }) => {
+  const deltaX = Math.abs(to.x - from.x);
+  
+  // If nodes are vertically aligned (deltaX < 50px), use simple vertical line
+  if (deltaX < 50) {
+    return <SimpleVerticalLine from={from} to={to} color={color} dashed={dashed} />;
+  }
+  
+  // If nodes are horizontally offset (deltaX >= 50px), use L-shaped branch
+  return <DecisionBranchLine from={from} to={to} color={color} dashed={dashed} />;
+};
     </>
   );
 };
