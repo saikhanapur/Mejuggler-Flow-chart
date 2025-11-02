@@ -9,7 +9,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import Dashboard from './components/Dashboard';
 import ProcessCreator from './components/ProcessCreator';
-import FlowchartEditor from './components/FlowchartEditor';
+import FlowchartCanvas from './components/flowchart/FlowchartCanvas';
 import HTMLFlowchartViewer from './components/HTMLFlowchartViewer';
 import TemplateGallery from './components/TemplateGallery';
 import StudioDashboard from './components/StudioDashboard';
