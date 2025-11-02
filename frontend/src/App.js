@@ -165,7 +165,7 @@ const AppContent = () => {
               onWorkspaceChange={setCurrentWorkspace}
               onWorkspacesUpdate={loadWorkspaces}
             />
-            <FlowchartEditor theme={theme} />
+            <FlowchartCanvas theme={theme} />
           </ProtectedRoute>
         } />
         
