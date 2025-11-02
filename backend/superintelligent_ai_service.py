@@ -711,10 +711,15 @@ Return valid JSON only."""
                     "criticalActions": [n["title"] for n in enhanced["nodes"] if n.get("status") == "critical"],
                     "keyTimings": extracted.get("timings", []),
                     "emergencyContacts": extracted.get("contacts", {})
-                }
+                },
+                "progressStages": []  # Will be populated based on node positions
             }
             
-            # Process nodes
+            # Process nodes and identify progress stages
+            critical_nodes = []
+            monitoring_nodes = []
+            recovery_nodes = []
+            
             for node in enhanced.get("nodes", []):
                 processed_node = {
                     "id": node["id"],
@@ -722,6 +727,8 @@ Return valid JSON only."""
                     "description": node.get("details", ""),
                     "type": self._map_status_to_type(node.get("status")),
                     "status": node.get("status", "operational"),
+                    "x": node.get("x", 330),
+                    "y": node.get("y", 0),
                     "position": {"x": node.get("x", 0), "y": node.get("y", 0)},
                     "actors": node.get("contacts", []),
                     "subSteps": node.get("actions", []),
@@ -748,6 +755,14 @@ Return valid JSON only."""
                 }
                 process["nodes"].append(processed_node)
                 
+                # Track nodes by status for progress stages
+                if node.get("status") == "critical":
+                    critical_nodes.append(node)
+                elif node.get("status") in ["monitoring", "verification"]:
+                    monitoring_nodes.append(node)
+                elif node.get("status") in ["recovery"]:
+                    recovery_nodes.append(node)
+                
                 # Create edges
                 for target_id in node.get("connections", []):
                     process["edges"].append({
@@ -756,6 +771,37 @@ Return valid JSON only."""
                         "target": target_id,
                         "label": None
                     })
+            
+            # Add progress stage badges
+            if critical_nodes:
+                first_critical = min(critical_nodes, key=lambda n: n.get("y", 0))
+                process["progressStages"].append({
+                    "type": "immediate",
+                    "x": 630,
+                    "y": first_critical.get("y", 0) + 5,
+                    "title": "IMMEDIATE ACTION",
+                    "description": "Critical response required - all teams coordinate"
+                })
+            
+            if monitoring_nodes:
+                first_monitoring = min(monitoring_nodes, key=lambda n: n.get("y", 0))
+                process["progressStages"].append({
+                    "type": "ongoing",
+                    "x": 630,
+                    "y": first_monitoring.get("y", 0) + 5,
+                    "title": "ONGOING",
+                    "description": "Continue operations until resolution confirmed"
+                })
+            
+            if recovery_nodes:
+                first_recovery = min(recovery_nodes, key=lambda n: n.get("y", 0))
+                process["progressStages"].append({
+                    "type": "complete",
+                    "x": 630,
+                    "y": first_recovery.get("y", 0) + 5,
+                    "title": "RECOVERY COMPLETE",
+                    "description": "All systems operational, timeline documented"
+                })
             
             logger.info(f"✅ EROAD-style flowchart complete: {len(process['nodes'])} nodes")
             return {"processes": [process], "multipleProcesses": False}
