@@ -43,7 +43,7 @@ const OperationalDetailsPanel = ({ node, onClose }) => {
     hasIdealState;
 
   return (
-    <div className="fixed right-0 top-0 h-full w-96 bg-white shadow-2xl z-50 overflow-y-auto border-l border-gray-200">
+    <div className="fixed right-0 top-16 h-[calc(100vh-4rem)] w-96 bg-white shadow-2xl z-50 overflow-y-auto border-l border-gray-200">
       {/* Header */}
       <div className="sticky top-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 z-10">
         <div className="flex items-start justify-between">
