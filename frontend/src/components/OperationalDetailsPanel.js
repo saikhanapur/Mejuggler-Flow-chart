@@ -142,21 +142,31 @@ const OperationalDetailsPanel = ({ node, onClose }) => {
           </div>
         )}
 
-        {/* Specific Actions - Only if different from title/description */}
+        {/* Specific Actions - Only if different from title/description/substeps */}
         {hasMeaningfulActions && (
           <div>
             <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3">
               Specific Actions Required
             </h3>
             <div className="space-y-2">
-              {details.specificActions.map((action, i) => (
-                <div key={i} className="flex items-start bg-gray-50 rounded-lg p-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded bg-indigo-600 text-white flex items-center justify-center text-xs font-bold mt-0.5">
-                    {i + 1}
+              {details.specificActions
+                .filter(action => {
+                  // Filter out duplicates with substeps
+                  if (node.subSteps) {
+                    return !node.subSteps.some(substep => 
+                      substep.toLowerCase().trim() === action.toLowerCase().trim()
+                    );
+                  }
+                  return true;
+                })
+                .map((action, i) => (
+                  <div key={i} className="flex items-start bg-gray-50 rounded-lg p-3">
+                    <div className="flex-shrink-0 w-6 h-6 rounded bg-indigo-600 text-white flex items-center justify-center text-xs font-bold mt-0.5">
+                      {i + 1}
+                    </div>
+                    <div className="ml-3 text-sm text-gray-800">{action}</div>
                   </div>
-                  <div className="ml-3 text-sm text-gray-800">{action}</div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         )}
