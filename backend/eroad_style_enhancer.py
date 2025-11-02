@@ -225,6 +225,19 @@ CRITICAL: PREVENT OVER-GROUPING
 - Each major phase/stage must be its own node
 - Only combine steps that happen simultaneously or are sub-tasks of the same action
 
+PROGRESS STAGES (REQUIRED):
+Analyze the timeline and create 2-4 progress stages that divide the process chronologically:
+- **IMMEDIATE ACTION**: Steps in first 0-15 minutes (position y near first critical nodes)
+- **ONGOING**: Steps that loop/repeat (position y in middle of process)  
+- **RECOVERY COMPLETE**: Final restoration steps (position y near last nodes)
+- Use timing indicators from document (e.g., "Every 30 minutes", "Within 2 hours")
+
+QUICK REFERENCE (REQUIRED):
+Extract from the document:
+- **criticalActions**: 3-5 most important immediate actions
+- **keyTimings**: Time-sensitive checkpoints (e.g., "Every 30 min: Update teams")
+- **emergencyContacts**: Key contacts with phone/email (from document appendix/contact section)
+
 Return ONLY valid JSON."""
         
         message = UserMessage(text=prompt)
