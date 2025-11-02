@@ -1401,25 +1401,27 @@ class BackendTester:
             self.log_result("Voice Transcription (Missing File)", False, f"Error: {str(e)}")
 
     def test_eroad_style_flowchart_generation(self):
-        """Test EROAD-style flowchart generation endpoint with sample document"""
-        print("\n🎨 Testing EROAD-Style Flowchart Generation...")
+        """Test EROAD-style flowchart generation with node count validation"""
+        print("\n🎯 Testing EROAD-Style Flowchart Generation with Node Count Validation...")
         
-        # Sample document from the review request
-        sample_document = """Business Continuity Procedure: System Outage Response
+        # Test document from review request (9 steps) - testing for over-grouping fix
+        test_document = """FIRST Security Roadside Assistance Request
 
-1. Identify the outage - Check monitoring systems
-2. Notify supervisor - Call on-duty manager immediately
-3. Setup BCP tracking - Create incident timeline in system
-4. Contact stakeholders - Email all affected teams
-5. Begin manual operations - Switch to backup procedures
-6. Monitor status - Check every 30 minutes for restoration
-7. Test system - Verify services are operational
-8. Notify restoration - Inform all parties systems are back
-9. Resume normal operations - Return to standard workflows
+Steps:
+1. Receive Officer Assistance Call - NOC receives call from field officer requesting roadside assistance
+2. Officer Safety Assessment - Confirm officer welfare and check if officer reports being harmed
+3. Emergency Services Response - If officer harmed, stay on line and call 111, refer to HSE framework
+4. Collect Officer & Vehicle Information - Confirm officer name, phone, car license, vehicle issue, location
+5. Contact Custom Fleet Services - Call Custom Fleet on 0800 11 63 63, identify as FIRST Security
+6. Custom Fleet Response Confirmed - Receive job number and ETA from Custom Fleet
+7. Contact AA Roadside (Backup) - If Custom Fleet unavailable, contact AA Roadside
+8. Management Debrief & Follow-up - NOC contacts on-duty manager, provides situation debrief
+9. Incident Resolution & Documentation - Complete incident documentation, confirm resolution
 
 Emergency Contacts:
-- IT Support: 0800 123 456
-- On-call Manager: 0800 789 012"""
+- Custom Fleet: 0800 11 63 63
+- AA Roadside: 0800 500 222
+- Emergency Services: 111"""
         
         try:
             payload = {
