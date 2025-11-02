@@ -1080,5 +1080,10 @@ Return valid JSON only."""
             "systems": [],
             "decisionCriteria": None,
             "emailTemplates": [],
+            "riskFactors": [],
+            "successCriteria": None,
+            "estimatedDuration": None,
+            "dependencies": [],
+            "trainingRequired": None,
             "sourcePage": None
         }
