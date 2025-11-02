@@ -29,9 +29,12 @@ const ConnectionLine = ({ from, to, type = 'solid', label = null }) => {
   const toX = x2 + 120;
   const toY = y2; // Top of to node
 
-  // Use target node's status for color
+  // Use target node's status for color (standardized - always solid lines)
   const color = STATUS_COLORS[to.status] || STATUS_COLORS.operational;
-  const isDashed = type === 'dashed' || to.status === 'warning' || to.status === 'critical';
+  
+  // Only use dashed for loops (explicit type='dashed')
+  const isDashed = type === 'dashed';
+  const lineWidth = 2; // Standard width for all lines
 
   const deltaX = Math.abs(toX - fromX);
   const isVertical = deltaX < 50;
@@ -43,13 +46,13 @@ const ConnectionLine = ({ from, to, type = 'solid', label = null }) => {
 
     return (
       <>
-        {/* Vertical line */}
+        {/* Vertical line - ALWAYS SOLID unless explicit loop */}
         <div
           className="absolute pointer-events-none"
           style={{
             left: `${fromX - 1}px`,
             top: `${fromY}px`,
-            width: '2px',
+            width: `${lineWidth}px`,
             height: `${height}px`,
             backgroundColor: isDashed ? 'transparent' : color,
             backgroundImage: isDashed
@@ -96,13 +99,13 @@ const ConnectionLine = ({ from, to, type = 'solid', label = null }) => {
 
   return (
     <>
-      {/* Vertical segment 1 */}
+      {/* Vertical segment 1 - ALWAYS SOLID */}
       <div
         className="absolute pointer-events-none"
         style={{
           left: `${fromX - 1}px`,
           top: `${fromY}px`,
-          width: '2px',
+          width: `${lineWidth}px`,
           height: `${verticalHeight1}px`,
           backgroundColor: isDashed ? 'transparent' : color,
           backgroundImage: isDashed
@@ -111,14 +114,14 @@ const ConnectionLine = ({ from, to, type = 'solid', label = null }) => {
         }}
       />
 
-      {/* Horizontal segment */}
+      {/* Horizontal segment - ALWAYS SOLID */}
       <div
         className="absolute pointer-events-none"
         style={{
           left: horizontalWidth > 0 ? `${fromX}px` : `${toX}px`,
           top: `${midY - 1}px`,
           width: `${Math.abs(horizontalWidth)}px`,
-          height: '2px',
+          height: `${lineWidth}px`,
           backgroundColor: isDashed ? 'transparent' : color,
           backgroundImage: isDashed
             ? `repeating-linear-gradient(to right, ${color} 0, ${color} 4px, transparent 4px, transparent 8px)`
@@ -126,13 +129,13 @@ const ConnectionLine = ({ from, to, type = 'solid', label = null }) => {
         }}
       />
 
-      {/* Vertical segment 2 */}
+      {/* Vertical segment 2 - ALWAYS SOLID */}
       <div
         className="absolute pointer-events-none"
         style={{
           left: `${toX - 1}px`,
           top: `${midY}px`,
-          width: '2px',
+          width: `${lineWidth}px`,
           height: `${verticalHeight2}px`,
           backgroundColor: isDashed ? 'transparent' : color,
           backgroundImage: isDashed
