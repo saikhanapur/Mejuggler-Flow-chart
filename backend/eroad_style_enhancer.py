@@ -298,6 +298,13 @@ Return ONLY valid JSON."""
                 y_position += 150
         # ============ END FIX #1 ============
         
+        # Position progress badges relative to nodes
+        progress_stages = enhanced.get('progressStages', [])
+        if progress_stages:
+            for stage in progress_stages:
+                # Position badges on the right side at specified Y
+                stage['x'] = 630  # Right side of main flow
+        
         # Validate
         if not enhanced.get('nodes'):
             raise ValueError("No nodes generated in enhancement")
