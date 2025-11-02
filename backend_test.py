@@ -1515,27 +1515,25 @@ Contacts:
             self.log_result("Voice Transcription (Missing File)", False, f"Error: {str(e)}")
 
     def test_eroad_style_flowchart_generation(self):
-        """Test EROAD-style flowchart generation with node count validation"""
-        print("\n🎯 Testing EROAD-Style Flowchart Generation with Node Count Validation...")
+        """Test EROAD-Style Flowchart Coordinate Enforcement after Fix #1"""
+        print("\n🎯 CRITICAL: Testing EROAD Flowchart Coordinate Enforcement...")
         
-        # Test document from review request (9 steps) - testing for over-grouping fix
-        test_document = """FIRST Security Roadside Assistance Request
+        # Use the exact 9-step document from the review request
+        test_document = """Business Continuity: System Outage Response
 
-Steps:
-1. Receive Officer Assistance Call - NOC receives call from field officer requesting roadside assistance
-2. Officer Safety Assessment - Confirm officer welfare and check if officer reports being harmed
-3. Emergency Services Response - If officer harmed, stay on line and call 111, refer to HSE framework
-4. Collect Officer & Vehicle Information - Confirm officer name, phone, car license, vehicle issue, location
-5. Contact Custom Fleet Services - Call Custom Fleet on 0800 11 63 63, identify as FIRST Security
-6. Custom Fleet Response Confirmed - Receive job number and ETA from Custom Fleet
-7. Contact AA Roadside (Backup) - If Custom Fleet unavailable, contact AA Roadside
-8. Management Debrief & Follow-up - NOC contacts on-duty manager, provides situation debrief
-9. Incident Resolution & Documentation - Complete incident documentation, confirm resolution
+1. Identify Outage - Monitor systems and detect failures
+2. Notify Supervisor - Call on-duty manager immediately  
+3. Setup BCP Tracking - Create incident timeline
+4. Contact Stakeholders - Email all affected teams
+5. Begin Manual Operations - Switch to backup procedures
+6. Monitor Status - Check every 30 minutes
+7. Test Restoration - Verify services operational
+8. Notify Restoration - Inform all parties
+9. Resume Operations - Return to normal workflows
 
-Emergency Contacts:
-- Custom Fleet: 0800 11 63 63
-- AA Roadside: 0800 500 222
-- Emergency Services: 111"""
+Contacts:
+- IT Support: 0800 123 456
+- Manager: 0800 789 012"""
         
         try:
             payload = {
@@ -1549,105 +1547,86 @@ Emergency Contacts:
             if response.status_code == 200:
                 result = response.json()
                 
-                # Verify response structure
-                if 'processes' not in result:
-                    self.log_result("EROAD-Style Generation (Structure)", False, 
+                # Verification Checklist from review request:
+                
+                # 1. Verify response contains processes array
+                if 'processes' not in result or not result['processes']:
+                    self.log_result("EROAD Coordinate Enforcement", False, 
                                   "Response missing 'processes' array")
                     return
                 
-                processes = result.get('processes', [])
-                if not processes or len(processes) == 0:
-                    self.log_result("EROAD-Style Generation (Structure)", False, 
-                                  "No processes found in response")
-                    return
-                
-                process = processes[0]
-                
-                # Test 1: Verify process structure
-                required_fields = ['nodes', 'edges', 'quickReference', 'progressStages', 'swimLanes']
-                missing_fields = [field for field in required_fields if field not in process]
-                
-                if missing_fields:
-                    self.log_result("EROAD-Style Generation (Process Structure)", False, 
-                                  f"Missing required fields: {missing_fields}")
-                    return
-                else:
-                    self.log_result("EROAD-Style Generation (Process Structure)", True, 
-                                  "Process contains all required fields")
-                
-                # Test 2: Verify nodes structure and count (CRITICAL: Should be AT LEAST 7-9 nodes, not 1!)
+                process = result['processes'][0]
                 nodes = process.get('nodes', [])
+                
+                # 2. Verify response contains 7-9 nodes (not 1!)
                 node_count = len(nodes)
-                
-                # Check for over-grouping issue (AI consolidating all steps into 1 node)
-                if node_count < 5:
-                    self.log_result("EROAD-Style Generation (Node Count Validation)", False, 
-                                  f"OVER-GROUPING DETECTED: Only {node_count} nodes generated (expected ≥7-9). AI may be consolidating all steps into too few nodes!")
+                if node_count < 7 or node_count > 9:
+                    self.log_result("EROAD Coordinate Enforcement", False, 
+                                  f"Expected 7-9 nodes, got {node_count} nodes")
                     return
-                elif 7 <= node_count <= 9:
-                    self.log_result("EROAD-Style Generation (Node Count)", True, 
-                                  f"Generated {node_count} nodes (within expected range 7-9)")
-                elif node_count >= 5:
-                    self.log_result("EROAD-Style Generation (Node Count)", True, 
-                                  f"Generated {node_count} nodes (acceptable, slightly below expected 7-9)")
-                else:
-                    self.log_result("EROAD-Style Generation (Node Count)", False, 
-                                  f"Generated {node_count} nodes (expected 7-9)")
                 
-                # Test 3: Verify node structure
-                if nodes:
-                    sample_node = nodes[0]
-                    required_node_fields = ['id', 'title', 'status', 'x', 'y', 'description']
-                    missing_node_fields = [field for field in required_node_fields if field not in sample_node]
-                    
-                    if missing_node_fields:
-                        self.log_result("EROAD-Style Generation (Node Structure)", False, 
-                                      f"Nodes missing required fields: {missing_node_fields}")
-                    else:
-                        self.log_result("EROAD-Style Generation (Node Structure)", True, 
-                                      "Nodes contain all required fields")
+                # 3. CRITICAL: Check ALL nodes have EXACTLY x=330
+                x_coordinate_issues = []
+                for i, node in enumerate(nodes):
+                    x_coord = node.get('x')
+                    if x_coord != 330:
+                        x_coordinate_issues.append(f"Node {i}: x={x_coord} (expected 330)")
                 
-                # Test 4: Verify node positioning
-                x_coordinates = [node.get('x', 0) for node in nodes]
-                y_coordinates = [node.get('y', 0) for node in nodes]
+                if x_coordinate_issues:
+                    self.log_result("EROAD Coordinate Enforcement", False, 
+                                  f"X coordinate violations: {x_coordinate_issues}")
+                    return
                 
-                # Check X coordinates are around 330
-                x_around_330 = all(300 <= x <= 360 for x in x_coordinates if x > 0)
-                if x_around_330:
-                    self.log_result("EROAD-Style Generation (X Coordinates)", True, 
-                                  f"X coordinates properly centered around 330: {x_coordinates[:3]}...")
-                else:
-                    self.log_result("EROAD-Style Generation (X Coordinates)", False, 
-                                  f"X coordinates not centered around 330: {x_coordinates[:3]}...")
+                # 4. CRITICAL: Check Y coordinates are 0, 150, 300, 450, 600, 750, 900, 1050, 1200
+                expected_y_coords = [i * 150 for i in range(node_count)]  # 0, 150, 300, etc.
+                y_coordinate_issues = []
+                for i, node in enumerate(nodes):
+                    y_coord = node.get('y')
+                    expected_y = expected_y_coords[i]
+                    if y_coord != expected_y:
+                        y_coordinate_issues.append(f"Node {i}: y={y_coord} (expected {expected_y})")
                 
-                # Check Y coordinates increment by ~150
-                if len(y_coordinates) > 1:
-                    y_sorted = sorted([y for y in y_coordinates if y > 0])
-                    if len(y_sorted) > 1:
-                        y_increments = [y_sorted[i+1] - y_sorted[i] for i in range(len(y_sorted)-1)]
-                        avg_increment = sum(y_increments) / len(y_increments) if y_increments else 0
-                        
-                        if 120 <= avg_increment <= 180:  # Allow some variance around 150
-                            self.log_result("EROAD-Style Generation (Y Coordinates)", True, 
-                                          f"Y coordinates increment appropriately (avg: {avg_increment:.0f})")
-                        else:
-                            self.log_result("EROAD-Style Generation (Y Coordinates)", False, 
-                                          f"Y coordinates increment incorrectly (avg: {avg_increment:.0f}, expected ~150)")
+                if y_coordinate_issues:
+                    self.log_result("EROAD Coordinate Enforcement", False, 
+                                  f"Y coordinate violations: {y_coordinate_issues}")
+                    return
                 
-                # Test 5: Verify node statuses are properly classified
-                node_statuses = [node.get('status') for node in nodes]
-                expected_statuses = ['critical', 'action', 'communication', 'operational', 'monitoring', 'verification', 'recovery']
-                valid_statuses = [status for status in node_statuses if status in expected_statuses]
+                # 5. Verify no X variance (no 230px, 360px, etc.)
+                unique_x_coords = set(node.get('x') for node in nodes)
+                if len(unique_x_coords) != 1 or 330 not in unique_x_coords:
+                    self.log_result("EROAD Coordinate Enforcement", False, 
+                                  f"X coordinate variance detected: {unique_x_coords}")
+                    return
                 
-                if len(valid_statuses) >= len(node_statuses) * 0.8:  # At least 80% should have valid statuses
-                    self.log_result("EROAD-Style Generation (Node Statuses)", True, 
-                                  f"Node statuses properly classified: {set(valid_statuses)}")
-                else:
-                    self.log_result("EROAD-Style Generation (Node Statuses)", False, 
-                                  f"Invalid node statuses found: {set(node_statuses) - set(expected_statuses)}")
+                # 6. Confirm quickReference structure present
+                quick_ref = process.get('quickReference')
+                if not quick_ref:
+                    self.log_result("EROAD Coordinate Enforcement", False, 
+                                  "Missing quickReference structure")
+                    return
                 
-                # Test 6: Verify edges structure
-                edges = process.get('edges', [])
+                # 7. Confirm progressStages generated
+                progress_stages = process.get('progressStages')
+                if not progress_stages:
+                    self.log_result("EROAD Coordinate Enforcement", False, 
+                                  "Missing progressStages structure")
+                    return
+                
+                # All checks passed!
+                self.log_result("EROAD Coordinate Enforcement", True, 
+                              f"✅ ALL CRITICAL CHECKS PASSED: {node_count} nodes, all x=330, Y spacing=150, quickReference & progressStages present")
+                
+                # Log detailed coordinate verification for transparency
+                coord_summary = []
+                for i, node in enumerate(nodes):
+                    coord_summary.append(f"Node {i}: ({node.get('x')}, {node.get('y')})")
+                print(f"   📍 Coordinate Verification: {', '.join(coord_summary)}")
+                
+            else:
+                self.log_result("EROAD Coordinate Enforcement", False, 
+                              f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("EROAD Coordinate Enforcement", False, f"Error: {str(e)}")
                 if edges:
                     sample_edge = edges[0]
                     required_edge_fields = ['id', 'source', 'target']
