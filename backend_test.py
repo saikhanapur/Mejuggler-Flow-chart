@@ -1042,26 +1042,21 @@ class BackendTester:
         except Exception as e:
             self.log_result("Error Handling (Missing Fields)", False, f"Error: {str(e)}")
 
-    def test_eroad_flowchart_coordinate_enforcement(self):
-        """Test EROAD-Style Flowchart Coordinate Enforcement after Fix #1"""
-        print("\n🎯 CRITICAL: Testing EROAD Flowchart Coordinate Enforcement...")
+    def test_eroad_flowchart_sample_generation(self):
+        """Test EROAD-Style Flowchart Generation with Sample Document - Capture EXACT JSON Response"""
+        print("\n🎯 TESTING: EROAD-Style Flowchart Generation - Sample Document...")
         
-        # Use the exact 9-step document from the review request
-        test_document = """Business Continuity: System Outage Response
+        # Use the exact 3-step document from the review request
+        test_document = """Emergency Response Procedure
 
-1. Identify Outage - Monitor systems and detect failures
-2. Notify Supervisor - Call on-duty manager immediately  
-3. Setup BCP Tracking - Create incident timeline
-4. Contact Stakeholders - Email all affected teams
-5. Begin Manual Operations - Switch to backup procedures
-6. Monitor Status - Check every 30 minutes
-7. Test Restoration - Verify services operational
-8. Notify Restoration - Inform all parties
-9. Resume Operations - Return to normal workflows
+Steps:
+1. Detect Emergency - Monitor systems and identify critical incident
+2. Notify Response Team - Contact on-duty manager and emergency services
+3. Execute Response Plan - Follow established emergency protocols
 
 Contacts:
-- IT Support: 0800 123 456
-- Manager: 0800 789 012"""
+- Emergency Services: 111
+- Manager: 0800 123 456"""
         
         try:
             payload = {
