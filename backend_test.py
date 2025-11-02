@@ -2687,17 +2687,8 @@ Contacts:
 if __name__ == "__main__":
     tester = BackendTester()
     
-    # Run only the EROAD-style test for focused testing
-    print("🎯 Running EROAD-Style Flowchart Generation Test...")
-    tester.test_eroad_style_flowchart_generation()
-    
-    # Print summary
-    print("\n" + "=" * 80)
-    print("🎯 EROAD-STYLE FLOWCHART GENERATION TEST - SUMMARY")
-    print("=" * 80)
-    
-    passed = sum(1 for result in tester.test_results if result['success'])
-    total = len(tester.test_results)
+    # Run only the EROAD sample generation test
+    result = tester.run_sample_generation_only()
     success_rate = (passed / total * 100) if total > 0 else 0
     
     print(f"📊 Tests Passed: {passed}/{total} ({success_rate:.1f}%)")
