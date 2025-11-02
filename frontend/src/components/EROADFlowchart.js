@@ -115,6 +115,12 @@ const FlowNode = ({ node, onClick, isSelected }) => {
   const colors = STATUS_COLORS[node.status] || STATUS_COLORS.action;
   const isCritical = node.status === 'critical';
   
+  // ============ FIX #3: NORMALIZE COORDINATES (DEFENSE IN DEPTH) ============
+  // Ensure valid positioning even if backend sends incorrect coordinates
+  const normalizedX = (node.x && node.x > 0) ? node.x : 330;
+  const normalizedY = (node.y !== undefined && node.y >= 0) ? node.y : 0;
+  // ============ END FIX #3 ============
+  
   return (
     <div
       className={`absolute transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer ${
@@ -123,8 +129,8 @@ const FlowNode = ({ node, onClick, isSelected }) => {
           : `${colors.bg} border-2 ${colors.border} shadow-md`
       } rounded-xl p-4 ${isSelected ? 'ring-4 ring-blue-400' : ''}`}
       style={{
-        left: `${node.x}px`,
-        top: `${node.y}px`,
+        left: `${normalizedX}px`,
+        top: `${normalizedY}px`,
         width: '240px',
       }}
       onClick={() => onClick(node)}
