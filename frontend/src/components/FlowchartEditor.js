@@ -388,7 +388,30 @@ const FlowchartEditor = ({ theme, readOnly = false, accessLevel = 'owner', proce
     );
   }
 
-  if (!process) return null;
+  if (!process) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="text-slate-400 text-lg mb-2">Process not found</div>
+          <div className="text-slate-500 text-sm mb-4">The flowchart you're looking for doesn't exist or you don't have access.</div>
+          <Button onClick={() => navigate('/')}>Go to Dashboard</Button>
+        </div>
+      </div>
+    );
+  }
+  
+  // Validate process structure
+  if (!process.nodes || !Array.isArray(process.nodes)) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <div className="text-amber-600 text-lg mb-2">Invalid Process Data</div>
+          <div className="text-slate-500 text-sm mb-4">The flowchart data is malformed. Please regenerate.</div>
+          <Button onClick={() => navigate('/')}>Go to Dashboard</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-[calc(100vh-80px)]" data-testid="flowchart-editor">
