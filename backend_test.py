@@ -2515,7 +2515,25 @@ Contacts:
         result = self.test_eroad_sample_flowchart_generation()
         
         # Print summary
-        self.print_test_summary()
+        print("\n" + "=" * 80)
+        print("📊 TEST SUMMARY")
+        print("=" * 80)
+        
+        passed = sum(1 for test_result in self.test_results if test_result['success'])
+        total = len(self.test_results)
+        success_rate = (passed / total * 100) if total > 0 else 0
+        
+        print(f"📊 Tests Passed: {passed}/{total} ({success_rate:.1f}%)")
+        
+        # Show all test results
+        for test_result in self.test_results:
+            status = "✅ PASS" if test_result['success'] else "❌ FAIL"
+            print(f"{status} {test_result['test']}: {test_result['details']}")
+        
+        if success_rate >= 90:
+            print("\n🎉 EROAD-style generation working correctly!")
+        else:
+            print("\n⚠️ Issues found with EROAD-style generation")
         
         return result
 
