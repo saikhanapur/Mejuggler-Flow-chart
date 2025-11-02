@@ -2419,6 +2419,106 @@ Contacts:
             # Restore original headers
             self.session.headers = original_headers
 
+    def test_eroad_sample_flowchart_generation(self):
+        """Generate a sample EROAD-style flowchart and capture the EXACT JSON response structure"""
+        print("\n🎯 GENERATING SAMPLE EROAD-STYLE FLOWCHART...")
+        
+        # Use the exact 3-step document from the review request
+        test_document = """Emergency Response Procedure
+
+Steps:
+1. Detect Emergency - Monitor systems and identify critical incident
+2. Notify Response Team - Contact on-duty manager and emergency services
+3. Execute Response Plan - Follow established emergency protocols
+
+Contacts:
+- Emergency Services: 111
+- Manager: 0800 123 456"""
+        
+        try:
+            payload = {
+                "text": test_document,
+                "inputType": "document"
+            }
+            
+            response = self.session.post(f"{self.base_url}/process/eroad-style", 
+                                       json=payload, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                # CAPTURE THE EXACT JSON RESPONSE STRUCTURE
+                print("\n" + "="*80)
+                print("📋 COMPLETE JSON RESPONSE STRUCTURE:")
+                print("="*80)
+                print(json.dumps(result, indent=2))
+                print("="*80)
+                
+                # Verify basic structure
+                if 'processes' not in result or not result['processes']:
+                    self.log_result("EROAD Sample Generation", False, 
+                                  "Response missing 'processes' array")
+                    return None
+                
+                process = result['processes'][0]
+                nodes = process.get('nodes', [])
+                edges = process.get('edges', [])
+                quick_ref = process.get('quickReference', {})
+                progress_stages = process.get('progressStages', [])
+                
+                print(f"\n📊 STRUCTURE ANALYSIS:")
+                print(f"   • Process Name: {process.get('name', 'N/A')}")
+                print(f"   • Description: {process.get('description', 'N/A')}")
+                print(f"   • Total Nodes: {len(nodes)}")
+                print(f"   • Total Edges: {len(edges)}")
+                print(f"   • QuickReference Keys: {list(quick_ref.keys())}")
+                print(f"   • Progress Stages: {len(progress_stages)}")
+                
+                # Show COMPLETE structure of first 2-3 nodes
+                print(f"\n🔍 COMPLETE NODE STRUCTURES (First {min(3, len(nodes))} nodes):")
+                for i in range(min(3, len(nodes))):
+                    node = nodes[i]
+                    print(f"\n--- NODE {i+1} ---")
+                    print(json.dumps(node, indent=2))
+                
+                # Show edges structure
+                print(f"\n🔗 EDGES STRUCTURE:")
+                print(json.dumps(edges, indent=2))
+                
+                # Show quickReference structure
+                print(f"\n⚡ QUICK REFERENCE STRUCTURE:")
+                print(json.dumps(quick_ref, indent=2))
+                
+                # Show progressStages structure
+                print(f"\n📈 PROGRESS STAGES STRUCTURE:")
+                print(json.dumps(progress_stages, indent=2))
+                
+                self.log_result("EROAD Sample Generation", True, 
+                              f"✅ Successfully generated EROAD-style flowchart with {len(nodes)} nodes")
+                
+                return result  # Return the full result for further analysis
+                
+            else:
+                self.log_result("EROAD Sample Generation", False, 
+                              f"HTTP {response.status_code}: {response.text}")
+                return None
+        except Exception as e:
+            self.log_result("EROAD Sample Generation", False, f"Error: {str(e)}")
+            return None
+
+    def run_sample_generation_only(self):
+        """Run only the EROAD sample generation test"""
+        print("🎯 Running EROAD Sample Generation Test Only...")
+        print(f"🌐 Testing against: {self.base_url}")
+        print("="*80)
+        
+        result = self.test_eroad_sample_flowchart_generation()
+        
+        # Print summary
+        self.print_test_summary()
+        
+        return result
+
     def run_all_tests(self):
         """Run all backend tests in order - ENTERPRISE SCALE COMPREHENSIVE TESTING"""
         print(f"🚀 FlowForge AI - ENTERPRISE SCALE PRE-AUTHENTICATION REVIEW")
