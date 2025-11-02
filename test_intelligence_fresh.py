@@ -8,7 +8,7 @@ import json
 import uuid
 import time
 
-BASE_URL = "https://flowmapper-2.preview.emergentagent.com/api"
+BASE_URL = "https://sop-genius-2.preview.emergentagent.com/api"
 TIMEOUT = 180
 
 def authenticate():

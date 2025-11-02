@@ -8,7 +8,7 @@ import requests
 import json
 import time
 
-BACKEND_URL = "https://flowmapper-2.preview.emergentagent.com"
+BACKEND_URL = "https://sop-genius-2.preview.emergentagent.com"
 
 # Full BCP SOP Document
 FULL_BCP_TEXT = """Business Continuity Procedure #8
