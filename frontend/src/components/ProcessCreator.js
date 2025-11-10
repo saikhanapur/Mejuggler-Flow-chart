@@ -606,6 +606,8 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
           onBack={() => setExtractedData(null)}
           currentWorkspace={currentWorkspace}
           selectedWorkspace={selectedWorkspace}
+          documentText={extractedData.text}
+          inputType={extractedData.inputType}
         />
       );
     }
