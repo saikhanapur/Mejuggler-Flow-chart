@@ -487,7 +487,7 @@ Return ONLY valid JSON."""
                 # Replace single quotes with double quotes
                 fixed = response_text.replace("'", '"')
                 return json.loads(fixed)
-            except:
+            except json.JSONDecodeError:
                 pass
             
             try:
