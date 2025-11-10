@@ -396,6 +396,57 @@ Return ONLY valid JSON."""
         
         return enhanced
     
+    def _build_structure_context(self, detection: Dict[str, Any]) -> str:
+        """Build human-readable context from detection"""
+        if not detection:
+            return "No structure detected - using standard flowchart layout"
+        
+        context_parts = []
+        
+        if detection.get("swimLanes") and len(detection.get("swimLanes", [])) > 0:
+            lanes = [f"{lane.get('title', 'Unknown')} ({lane.get('team', 'Team')})" for lane in detection['swimLanes']]
+            context_parts.append(f"SWIM LANES DETECTED: {', '.join(lanes)}")
+            context_parts.append(f"  → Position nodes in correct lanes (X coordinates vary by lane)")
+        
+        if detection.get("phases") and len(detection.get("phases", [])) > 0:
+            phases = [f"Phase {p.get('number', '?')}: {p.get('title', 'Unknown')}" for p in detection['phases']]
+            context_parts.append(f"PHASES DETECTED: {', '.join(phases)}")
+            context_parts.append(f"  → Group nodes by phase")
+        
+        if detection.get("decisionPoints") and len(detection.get("decisionPoints", [])) > 0:
+            context_parts.append(f"DECISION POINTS DETECTED: {len(detection['decisionPoints'])} decision branches")
+            for dp in detection['decisionPoints'][:3]:  # Show first 3
+                condition = dp.get('condition', 'Unknown')
+                context_parts.append(f"  → {condition}")
+        
+        if detection.get("monitoringLoops") and len(detection.get("monitoringLoops", [])) > 0:
+            context_parts.append(f"MONITORING LOOPS DETECTED: {len(detection['monitoringLoops'])} loops")
+            for loop in detection['monitoringLoops'][:3]:  # Show first 3
+                action = loop.get('action', 'Unknown')
+                freq = loop.get('frequency', 'periodic')
+                context_parts.append(f"  → {action} ({freq})")
+        
+        if detection.get("parallelActivities") and len(detection.get("parallelActivities", [])) > 0:
+            context_parts.append(f"PARALLEL ACTIVITIES DETECTED: {len(detection['parallelActivities'])} groups")
+            context_parts.append(f"  → Position at same Y level, different X positions")
+        
+        if detection.get("hasRACITable"):
+            context_parts.append("RACI TABLE DETECTED: Role-based responsibilities present")
+        
+        if detection.get("referencedProcedures") and len(detection.get("referencedProcedures", [])) > 0:
+            refs = ', '.join(detection['referencedProcedures'][:5])
+            context_parts.append(f"REFERENCED SUB-PROCESSES: {refs}")
+        
+        if detection.get("gates") and len(detection.get("gates", [])) > 0:
+            gates = ', '.join(detection['gates'])
+            context_parts.append(f"APPROVAL GATES DETECTED: {gates}")
+        
+        complexity = detection.get('complexity', 'unknown')
+        context_parts.append(f"\nCOMPLEXITY: {complexity}")
+        context_parts.append(f"RECOMMENDATION: {detection.get('autoDecision', 'Standard flowchart')}")
+        
+        return "\n".join(context_parts)
+    
     def _parse_json_response(self, response: str) -> Dict[str, Any]:
         """Parse JSON from response"""
         response_text = response.strip()
