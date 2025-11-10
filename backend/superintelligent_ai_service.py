@@ -1322,3 +1322,183 @@ Analyze now:"""
             "trainingRequired": None,
             "sourcePage": None
         }
+    
+    def _extract_process_section(
+        self,
+        document_text: str,
+        process_title: str,
+        all_process_titles: List[str]
+    ) -> str:
+        """
+        Extract text section for a specific process from multi-process document
+        
+        Strategy:
+        1. Find the heading that matches process_title
+        2. Extract text from that heading to the next process heading
+        3. Return the extracted section
+        """
+        import re
+        
+        logger.info(f"📄 Extracting section for: {process_title}")
+        
+        # Create pattern to find the process title
+        # Make it flexible to handle variations
+        title_pattern = re.escape(process_title)
+        title_pattern = title_pattern.replace(r'\ ', r'\s+')  # Allow flexible spacing
+        
+        # Find where this process starts
+        start_match = re.search(title_pattern, document_text, re.IGNORECASE)
+        
+        if not start_match:
+            logger.warning(f"⚠️ Could not find '{process_title}' in document, using full text")
+            return document_text
+        
+        start_pos = start_match.start()
+        
+        # Find where the next process starts
+        end_pos = len(document_text)
+        
+        for other_title in all_process_titles:
+            if other_title == process_title:
+                continue
+            
+            other_pattern = re.escape(other_title)
+            other_pattern = other_pattern.replace(r'\ ', r'\s+')
+            
+            next_match = re.search(other_pattern, document_text[start_pos + len(process_title):], re.IGNORECASE)
+            
+            if next_match:
+                potential_end = start_pos + len(process_title) + next_match.start()
+                if potential_end < end_pos:
+                    end_pos = potential_end
+        
+        # Extract the section
+        section = document_text[start_pos:end_pos].strip()
+        
+        logger.info(f"✅ Extracted {len(section)} chars for '{process_title}'")
+        return section
+    
+    async def generate_eroad_style_single_process(
+        self,
+        process_text: str,
+        process_title: str,
+        input_type: str,
+        user_id: str = None
+    ) -> Dict[str, Any]:
+        """
+        Generate EROAD-style flowchart for a SINGLE PROCESS
+        
+        Used when user selects individual processes from multi-process document
+        """
+        logger.info(f"🎯 Generating EROAD-style flowchart for: {process_title}")
+        
+        try:
+            # Extract data for this one process
+            extracted = await self.analyze_document(process_text, input_type, user_id)
+            
+            # Override process name with the selected title
+            extracted["processName"] = process_title
+            
+            # Enhance for visualization (without detection - single process)
+            from eroad_style_enhancer import EROADStyleEnhancer
+            
+            enhancer = EROADStyleEnhancer(self.api_key)
+            enhanced = await enhancer.enhance_for_visualization(
+                extracted, 
+                process_text,
+                detection=None  # No detection needed for single extracted process
+            )
+            
+            # Override name again (ensure it's preserved)
+            enhanced["processName"] = process_title
+            
+            # Map to expected format (same as generate_eroad_style_flowchart)
+            process = {
+                "name": process_title,  # Use selected title
+                "description": extracted.get("documentSummary", f"Workflow for {process_title}"),
+                "nodes": [],
+                "edges": [],
+                "swimLanes": enhanced.get("swimLanes", []),
+                "actors": list(set([
+                    actor 
+                    for node in enhanced.get("nodes", []) 
+                    for actor in node.get("contacts", [])
+                ])),
+                "quickReference": {
+                    "criticalActions": [n["title"] for n in enhanced["nodes"] if n.get("status") == "critical"],
+                    "keyTimings": extracted.get("timings", []),
+                    "emergencyContacts": extracted.get("contacts", {})
+                },
+                "progressStages": []
+            }
+            
+            # Process nodes (same logic as before)
+            for node in enhanced.get("nodes", []):
+                processed_node = {
+                    "id": node["id"],
+                    "title": node["title"],
+                    "description": node.get("details", ""),
+                    "type": self._map_status_to_type(node.get("status")),
+                    "status": node.get("status", "operational"),
+                    "x": node.get("x", 330),
+                    "y": node.get("y", 0),
+                    "position": {"x": node.get("x", 0), "y": node.get("y", 0)},
+                    "actors": node.get("contacts", []),
+                    "subSteps": node.get("actions", []),
+                    "dependencies": node.get("dependencies", []),
+                    "parallelWith": node.get("parallelWith", []),
+                    "isDecisionPoint": node.get("isDecisionPoint", False),
+                    "decisionCriteria": node.get("decisionCriteria"),
+                    "decisionOptions": node.get("decisionOptions", {}),
+                    "isLoop": node.get("isLoop", False),
+                    "loopBackTo": node.get("loopBackTo"),
+                    "failures": [],
+                    "blocking": None,
+                    "impact": "high" if node.get("status") == "critical" else "medium",
+                    "timeEstimate": node.get("timing"),
+                    "operationalDetails": {
+                        "purpose": node.get("purpose", ""),
+                        "specificActions": node.get("actions", []),
+                        "requiredData": [],
+                        "contactInfo": {c.split(":")[0]: c.split(":")[1].strip() if ":" in c else c for c in node.get("contacts", [])},
+                        "timeline": node.get("timing"),
+                        "systems": node.get("systems", []),
+                        "decisionCriteria": node.get("decisionCriteria") if node.get("isDecisionPoint") else None,
+                        "emailTemplates": [],
+                        "currentState": node.get("currentState"),
+                        "idealState": node.get("idealState"),
+                        "gap": node.get("gap"),
+                        "sourcePage": None
+                    }
+                }
+                process["nodes"].append(processed_node)
+                
+                # Create edges
+                for target_id in node.get("connections", []):
+                    edge = {
+                        "id": f"e-{node['id']}-{target_id}",
+                        "source": node['id'],
+                        "target": target_id,
+                        "label": None
+                    }
+                    
+                    # Mark as dashed if it's a loop
+                    if node.get("isLoop") and target_id == node.get("loopBackTo"):
+                        edge["type"] = "dashed"
+                    
+                    # Add label for decision branches
+                    if node.get("isDecisionPoint") and node.get("decisionOptions"):
+                        decision_opts = node.get("decisionOptions", {})
+                        if decision_opts.get("yes") == target_id:
+                            edge["label"] = "YES"
+                        elif decision_opts.get("no") == target_id:
+                            edge["label"] = "NO"
+                    
+                    process["edges"].append(edge)
+            
+            logger.info(f"✅ EROAD-style flowchart complete for '{process_title}': {len(process['nodes'])} nodes")
+            return {"processes": [process], "multipleProcesses": False}
+            
+        except Exception as e:
+            logger.error(f"❌ Single process generation failed for '{process_title}': {e}", exc_info=True)
+            raise
