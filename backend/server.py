@@ -2763,6 +2763,100 @@ async def eroad_style_generation(
 
 # ==================== END EROAD-STYLE ====================
 
+@api_router.post("/process/eroad-style/create-selected")
+async def create_selected_processes(
+    request_data: dict,
+    request: Request
+):
+    """
+    Create selected processes from multi-process document
+    
+    Called after detection finds multiple processes
+    User can select which ones to create
+    
+    Input:
+    {
+        "documentText": "full document text",
+        "inputType": "document",
+        "selectedProcessTitles": ["Process 1", "Process 3"],
+        "createAll": false
+    }
+    
+    Output:
+    {
+        "processCount": 2,
+        "processes": [...],  # Created process IDs
+        "multipleProcesses": true
+    }
+    """
+    try:
+        user = await get_current_user(request)
+        user_id = user.get("id") if user else None
+        
+        document_text = request_data.get("documentText")
+        input_type = request_data.get("inputType", "document")
+        selected_titles = request_data.get("selectedProcessTitles", [])
+        create_all = request_data.get("createAll", False)
+        
+        logger.info(f"🎨 Creating {len(selected_titles)} selected process(es)")
+        
+        service = SuperintelligentAIService(
+            api_key=os.environ.get("EMERGENT_LLM_KEY"),
+            db_client=client
+        )
+        
+        # If createAll, get all titles from detection
+        if create_all:
+            detection = await service.detect_multiple_processes_and_structure(document_text)
+            selected_titles = detection.get("processTitles", [])
+            logger.info(f"Creating all {len(selected_titles)} processes")
+        
+        # Create individual flowcharts for each selected process
+        created_processes = []
+        
+        for i, process_title in enumerate(selected_titles):
+            logger.info(f"Creating process {i+1}/{len(selected_titles)}: {process_title}")
+            
+            # Extract section for this process
+            process_text = service._extract_process_section(
+                document_text, 
+                process_title, 
+                selected_titles
+            )
+            
+            # Generate EROAD-style flowchart for this one process
+            process_result = await service.generate_eroad_style_single_process(
+                process_text, 
+                process_title, 
+                input_type, 
+                user_id
+            )
+            
+            # Get the generated process
+            if process_result.get("processes") and len(process_result["processes"]) > 0:
+                process_data = process_result["processes"][0]
+                
+                # Add to created list (don't save to DB yet - frontend will do that)
+                created_processes.append(process_data)
+                logger.info(f"✅ Process '{process_title}' generated: {len(process_data.get('nodes', []))} nodes")
+            else:
+                logger.warning(f"⚠️ No process generated for '{process_title}'")
+        
+        result = {
+            "multipleProcesses": True,
+            "processCount": len(created_processes),
+            "processes": created_processes
+        }
+        
+        logger.info(f"✅ Created {len(created_processes)} processes")
+        return result
+        
+    except Exception as e:
+        logger.error(f"❌ Selected process creation failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== END MULTI-PROCESS CREATION ====================
+
 @api_router.post("/process/simple-generate")
 async def simple_flowchart_generation(
     input_data: ProcessInput,
