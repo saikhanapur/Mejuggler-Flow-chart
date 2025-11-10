@@ -27,18 +27,25 @@ class EROADStyleEnhancer:
     async def enhance_for_visualization(
         self, 
         extracted_data: Dict[str, Any],
-        document_text: str = None
+        document_text: str = None,
+        detection: Dict[str, Any] = None
     ) -> Dict[str, Any]:
         """
         Transform extracted data into visualization-ready format
         
-        Input: Raw extracted data (steps, contacts, systems, etc.)
-        Output: 8-13 enriched nodes with PURPOSE, current/ideal state
+        NEW: Now uses detected structure (swim lanes, phases, decisions, loops)
+        
+        Input: Raw extracted data + detected structure
+        Output: 8-13 enriched nodes with PURPOSE, current/ideal state, and structure
         """
-        logger.info("🎨 EROAD-Style Enhancement Layer")
+        logger.info("🎨 EROAD-Style Enhancement with Structure Awareness")
         
         input_step_count = len(extracted_data.get('steps', []))
         logger.info(f"📊 Input: {input_step_count} steps to enhance")
+        
+        # Build structure context from detection
+        structure_context = self._build_structure_context(detection) if detection else "No structure detected"
+        logger.info(f"🏗️ Structure context: {structure_context}")
         
         chat = LlmChat(
             api_key=self.api_key,
@@ -51,7 +58,8 @@ Key principles:
 1. SIMPLIFY - Group intelligently, show what matters
 2. EXPLAIN WHY - Purpose field explains the goal, not the mechanics
 3. ADD VALUE - Current vs Ideal shows improvement opportunities
-4. CLASSIFY - Use visual status types for instant recognition"""
+4. CLASSIFY - Use visual status types for instant recognition
+5. USE DETECTED STRUCTURE - Swim lanes, phases, decisions, loops from analysis"""
         ).with_model("anthropic", "claude-4-sonnet-20250514")
         
         # Prepare extracted data summary
