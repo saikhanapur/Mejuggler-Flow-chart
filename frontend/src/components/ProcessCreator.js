@@ -89,14 +89,37 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
         // EROAD-style: Extract → Enhance → Display
         const result = await api.generateEROADStyleFlowchart(input, inputType);
         
-        // Check if multiple processes
-        if (result.multipleProcesses && result.processes.length > 1) {
-          setExtractedData(result);
+        console.log('EROAD result:', result);
+        
+        // Check if multiple processes detected
+        if (result.multipleProcesses) {
+          console.log(`Multiple processes detected: ${result.processCount}`);
+          setExtractedData({
+            text: input,
+            inputType: inputType,
+            multipleProcesses: true,
+            processCount: result.processCount,
+            processTitles: result.processTitles,
+            processDescriptions: result.processDescriptions || [],
+            recommendation: result.recommendation,
+            complexity: result.complexity,
+            reasoning: result.reasoning,
+            autoDecision: result.autoDecision,
+            detection: result.detection
+          });
           setProcessing(false);
+          toast.info(`${result.processCount} processes detected in document!`);
+          // TODO: Show MultiProcessReview UI
+          // For now, just show message
+          toast.info('Multi-process handling coming soon. Please upload a single-process document.');
           return;
         }
         
-        // Single process - create it
+        // Single process - validate and create it
+        if (!result.processes || result.processes.length === 0) {
+          throw new Error('No flowchart generated. Please try a different document.');
+        }
+        
         const process = result.processes[0];
         
         // Validate
