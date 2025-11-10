@@ -184,6 +184,20 @@ LOOP DETECTION:
 - Example: "Check every 30 minutes" loops back to "Monitor Status"
 - Mark as: "isLoop": true, "loopBackTo": "monitor_node_id"
 
+SWIM LANE POSITIONING (if swim lanes detected):
+- If swim lanes detected in structure, position nodes by their role/team
+- Lane 1 (Left): X=150
+- Lane 2 (Center): X=380  
+- Lane 3 (Right): X=610
+- Example: "Onshore Actions" nodes at X=150, "Offshore Actions" nodes at X=610
+- Parallel nodes in different lanes should have same Y position
+- Add "swimLane": "lane_id" field to each node
+
+PHASE GROUPING (if phases detected):
+- If phases detected, include "phase": number field
+- Example: Phase 0 nodes, Phase 1 nodes, Phase 2 nodes
+- Keep nodes grouped by phase for visual clarity
+
 STATUS CLASSIFICATION GUIDE (CRITICAL - Choose Carefully):
 - **critical**: Urgent, time-sensitive, high-impact failures (e.g., "Emergency Response", "System Down", "Call 111")
 - **action**: Steps requiring immediate action/decision (e.g., "Notify Manager", "Initiate BCP", "Contact Stakeholders")
