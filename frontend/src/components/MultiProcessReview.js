@@ -7,12 +7,18 @@ import { Badge } from '@/components/ui/badge';
 import { api } from '@/utils/api';
 import { toast } from 'sonner';
 
-const MultiProcessReview = ({ processesData, onBack, currentWorkspace, selectedWorkspace }) => {
+const MultiProcessReview = ({ processesData, onBack, currentWorkspace, selectedWorkspace, documentText, inputType }) => {
   const navigate = useNavigate();
   const [expandedIndex, setExpandedIndex] = useState(0);
   const [creating, setCreating] = useState(false);
+  const [progress, setProgress] = useState(0);
+  
+  // NEW: Handle both old format (processes array) and new format (detection)
+  const processTitles = processesData.processTitles || processesData.processes?.map(p => p.processName) || [];
+  const processDescriptions = processesData.processDescriptions || [];
+  
   const [selectedProcesses, setSelectedProcesses] = useState(
-    processesData.processes.map((_, idx) => idx)
+    processTitles.map((_, idx) => idx)
   );
 
   const handleToggleProcess = (index) => {
@@ -23,20 +29,63 @@ const MultiProcessReview = ({ processesData, onBack, currentWorkspace, selectedW
     );
   };
 
-  const handleCreateAll = async () => {
+  const handleCreateSelected = async () => {
     if (selectedProcesses.length === 0) {
       toast.error('Please select at least one process');
       return;
     }
 
     setCreating(true);
+    setProgress(0);
     const loadingToast = toast.loading(`Creating ${selectedProcesses.length} process(es)...`);
 
     try {
-      const createdProcesses = [];
+      // Get selected process titles
+      const selectedTitles = selectedProcesses.map(idx => processTitles[idx]);
+      
+      // Call new multi-process creation endpoint
+      const result = await api.createSelectedProcesses({
+        documentText: documentText || processesData.text,
+        inputType: inputType || processesData.inputType || 'document',
+        selectedProcessTitles: selectedTitles,
+        createAll: false
+      });
 
-      for (const index of selectedProcesses) {
-        const processData = processesData.processes[index];
+      toast.dismiss(loadingToast);
+
+      if (result.processes && result.processes.length > 0) {
+        // Create each process in the database
+        const createdProcesses = [];
+        
+        for (let i = 0; i < result.processes.length; i++) {
+          const processData = result.processes[i];
+          setProgress(((i + 1) / result.processes.length) * 100);
+          
+          const createResponse = await api.createProcess({
+            ...processData,
+            workspaceId: selectedWorkspace || currentWorkspace?.id
+          });
+
+          if (createResponse) {
+            createdProcesses.push(createResponse);
+          }
+        }
+
+        toast.success(`Created ${createdProcesses.length} flowchart(s)!`);
+        navigate('/dashboard');
+      } else {
+        toast.error('No flowcharts were generated');
+      }
+
+    } catch (error) {
+      console.error('Error creating processes:', error);
+      toast.dismiss(loadingToast);
+      toast.error('Failed to create processes: ' + (error.message || 'Unknown error'));
+    } finally {
+      setCreating(false);
+      setProgress(0);
+    }
+  };
         
         const process = {
           id: `process-${Date.now()}-${index}`,
