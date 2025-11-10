@@ -302,5 +302,10 @@ export const api = {
       inputType
     });
     return res.data;
+  },
+
+  createSelectedProcesses: async (data) => {
+    const res = await axios.post(`${API}/process/eroad-style/create-selected`, data);
+    return res.data;
   }
 };
