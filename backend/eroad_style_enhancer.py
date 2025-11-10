@@ -424,12 +424,12 @@ Return ONLY valid JSON."""
         if detection.get("swimLanes") and len(detection.get("swimLanes", [])) > 0:
             lanes = [f"{lane.get('title', 'Unknown')} ({lane.get('team', 'Team')})" for lane in detection['swimLanes']]
             context_parts.append(f"SWIM LANES DETECTED: {', '.join(lanes)}")
-            context_parts.append(f"  → Position nodes in correct lanes (X coordinates vary by lane)")
+            context_parts.append("  → Position nodes in correct lanes (X coordinates vary by lane)")
         
         if detection.get("phases") and len(detection.get("phases", [])) > 0:
             phases = [f"Phase {p.get('number', '?')}: {p.get('title', 'Unknown')}" for p in detection['phases']]
             context_parts.append(f"PHASES DETECTED: {', '.join(phases)}")
-            context_parts.append(f"  → Group nodes by phase")
+            context_parts.append("  → Group nodes by phase")
         
         if detection.get("decisionPoints") and len(detection.get("decisionPoints", [])) > 0:
             context_parts.append(f"DECISION POINTS DETECTED: {len(detection['decisionPoints'])} decision branches")
@@ -446,7 +446,7 @@ Return ONLY valid JSON."""
         
         if detection.get("parallelActivities") and len(detection.get("parallelActivities", [])) > 0:
             context_parts.append(f"PARALLEL ACTIVITIES DETECTED: {len(detection['parallelActivities'])} groups")
-            context_parts.append(f"  → Position at same Y level, different X positions")
+            context_parts.append("  → Position at same Y level, different X positions")
         
         if detection.get("hasRACITable"):
             context_parts.append("RACI TABLE DETECTED: Role-based responsibilities present")
