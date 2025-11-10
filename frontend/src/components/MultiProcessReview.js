@@ -316,13 +316,13 @@ const MultiProcessReview = ({ processesData, onBack, currentWorkspace, selectedW
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3">
           <Button
-            onClick={handleCreateAll}
+            onClick={handleCreateSelected}
             disabled={creating || selectedProcesses.length === 0}
             className="flex-1"
             size="lg"
           >
             <CheckCircle className="w-5 h-5 mr-2" />
-            {creating ? 'Creating...' : `Create ${selectedProcesses.length} Process(es) Separately`}
+            {creating ? `Creating... ${Math.round(progress)}%` : `Create ${selectedProcesses.length} Process(es) Separately`}
           </Button>
 
           {selectedProcesses.length > 1 && (
