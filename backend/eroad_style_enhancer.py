@@ -71,15 +71,19 @@ Key principles:
         
         prompt = f"""TRANSFORM EXTRACTED DATA INTO VISUALIZATION-READY FLOWCHART
 
+DETECTED STRUCTURE:
+{structure_context}
+
 EXTRACTED DATA:
-Steps: {json.dumps(steps, indent=2)}
-Contacts: {json.dumps(contacts, indent=2)}
+Steps: {json.dumps(steps, indent=2)[:8000]}
+Contacts: {json.dumps(contacts, indent=2)[:2000]}
 Systems: {systems}
 Timings: {timings}
 Decision Points: {decisions}
 
 YOUR TASK:
 Transform this into 10-15 workflow nodes for an interactive flowchart.
+USE THE DETECTED STRUCTURE (swim lanes, phases, decisions, loops) in your transformation.
 
 GROUPING RULES (STRATEGIC SIMPLIFICATION - NOT OVER-CONSOLIDATION):
 1. **Combine ONLY closely related sequential steps** that serve the same immediate purpose
