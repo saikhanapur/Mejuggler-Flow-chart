@@ -109,9 +109,6 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
           });
           setProcessing(false);
           toast.info(`${result.processCount} processes detected in document!`);
-          // TODO: Show MultiProcessReview UI
-          // For now, just show message
-          toast.info('Multi-process handling coming soon. Please upload a single-process document.');
           return;
         }
         
