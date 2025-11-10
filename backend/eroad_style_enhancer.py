@@ -506,7 +506,7 @@ Return ONLY valid JSON."""
                 if start != -1 and end != -1:
                     fixed = response_text[start:end+1]
                     return json.loads(fixed)
-            except:
+            except json.JSONDecodeError:
                 pass
             
             # If all repairs fail, raise original error
