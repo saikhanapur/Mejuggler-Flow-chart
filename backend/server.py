@@ -2734,17 +2734,28 @@ async def eroad_style_generation(
             user_id=user_id
         )
         
-        # Create process in database
-        process = result["processes"][0]
-        process_data = {
-            **process,
-            "workspaceId": None,  # Will be set by frontend
-            "userId": user_id,
-            "isGuest": user is None
-        }
+        # Check if multiple processes detected
+        if result.get("multipleProcesses"):
+            logger.info(f"🔍 Returning multi-process detection: {result.get('processCount')} processes")
+            # Return detection result for frontend to handle
+            return result
         
-        # Note: Frontend will create the process
-        return result
+        # Single process - return as before
+        if result.get("processes") and len(result["processes"]) > 0:
+            process = result["processes"][0]
+            process_data = {
+                **process,
+                "workspaceId": None,  # Will be set by frontend
+                "userId": user_id,
+                "isGuest": user is None
+            }
+            
+            # Note: Frontend will create the process
+            return result
+        else:
+            # Fallback - no processes generated
+            logger.error("❌ No processes in result")
+            raise HTTPException(status_code=500, detail="No flowchart generated")
         
     except Exception as e:
         logger.error(f"❌ EROAD-style generation failed: {e}", exc_info=True)
