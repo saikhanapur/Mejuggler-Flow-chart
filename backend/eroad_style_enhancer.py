@@ -466,14 +466,49 @@ Return ONLY valid JSON."""
         return "\n".join(context_parts)
     
     def _parse_json_response(self, response: str) -> Dict[str, Any]:
-        """Parse JSON from response"""
+        """Parse JSON response with robust error handling"""
         response_text = response.strip()
         
-        # Remove markdown
+        # Remove markdown code blocks
         if response_text.startswith('```'):
             start = response_text.find('{')
             end = response_text.rfind('}')
             if start != -1 and end != -1:
                 response_text = response_text[start:end+1]
         
-        return json.loads(response_text)
+        try:
+            return json.loads(response_text)
+        except json.JSONDecodeError as e:
+            logger.warning(f"⚠️ JSON parse error: {e}")
+            logger.warning(f"   Response snippet: {response_text[max(0, e.pos-100):e.pos+100]}")
+            
+            # Try to repair common issues
+            try:
+                # Replace single quotes with double quotes
+                fixed = response_text.replace("'", '"')
+                return json.loads(fixed)
+            except:
+                pass
+            
+            try:
+                # Remove trailing commas
+                import re
+                fixed = re.sub(r',\s*}', '}', response_text)
+                fixed = re.sub(r',\s*]', ']', fixed)
+                return json.loads(fixed)
+            except:
+                pass
+            
+            try:
+                # Try to extract just the JSON object
+                start = response_text.find('{')
+                end = response_text.rfind('}')
+                if start != -1 and end != -1:
+                    fixed = response_text[start:end+1]
+                    return json.loads(fixed)
+            except:
+                pass
+            
+            # If all repairs fail, raise original error
+            logger.error(f"❌ Could not repair JSON. First 500 chars: {response_text[:500]}")
+            raise ValueError(f"Failed to parse JSON response: {e}")
