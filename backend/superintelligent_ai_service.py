@@ -755,6 +755,209 @@ Return valid JSON only."""
         except Exception as e:
             logger.warning(f"Could not update patterns: {e}")
     
+    async def detect_multiple_processes_and_structure(self, document_text: str) -> Dict[str, Any]:
+        """
+        STAGE 0.5: Comprehensive Document Analysis
+        
+        Detects:
+        1. Multiple processes (like Recruitment: 9 processes)
+        2. Swim lanes/role sections (like BCPs: Onshore/Offshore)
+        3. Phased structures (like DR SOP: 7 phases)
+        4. Decision points (if/then branches)
+        5. Monitoring loops (every X minutes)
+        6. Parallel activities (simultaneous actions)
+        7. RACI tables (role matrices)
+        
+        Returns comprehensive structure for AI to use
+        """
+        logger.info("🔍 Comprehensive document structure detection...")
+        
+        try:
+            chat = LlmChat(
+                api_key=self.api_key,
+                session_id=f"detect_{uuid.uuid4()}",
+                system_message="""You are an enterprise process intelligence expert. Analyze documents from:
+- Manufacturing (Quality Control, Product Recall, Safety)
+- Healthcare (Clinical pathways, Emergency protocols)
+- Finance (KYC, Transaction processing, Approval chains)
+- IT (Incident management, Disaster Recovery, Change management)
+- HR (Recruitment, Onboarding, Performance, Offboarding)
+
+Your job: Identify ALL structural patterns in the document."""
+            ).with_model("anthropic", "claude-4-sonnet-20250514")
+            
+            prompt = f"""COMPREHENSIVE DOCUMENT STRUCTURE ANALYSIS
+
+DOCUMENT (first 25,000 chars):
+{document_text[:25000]}
+
+ANALYZE FOR ALL PATTERNS:
+
+1. MULTIPLE PROCESSES:
+   - Are there 2+ distinct processes in this document?
+   - Look for: Numbered sections (Process 1, 2, 3), Separate workflows
+   - Example: "Recruitment Process Maps" with 9 separate processes
+   - If found, list each process title
+
+2. SWIM LANES / ROLE SECTIONS:
+   - Are there parallel columns/sections by role or team?
+   - Look for: "Onshore Actions", "Offshore Actions", "IDENTIFY", "ASSESS", "MITIGATE"
+   - Look for: Role-based headers (QA Manager, DR Manager, Platform Owner)
+   - Example: BCP with "Identify | Onshore | Offshore" columns
+
+3. PHASED STRUCTURE:
+   - Is the process divided into phases/stages?
+   - Look for: "Phase 1", "Phase 2", "Stage 1", "Step 1"
+   - Example: DR SOP with "Phase 0: Preparedness, Phase 1: Incident Declaration..."
+   - If found, list phase names
+
+4. DECISION POINTS:
+   - Look for if/then/else logic, branching
+   - Patterns: "If [condition]", "[System] down?", "Has [X] occurred?"
+   - Example: "If Supplier Issue → Trigger SD-07"
+   - Example: "Has Wilsar Outage? YES/NO"
+   - List all decision criteria found
+
+5. MONITORING LOOPS:
+   - Look for recurring checks/validations
+   - Patterns: "Check every [X] minutes", "Monitor until [condition]"
+   - Example: "Check in with Wilson IT every 30 minutes until services restored"
+   - Example: "RCA validated until accepted by QA Director"
+   - List all loops with frequency
+
+6. PARALLEL ACTIVITIES:
+   - Look for simultaneous actions by different teams
+   - Patterns: "Meanwhile", "At the same time", "Parallel", actions in same row
+   - Example: "QA notifies Regulatory, Supply Chain halts distribution, Customer Service drafts notice"
+   - Look for: Same timing/level but different actors
+   - List parallel activity groups
+
+7. RACI TABLES / ROLE MATRICES:
+   - Look for tables showing Responsible, Accountable, Consulted, Informed
+   - Look for: Role columns (Manager, Employee, HR, IT)
+   - Example: RACI matrix in Product Recall SOP
+   - If found, note presence
+
+8. REFERENCED SUB-PROCESSES:
+   - Look for references to other procedures
+   - Patterns: "SOP-XXX", "Refer to [Procedure]", "Trigger [Sub-Process]"
+   - Example: "Trigger Supplier Deviation Procedure SD-07"
+   - List referenced procedures
+
+9. GATES / APPROVALS:
+   - Look for approval points or gates
+   - Patterns: "Gate G3", "Approval required", "Sign-off"
+   - Example: "Gate G6: Steering Committee approval required"
+   - List all gates
+
+10. DOCUMENT COMPLEXITY:
+    - Simple (3-10 steps, linear)
+    - Medium (10-20 steps, some branching)
+    - Complex (20+ steps, multiple branches/phases)
+    - Very Complex (30+ steps, nested processes, tables)
+
+RETURN JSON (VALID JSON ONLY, NO MARKDOWN):
+{{
+  "multipleProcesses": true or false,
+  "processCount": 1,
+  "processTitles": ["Process 1 title"],
+  
+  "swimLanes": [
+    {{"id": "identify", "title": "IDENTIFY", "team": "Dispatch"}},
+    {{"id": "onshore", "title": "ONSHORE ACTIONS", "team": "Onshore Supervisor"}}
+  ],
+  
+  "phases": [
+    {{"number": 0, "title": "Preparedness", "description": "Pre-incident"}},
+    {{"number": 1, "title": "Incident Declaration", "description": "Initial response"}}
+  ],
+  
+  "decisionPoints": [
+    {{"condition": "Has Wilsar Outage?", "branches": ["YES", "NO"], "location": "section 2"}},
+    {{"condition": "If Supplier Issue", "branches": ["Trigger SD-07", "Continue"], "location": "step 5"}}
+  ],
+  
+  "monitoringLoops": [
+    {{"action": "Check with Wilson IT", "frequency": "every 30 minutes", "until": "services restored"}},
+    {{"action": "RCA validation", "frequency": "iterative", "until": "accepted by QA Director"}}
+  ],
+  
+  "parallelActivities": [
+    {{"level": "notification", "activities": ["QA notifies Regulatory", "Supply Chain halts", "Customer Service drafts"]}}
+  ],
+  
+  "hasRACITable": false,
+  "referencedProcedures": ["SOP-RCA-001", "SD-07", "FR-05"],
+  "gates": ["Gate G3", "Gate G6"],
+  
+  "complexity": "simple",
+  "reasoning": "Why this structure?",
+  "recommendation": "single_flowchart",
+  "pageEstimate": 5
+}}
+
+CRITICAL:
+- If processCount >= 2, set multipleProcesses: true
+- If swimLanes found, list ALL swim lanes with their teams
+- If phases found, list ALL phases
+- Return ONLY valid JSON, no explanatory text before/after
+- Be thorough - capture ALL patterns
+
+Analyze now:"""
+            
+            message = UserMessage(text=prompt)
+            response = await chat.send_message(message)
+            
+            # Parse response
+            detection = self._parse_json_response(response)
+            
+            # Auto-decide based on detection
+            if detection.get("multipleProcesses") and detection.get("processCount", 0) >= 2:
+                # AUTO-DECIDE: Multiple processes → Create separately
+                detection["recommendation"] = "multiple_flowcharts"
+                detection["autoDecision"] = "Create each process as a separate flowchart"
+            elif detection.get("phases") and len(detection.get("phases", [])) >= 3:
+                # AUTO-DECIDE: Phased process → Keep as one with phases
+                detection["recommendation"] = "phased_single_flowchart"
+                detection["autoDecision"] = "Create one flowchart with phase stages"
+            elif detection.get("swimLanes") and len(detection.get("swimLanes", [])) >= 2:
+                # AUTO-DECIDE: Swim lanes → Keep as one with lanes
+                detection["recommendation"] = "swimlane_single_flowchart"
+                detection["autoDecision"] = "Create one flowchart with swim lanes"
+            else:
+                # AUTO-DECIDE: Simple process → Standard flowchart
+                detection["recommendation"] = "single_flowchart"
+                detection["autoDecision"] = "Create standard flowchart"
+            
+            logger.info(f"✅ Detection complete: {detection.get('processCount')} process(es)")
+            logger.info(f"   Auto-decision: {detection.get('autoDecision')}")
+            logger.info(f"   Swim lanes: {len(detection.get('swimLanes', []))}")
+            logger.info(f"   Phases: {len(detection.get('phases', []))}")
+            logger.info(f"   Decisions: {len(detection.get('decisionPoints', []))}")
+            logger.info(f"   Loops: {len(detection.get('monitoringLoops', []))}")
+            
+            return detection
+            
+        except Exception as e:
+            logger.error(f"❌ Detection failed: {e}", exc_info=True)
+            return {
+                "multipleProcesses": False,
+                "processCount": 1,
+                "processTitles": [],
+                "swimLanes": [],
+                "phases": [],
+                "decisionPoints": [],
+                "monitoringLoops": [],
+                "parallelActivities": [],
+                "hasRACITable": False,
+                "referencedProcedures": [],
+                "gates": [],
+                "complexity": "unknown",
+                "recommendation": "single_flowchart",
+                "autoDecision": "Create standard flowchart (detection failed)",
+                "reasoning": f"Detection failed: {str(e)}"
+            }
+    
     async def generate_eroad_style_flowchart(
         self,
         document_text: str,
