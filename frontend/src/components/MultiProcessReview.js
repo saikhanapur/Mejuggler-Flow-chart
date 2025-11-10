@@ -211,9 +211,10 @@ const MultiProcessReview = ({ processesData, onBack, currentWorkspace, selectedW
 
         {/* Process List */}
         <div className="space-y-4 mb-8">
-          {processesData.processes.map((proc, index) => {
+          {processTitles.map((title, index) => {
             const isExpanded = expandedIndex === index;
             const isSelected = selectedProcesses.includes(index);
+            const description = processDescriptions[index] || 'No description available';
 
             return (
               <Card 
@@ -237,7 +238,7 @@ const MultiProcessReview = ({ processesData, onBack, currentWorkspace, selectedW
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <span className="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded">
-                            Process {index + 1}/{processesData.processCount}
+                            Process {index + 1}/{processTitles.length}
                           </span>
                         </div>
                         <h3 className="text-lg font-bold text-slate-800 mb-1">
