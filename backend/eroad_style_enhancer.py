@@ -496,7 +496,7 @@ Return ONLY valid JSON."""
                 fixed = re.sub(r',\s*}', '}', response_text)
                 fixed = re.sub(r',\s*]', ']', fixed)
                 return json.loads(fixed)
-            except:
+            except (json.JSONDecodeError, re.error):
                 pass
             
             try:
