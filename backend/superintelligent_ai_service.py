@@ -99,8 +99,8 @@ Be thorough. Return valid JSON only."""
             
             try:
                 analysis = self._parse_json_response(response)
-            except ValueError as parse_error:
-                logger.warning(f"⚠️ Complex prompt failed, trying simplified extraction...")
+            except ValueError:
+                logger.warning("⚠️ Complex prompt failed, trying simplified extraction...")
                 
                 # Fallback: Use a simpler prompt with minimal JSON structure
                 simplified_prompt = f"""Analyze this document and extract basic information. Return ONLY a valid JSON object.
@@ -1219,7 +1219,7 @@ Analyze now:"""
             return parsed
         except json.JSONDecodeError as e:
             logger.warning(f"Initial JSON parsing failed at position {e.pos}: {e.msg}")
-            logger.warning(f"Attempting repairs...")
+            logger.warning("Attempting repairs...")
             
             # Repair strategy 1: Remove trailing commas
             response_text = re.sub(r',(\s*[}\]])', r'\1', response_text)
@@ -1247,7 +1247,7 @@ Analyze now:"""
                 logger.info("✅ JSON repaired successfully with basic fixes")
                 return parsed
             except json.JSONDecodeError as e2:
-                logger.warning(f"Basic repair failed. Attempting advanced repair...")
+                logger.warning("Basic repair failed. Attempting advanced repair...")
                 
                 # Advanced repair: Try to fix the specific error location
                 try:
@@ -1285,7 +1285,7 @@ Analyze now:"""
                         pass
                 
                 # Ultimate fallback: Ask LLM to regenerate with stricter instructions
-                logger.error(f"❌ All JSON repair attempts failed")
+                logger.error("❌ All JSON repair attempts failed")
                 raise ValueError(f"Failed to parse AI response as JSON after all repair attempts. Original error: {e2}")
     
     def _add_node_defaults(self, node: Dict):
