@@ -242,10 +242,10 @@ const MultiProcessReview = ({ processesData, onBack, currentWorkspace, selectedW
                           </span>
                         </div>
                         <h3 className="text-lg font-bold text-slate-800 mb-1">
-                          {proc.processName}
+                          {title}
                         </h3>
                         <p className="text-sm text-slate-600 leading-relaxed">
-                          {proc.description}
+                          {description}
                         </p>
                       </div>
 
