@@ -965,26 +965,58 @@ Analyze now:"""
         user_id: str = None
     ) -> Dict[str, Any]:
         """
-        HYBRID APPROACH: Extract → Enhance → Return
+        HYBRID APPROACH WITH COMPREHENSIVE DETECTION: Detect → Extract → Enhance → Return
         
+        NEW: Now detects multiple processes, swim lanes, phases, decisions, loops!
+        
+        Phase 0: Detect structure (multi-process, swim lanes, phases, etc.)
         Phase 1: Extract structured data
         Phase 2: Enhance with EROAD-style grouping and rich details
         
-        Returns visualization-ready flowchart (10-15 nodes with PURPOSE)
+        Returns visualization-ready flowchart(s) with detected structure
         """
-        logger.info("🚀 EROAD-Style Flowchart Generation (Hybrid)")
+        logger.info("🚀 EROAD-Style Flowchart Generation with Comprehensive Detection")
         
         try:
-            # Phase 1: Extract data
+            # PHASE 0: Comprehensive structure detection
+            detection = await self.detect_multiple_processes_and_structure(document_text)
+            
+            # AUTO-DECIDE based on detection
+            if detection.get("multipleProcesses") and detection.get("processCount", 0) >= 2:
+                logger.info(f"🔍 Multiple processes detected: {detection['processCount']}")
+                logger.info(f"   Auto-decision: {detection['autoDecision']}")
+                
+                # Return detection result for multi-process handling
+                return {
+                    "multipleProcesses": True,
+                    "processCount": detection["processCount"],
+                    "processTitles": detection["processTitles"],
+                    "detection": detection,  # Include full detection for reference
+                    "autoDecision": detection["autoDecision"],
+                    "reasoning": detection.get("reasoning", ""),
+                    "processes": []  # Empty - will be created individually by separate endpoint
+                }
+            
+            # PHASE 1: Single process - Extract data with structure context
+            logger.info(f"📄 Single process detected - using structure: {detection.get('autoDecision')}")
+            logger.info(f"   Swim lanes: {len(detection.get('swimLanes', []))}")
+            logger.info(f"   Phases: {len(detection.get('phases', []))}")
+            logger.info(f"   Decisions: {len(detection.get('decisionPoints', []))}")
+            logger.info(f"   Loops: {len(detection.get('monitoringLoops', []))}")
+            
             extracted = await self.analyze_document(document_text, input_type, user_id)
             
-            # Phase 2: Enhance for visualization
+            # PHASE 2: Enhance for visualization with detected structure
             from eroad_style_enhancer import EROADStyleEnhancer
             
             enhancer = EROADStyleEnhancer(self.api_key)
-            enhanced = await enhancer.enhance_for_visualization(extracted, document_text)
+            enhanced = await enhancer.enhance_for_visualization(
+                extracted, 
+                document_text,
+                detection  # NEW: Pass detected structure to enhancer
+            )
             
-            # Map to expected format
+            # Map to expected format (existing code continues...)
             process = {
                 "name": enhanced.get("processName"),
                 "description": extracted.get("documentSummary"),
