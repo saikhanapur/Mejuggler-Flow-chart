@@ -392,6 +392,7 @@ class ManualNodeEditingTester:
         
         print(f"✅ Selected process: {test_process.get('name', 'Unknown')} (ID: {process_id})")
         print(f"✅ Selected node: {first_node.get('title', 'Unknown')} (ID: {first_node_id})")
+        print(f"   Node structure: {json.dumps(first_node, indent=2)[:500]}...")
         
         # Run tests
         print("\n🧪 Running Manual Node Editing Tests...")
