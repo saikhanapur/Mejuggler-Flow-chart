@@ -69,16 +69,6 @@ const FlowchartDisplay = ({ process, onNodeClick, onUpdateNode, selectedNodeId }
     return map;
   }, [nodes]);
 
-  // Determine if quick reference should be shown (AI decision)
-  const shouldShowQuickReference = useMemo(() => {
-    // Show if AI provided quick reference data with content
-    const hasCriticalActions = quickReference.criticalActions && quickReference.criticalActions.length > 0;
-    const hasKeyTimings = quickReference.keyTimings && quickReference.keyTimings.length > 0;
-    const hasEmergencyContacts = quickReference.emergencyContacts && Object.keys(quickReference.emergencyContacts).length > 0;
-    
-    return hasCriticalActions || hasKeyTimings || hasEmergencyContacts;
-  }, [quickReference]);
-
   // Zoom controls
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.2, 2));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.2, 0.5));
