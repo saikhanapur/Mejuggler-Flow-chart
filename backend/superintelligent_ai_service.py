@@ -60,21 +60,55 @@ Extract:
 6. Parallel processes (things happening simultaneously)"""
             ).with_model("anthropic", "claude-4-sonnet-20250514")
             
-            prompt = f"""EXTRACT STRUCTURED DATA FROM DOCUMENT
+            prompt = f"""EXTRACT STRUCTURED DATA FROM DOCUMENT - WORLD-CLASS ANALYSIS
 
 {learning_context}
 
 DOCUMENT:
 {document_text}
 
-EXTRACT:
-1. **All Steps**: List every procedural step (maintain order)
-2. **Decision Points**: Any if/then/else logic
-3. **Contacts**: Names, phone numbers, emails WITH context (extensions, options)
-4. **Systems**: Software, tools, platforms mentioned
-5. **Timings**: Time constraints, frequencies
-6. **Parallel Processes**: Steps that happen simultaneously
-7. **Document Sections**: ALL section headers, references, escalation hierarchies, timelines (extract EVERYTHING, don't filter)
+VISUAL PATTERN RECOGNITION (if flowchart present):
+- Diamond shapes (◆) = Decision points
+- Boxes with red/bold borders = Critical/urgent actions  
+- Dashed lines/arrows = Loops or repeated processes
+- Horizontal bands/sections = Swim lanes (different teams/roles)
+- Parallel vertical alignment = Simultaneous processes
+- Color coding: Red=critical, Blue=action, Purple=communication, Green=operational, Yellow=monitoring
+
+EXTRACT WITH PRECISION:
+1. **All Steps**: Every procedural step (maintain exact order)
+
+2. **Decision Points** (DIAMONDS - Critical!):
+   For each decision, capture:
+   - Question being asked
+   - YES branch: what happens + which step it leads to
+   - NO branch: what happens + which step it leads to  
+   - Default/preferred path
+   - What triggers this decision
+
+3. **Loops** (DASHED LINES - Important!):
+   For each loop, capture:
+   - Type: retry/monitoring/iterative
+   - Trigger: What causes the loop
+   - Action: What repeats
+   - Exit condition: How loop ends
+   - Loop-back target: Which step it returns to
+
+4. **Swim Lanes** (HORIZONTAL BANDS):
+   Identify separate process tracks:
+   - Lane name/label (e.g., "Onshore Team", "Offshore Team", "Manager", "Field Officer")
+   - Steps in each lane
+   - Purpose of lane
+
+5. **Contacts**: Names, phone numbers, emails WITH context (extensions, options)
+
+6. **Systems**: Software, tools, platforms mentioned
+
+7. **Timings**: Time constraints, frequencies, schedules
+
+8. **Parallel Processes**: Steps that happen simultaneously
+
+9. **Document Sections**: ALL section headers, references, escalation hierarchies, timelines (extract EVERYTHING)
 
 CONTACT EXTRACTION RULES (CRITICAL):
 - Preserve ALL context: extensions, options, instructions
