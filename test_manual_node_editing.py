@@ -57,7 +57,7 @@ class ManualNodeEditingTester:
             
             if response.status_code == 200:
                 result = response.json()
-                self.auth_token = result.get('token')
+                self.auth_token = result.get('access_token') or result.get('token')
                 if self.auth_token:
                     self.session.headers.update({
                         'Authorization': f'Bearer {self.auth_token}'
