@@ -1823,6 +1823,141 @@ Analyze now:"""
                     # Try alternate format: "Press 1 for Alarm"
                     press_match = re.match(r'(?:Press|Dial)\s+(\d+)\s+for\s+(.+)', option_part, re.IGNORECASE)
                     if press_match:
+
+
+    def extract_key_timings_enhanced(self, nodes: List[Dict], extracted_data: Dict) -> List[str]:
+        """
+        Extract timing requirements with FULL CONTEXT from nodes.
+        
+        Unlike basic extraction, this captures:
+        - Action associated with timing: "Check MyIT" not just "30 min"
+        - Method/tool: "via email", "in Lighthouse", "on phone"
+        - Complete context: "Check MyIT ticket status every 30 minutes"
+        
+        Returns array of context-rich timing strings.
+        """
+        logger.info("⏰ Extracting key timings with context...")
+        
+        timing_patterns = [
+            # "every X minutes/hours/days"
+            (r'(.{0,50})\s+(every|each)\s+(\d+)\s*(min|minute|minutes|hour|hours|day|days)(.{0,30})', 
+             lambda m: self._format_timing_context(m.group(1), f"every {m.group(3)} {m.group(4)}", m.group(5))),
+            
+            # "within X minutes/hours"
+            (r'(.{0,50})\s+(within)\s+(\d+)\s*(min|minute|minutes|hour|hours)(.{0,30})',
+             lambda m: self._format_timing_context(m.group(1), f"within {m.group(3)} {m.group(4)}", m.group(5))),
+            
+            # "at X am/pm" or "by X am/pm"
+            (r'(.{0,50})\s+(at|by)\s+(\d+:\d+\s*(?:am|pm|AM|PM))(.{0,30})',
+             lambda m: self._format_timing_context(m.group(1), f"{m.group(2)} {m.group(3)}", m.group(4))),
+            
+            # "hourly", "daily", "weekly"
+            (r'(.{0,50})\s+(hourly|daily|weekly|monthly)(.{0,30})',
+             lambda m: self._format_timing_context(m.group(1), m.group(2), m.group(3))),
+            
+            # "X times per day/hour"
+            (r'(.{0,50})\s+(\d+)\s*times?\s+(per|each)\s+(day|hour|week)(.{0,30})',
+             lambda m: self._format_timing_context(m.group(1), f"{m.group(2)} times per {m.group(4)}", m.group(5))),
+        ]
+        
+        enhanced_timings = []
+        seen_timings = set()  # Avoid duplicates
+        
+        # First, check all nodes for timing patterns
+        for node in nodes:
+            title = node.get("title", "")
+            description = node.get("details", node.get("description", ""))
+            actions = node.get("actions", [])
+            timing = node.get("timing", "")
+            
+            # Combine all text for analysis
+            full_text = f"{title}. {description}. {timing}. {' '.join(actions)}"
+            
+            for pattern, formatter in timing_patterns:
+                matches = re.finditer(pattern, full_text, re.IGNORECASE)
+                for match in matches:
+                    try:
+                        formatted_timing = formatter(match)
+                        # Normalize for deduplication
+                        normalized = formatted_timing.lower().strip()
+                        if normalized and normalized not in seen_timings:
+                            enhanced_timings.append(formatted_timing)
+                            seen_timings.add(normalized)
+                    except Exception as e:
+                        logger.warning(f"Failed to format timing from match: {e}")
+                        continue
+        
+        # Also include basic timings from extracted data (fallback)
+        basic_timings = extracted_data.get("timings", [])
+        for basic_timing in basic_timings:
+            normalized = basic_timing.lower().strip()
+            if normalized and normalized not in seen_timings:
+                enhanced_timings.append(basic_timing)
+                seen_timings.add(normalized)
+        
+        logger.info(f"✅ Extracted {len(enhanced_timings)} timing requirements with context")
+        for i, timing in enumerate(enhanced_timings[:5], 1):  # Log top 5
+            logger.info(f"   {i}. {timing}")
+        
+        return enhanced_timings
+    
+    def _format_timing_context(self, before: str, timing: str, after: str) -> str:
+        """
+        Format timing with context by extracting action and method.
+        
+        Example:
+        before = "Check MyIT ticket status"
+        timing = "every 30 minutes"
+        after = "via portal"
+        
+        Returns: "Check MyIT ticket status every 30 minutes via portal"
+        """
+        # Clean up before/after text
+        before = before.strip()
+        after = after.strip()
+        
+        # Extract action verb from before (if present)
+        action_verbs = ['check', 'update', 'monitor', 'verify', 'send', 'email', 'call', 
+                       'notify', 'review', 'document', 'log', 'report', 'escalate']
+        
+        words_before = before.lower().split()
+        action = None
+        for i, word in enumerate(words_before):
+            if word in action_verbs:
+                # Take from this verb onwards
+                action = ' '.join(before.split()[i:])
+                break
+        
+        if not action:
+            # No verb found, take last few words
+            action = ' '.join(before.split()[-5:]) if before else ""
+        
+        # Extract method from after (if present)
+        method_keywords = ['via', 'in', 'using', 'through', 'on', 'by']
+        method = None
+        words_after = after.lower().split()
+        for i, word in enumerate(words_after):
+            if word in method_keywords:
+                # Take from this keyword onwards (next 2-3 words)
+                method = ' '.join(after.split()[i:i+3])
+                break
+        
+        # Construct the timing string
+        parts = []
+        if action:
+            parts.append(action.strip())
+        parts.append(timing.strip())
+        if method:
+            parts.append(method.strip())
+        
+        result = ' '.join(parts)
+        
+        # Capitalize first letter
+        if result:
+            result = result[0].upper() + result[1:]
+        
+        return result
+
                         parsed["options"].append({
                             "number": press_match.group(1),
                             "description": press_match.group(2).strip()
