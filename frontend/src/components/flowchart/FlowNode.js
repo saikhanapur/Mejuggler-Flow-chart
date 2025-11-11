@@ -304,8 +304,7 @@ const FlowNode = ({ node, onClick, isSelected }) => {
           {/* Expandable sub-steps section */}
           {hasSubSteps && isExpanded && (
             <div 
-              className="mt-3 pt-3 border-t border-black/10 space-y-1.5"
-              style={{ animation: 'slideDown 0.3s ease-out' }}
+              className="mt-3 pt-3 border-t border-black/10 space-y-1.5 animate-fade-in"
             >
               <div className="text-xs font-semibold text-black/60 mb-2">
                 Detailed Steps:
