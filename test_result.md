@@ -1792,3 +1792,67 @@ agent_communication:
       **EXACT JSON STRUCTURE DOCUMENTED**: The complete, untruncated JSON response has been captured showing the precise structure of all required fields (nodes, edges, quickReference, progressStages) as requested in the review. All node structures include the full operationalDetails object with all sub-fields properly populated.
       
       **RESULT**: EROAD-style flowchart generation is fully functional and produces comprehensive, properly structured JSON responses suitable for frontend consumption. The API successfully transforms simple 3-step procedures into detailed 7-node workflows with rich operational metadata.
+
+  - agent: "main"
+    message: |
+      🔧 ACTION ITEM #2: MANUAL PRIORITY OVERRIDE - IMPLEMENTATION IN PROGRESS
+      
+      **USER REQUEST**: Implement manual editing for flowchart nodes with focus on Tesla-ready reliability and simplicity.
+      
+      **IMPLEMENTATION STATUS**:
+      
+      ✅ **BACKEND - COMPLETE**:
+      - ProcessEditor class exists (/app/backend/process_editor.py) with methods:
+        * update_node_priority(node, new_priority_level) - Updates P0-P4 with manualOverride flag
+        * update_node_title(node, new_title) - Updates title with edit history tracking
+        * update_node_description(node, new_description) - Updates description
+      - API endpoint exists: PATCH /api/process/{process_id}/node
+        * Accepts NodeUpdateRequest: { nodeId, field, value }
+        * Supports fields: "priority", "title", "description"
+        * Returns updated node with success response
+      
+      ✅ **FRONTEND UI - COMPLETE**:
+      - FlowNode.js has interactive editing UI:
+        * Priority dropdown - Click P0-P4 badge to change priority
+        * Inline title editing - Click title to edit directly
+        * Edit state management with useState hooks
+        * Smooth UI transitions and visual feedback
+      
+      ✅ **INTEGRATION - JUST COMPLETED**:
+      - Added api.updateProcessNode(processId, nodeId, field, value) method
+      - Created handleUpdateNode in FlowchartCanvas component:
+        * Calls API to update node
+        * Reloads process to get fresh data
+        * Shows success/error toasts
+      - Connected handler through component hierarchy:
+        * FlowchartCanvas → onUpdateNode → FlowchartDisplay → FlowNode
+      
+      ✅ **AI EDITING - ALREADY EXISTS**:
+      - AIRefineChat component handles conversational editing
+      - Accessible via "AI Edit" button in FlowchartCanvas
+      - Users can say: "Change step 3 priority to P0" or "Update title of step 2"
+      
+      **USER EXPERIENCE**:
+      1. **Manual UI Editing**:
+         - Click priority badge (🔴 P0) → Dropdown appears → Select new priority → Auto-saves
+         - Click node title → Inline edit field → Type → Enter/Blur to save
+         - Instant visual feedback with toast notifications
+      
+      2. **AI Conversational Editing**:
+         - Click "AI Edit" button → Chat panel opens
+         - Type or speak: "Make step 3 urgent" → AI updates priority
+         - Natural language processing for all edits
+      
+      **TESTING PLAN**:
+      1. Backend testing: Test PATCH /api/process/{id}/node endpoint
+      2. Manual editing: Test priority dropdown + title editing
+      3. Data persistence: Verify changes persist after reload
+      4. AI editing: Test conversational editing via chat
+      5. Error handling: Test with invalid data
+      
+      **NEXT STEPS**:
+      - Run backend testing to verify API endpoint
+      - Test manual editing UI flow
+      - Verify integration works end-to-end
+      - Test AI conversational editing
+      - Document any issues found
