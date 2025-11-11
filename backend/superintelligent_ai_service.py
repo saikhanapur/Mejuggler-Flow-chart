@@ -2469,8 +2469,7 @@ Return JSON array with this structure:
 Analyze ONLY the nodes shown above. Return valid JSON array."""
 
             chat = LlmChat(
-                api_key=self.api_key,
-                model="claude-sonnet-4-20250514"
+                api_key=self.api_key
             )
             chat.add_message(UserMessage(content=prompt))
             
