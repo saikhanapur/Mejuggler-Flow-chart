@@ -2164,5 +2164,63 @@ Analyze now:"""
                 "visibility": round(visibility_score, 1),
                 "baseline": baseline
             }
+
+    
+    async def generate_node_embedding(self, node: Dict) -> List[float]:
+        """
+        Generate vector embedding for a node using OpenAI embeddings.
+        
+        Combines node title, description, and actions into searchable text.
+        Uses text-embedding-3-small model for efficiency.
+        
+        Returns: List of floats representing the embedding vector
+        """
+        # Combine all searchable text from node
+        title = node.get("title", "")
+        description = node.get("description", node.get("details", ""))
+        actions = " ".join(node.get("subSteps", node.get("actions", [])))
+        contacts = " ".join(str(c) for c in node.get("actors", []))
+        systems = " ".join(node.get("operationalDetails", {}).get("systems", []))
+        
+        # Create comprehensive search text
+        search_text = f"{title}. {description}. Actions: {actions}. Contacts: {contacts}. Systems: {systems}"
+        search_text = search_text.strip()
+        
+        try:
+            import openai
+            openai.api_key = self.api_key  # Using Emergent LLM key
+            
+            response = openai.embeddings.create(
+                model="text-embedding-3-small",
+                input=search_text
+            )
+            
+            embedding = response.data[0].embedding
+            return embedding
+            
+        except Exception as e:
+            logger.error(f"Failed to generate embedding: {e}")
+            return []
+    
+    def cosine_similarity(self, vec1: List[float], vec2: List[float]) -> float:
+        """
+        Calculate cosine similarity between two vectors.
+        
+        Returns: Similarity score between 0 and 1 (1 = identical, 0 = orthogonal)
+        """
+        if not vec1 or not vec2 or len(vec1) != len(vec2):
+            return 0.0
+        
+        import math
+        
+        dot_product = sum(a * b for a, b in zip(vec1, vec2))
+        magnitude1 = math.sqrt(sum(a * a for a in vec1))
+        magnitude2 = math.sqrt(sum(b * b for b in vec2))
+        
+        if magnitude1 == 0 or magnitude2 == 0:
+            return 0.0
+        
+        return dot_product / (magnitude1 * magnitude2)
+
         }
 
