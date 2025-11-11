@@ -2223,5 +2223,3 @@ Analyze now:"""
         
         return dot_product / (magnitude1 * magnitude2)
 
-        }
-
