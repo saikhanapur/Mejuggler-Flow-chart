@@ -1233,6 +1233,10 @@ Analyze now:"""
                 logger.info(f"   ✅ Emergency Contacts: {len(extracted.get('contacts', {}))}")
                 logger.info(f"   ✅ Recovery Steps: {len(recovery_steps_list)}")
             
+            # INNOVATION 1: Generate Contextual AI Recommendations
+            logger.info("💡 Generating AI recommendations for process improvement...")
+            process['nodes'] = await self.generate_contextual_recommendations(process['nodes'])
+            
             logger.info(f"✅ EROAD-style flowchart complete: {len(process['nodes'])} nodes")
             return {"processes": [process], "multipleProcesses": False}
             
