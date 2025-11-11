@@ -542,7 +542,7 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
             <p className="text-sm text-blue-700 leading-relaxed">
               {analyzing 
                 ? 'Understanding your process to ask smart questions that improve accuracy' 
-                : 'Claude AI is carefully analyzing your process to identify gaps, dependencies, and improvement opportunities.'}
+                : 'SuperHumanly AI is analyzing your process to identify gaps, dependencies, and improvement opportunities.'}
             </p>
           </div>
         </div>
