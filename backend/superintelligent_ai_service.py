@@ -1787,11 +1787,12 @@ Analyze now:"""
         hierarchical_contacts = {}
         
         for name, contact_info in contacts_dict.items():
-            parsed = {
-                "main": contact_info,  # Default to full string
-                "extension": None,
-                "options": []
-            }
+            try:
+                parsed = {
+                    "main": contact_info,  # Default to full string
+                    "extension": None,
+                    "options": []
+                }
             
             # Split by pipe to separate main number from options
             parts = contact_info.split(" | ")
