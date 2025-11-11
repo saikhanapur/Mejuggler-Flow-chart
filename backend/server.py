@@ -2778,7 +2778,7 @@ async def semantic_search(
                     search_text = f"{title}. {description}. {sub_steps}. {actors}"
                     
                     try:
-                        node_response = openai.embeddings.create(
+                        node_response = openai_client.embeddings.create(
                             model="text-embedding-3-small",
                             input=search_text
                         )
