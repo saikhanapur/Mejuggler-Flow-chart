@@ -1033,14 +1033,6 @@ Analyze now:"""
                 "nodes": [],
                 "edges": [],
                 "swimLanes": enhanced.get("swimLanes", []),
-                "metadata": {  # NEW: Verification metadata
-                    "originalStepCount": len(extracted.get("steps", [])),
-                    "coveragePercent": 100,
-                    "contactsExtracted": len(extracted.get("contacts", {})),
-                    "timingsExtracted": len(extracted.get("timings", [])),
-                    "generatedAt": datetime.now(timezone.utc).isoformat(),
-                    "aiModel": "Claude Sonnet 4"
-                },
                 "actors": list(set([
                     actor 
                     for node in enhanced.get("nodes", []) 
@@ -1050,6 +1042,19 @@ Analyze now:"""
                 "_pendingQuickReference": True,  # Flag to populate later
                 "progressStages": []  # Will be populated based on node positions
             }
+            
+            # Add metadata for verification
+            process["metadata"] = {
+                "originalStepCount": len(extracted.get("steps", [])),
+                "nodesCreated": len(enhanced.get("nodes", [])),
+                "coveragePercent": 100,
+                "contactsExtracted": len(extracted.get("contacts", {})),
+                "timingsExtracted": len(extracted.get("timings", [])),
+                "generatedAt": datetime.now(timezone.utc).isoformat(),
+                "aiModel": "Claude Sonnet 4"
+            }
+            
+            logger.info(f"✅ Metadata added: {process['metadata']}")
             
             # Process nodes and identify progress stages
             critical_nodes = []
