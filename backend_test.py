@@ -3623,6 +3623,9 @@ Contacts:
         print("\n🎯 NEW FEATURES - Intelligent Critical Actions Extraction...")
         self.test_intelligent_critical_actions_extraction()
         
+        print("\n⏰ NEW FEATURES - Enhanced Key Timings Extraction...")
+        self.test_enhanced_key_timings_extraction()
+        
         print("\n📞 NEW FEATURES - Hierarchical Emergency Contacts...")
         self.test_hierarchical_emergency_contacts()
         
