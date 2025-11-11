@@ -1,16 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const QuickReference = ({ criticalActions, keyTimings, recoverySteps }) => {
+  // Collapsible state - Critical Actions always expanded, others start collapsed
+  const [isCriticalExpanded, setIsCriticalExpanded] = useState(true);
+  const [isTimingsExpanded, setIsTimingsExpanded] = useState(false);
+  const [isRecoveryExpanded, setIsRecoveryExpanded] = useState(false);
+  
   return (
     <div className="grid grid-cols-3 gap-6 mt-6">
       {/* Critical Actions */}
-      <div className="bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-300 rounded-xl p-6 shadow-lg">
-        <h3 className="font-bold text-red-900 mb-4 flex items-center gap-2 text-lg">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      <div className="bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-300 rounded-xl shadow-lg overflow-hidden">
+        <button
+          onClick={() => setIsCriticalExpanded(!isCriticalExpanded)}
+          className="w-full p-6 pb-4 text-left hover:bg-red-100/50 transition-colors flex items-center justify-between group"
+        >
+          <h3 className="font-bold text-red-900 flex items-center gap-2 text-lg">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            Critical Actions
+          </h3>
+          <svg 
+            className={`w-5 h-5 text-red-700 transition-transform duration-300 ${isCriticalExpanded ? 'rotate-180' : ''}`}
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
-          Critical Actions
-        </h3>
+        </button>
+        {isCriticalExpanded && (
+          <div className="px-6 pb-6 animate-fade-in">
         <div className="space-y-2 text-sm text-red-800">
           {criticalActions && criticalActions.length > 0 ? (
             criticalActions.map((action, idx) => (
