@@ -112,6 +112,7 @@ const FlowNode = ({ node, onClick, selectedNodeId, onUpdateNode }) => {
   const [editedTitle, setEditedTitle] = useState(node.title);
   const [isEditingPriority, setIsEditingPriority] = useState(false);
   
+  const isSelected = selectedNodeId === node.id;
   const config = STATUS_CONFIG[node.status] || STATUS_CONFIG.operational;
   
   // Get coordinates from node (backend provides these)
