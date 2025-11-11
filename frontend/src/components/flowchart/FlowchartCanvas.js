@@ -44,6 +44,26 @@ const FlowchartCanvas = ({ processData }) => {
     setSelectedNode(node);
   };
 
+  const handleUpdateNode = async (nodeId, field, value) => {
+    try {
+      // Call API to update node
+      await api.updateProcessNode(id, nodeId, field, value);
+      
+      // Reload process to get updated data
+      await loadProcess();
+      
+      // Show success message
+      const fieldLabel = field === 'priority' ? 'Priority' : field === 'title' ? 'Title' : 'Description';
+      toast.success(`${fieldLabel} updated successfully`);
+      
+      return true;
+    } catch (error) {
+      console.error('Failed to update node:', error);
+      toast.error(`Failed to update ${field}`);
+      return false;
+    }
+  };
+
   const handleExport = () => {
     setShowExportModal(true);
   };
