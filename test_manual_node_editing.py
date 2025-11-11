@@ -35,6 +35,18 @@ class ManualNodeEditingTester:
     def test_user_login(self):
         """Login as test user"""
         try:
+            # First try to signup (in case user doesn't exist)
+            signup_payload = {
+                "email": self.test_user_email,
+                "password": self.test_user_password,
+                "name": "Test User"
+            }
+            
+            signup_response = self.session.post(f"{self.base_url}/auth/signup", 
+                                              json=signup_payload, timeout=TIMEOUT)
+            # Ignore signup response - user might already exist
+            
+            # Now try to login
             login_payload = {
                 "email": self.test_user_email,
                 "password": self.test_user_password
@@ -52,7 +64,7 @@ class ManualNodeEditingTester:
                     })
                     return self.log_result("User Login", True, f"Logged in as {self.test_user_email}")
                 else:
-                    return self.log_result("User Login", False, "No token received")
+                    return self.log_result("User Login", False, f"No token received. Response: {result}")
             else:
                 return self.log_result("User Login", False, f"HTTP {response.status_code}: {response.text}")
                 
