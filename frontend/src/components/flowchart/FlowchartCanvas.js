@@ -176,6 +176,7 @@ const FlowchartCanvas = ({ processData }) => {
           <FlowchartDisplay 
             process={process} 
             onNodeClick={handleNodeClick}
+            onUpdateNode={handleUpdateNode}
             selectedNodeId={selectedNode?.id}
           />
         </div>
