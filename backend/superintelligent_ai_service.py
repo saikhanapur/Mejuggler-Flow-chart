@@ -1798,49 +1798,49 @@ Analyze now:"""
                 parts = contact_info.split(" | ")
                 main_part = parts[0].strip()
                 option_parts = parts[1:] if len(parts) > 1 else []
-            
-            # Parse extension from main part
-            extension_patterns = [
-                r'\(Extension:\s*([^)]+)\)',  # (Extension: 8088)
-                r'\(ext\.?\s*([^)]+)\)',      # (ext 8088) or (ext. 8088)
-                r'\(x\s*([^)]+)\)',           # (x 8088)
-                r'ext\.?\s*(\d+)',            # ext 8088 or ext. 8088
-                r'extension\s*(\d+)',         # extension 8088
-            ]
-            
-            extension_found = None
-            clean_main = main_part
-            
-            for pattern in extension_patterns:
-                match = re.search(pattern, main_part, re.IGNORECASE)
-                if match:
-                    extension_found = match.group(1).strip()
-                    # Remove the extension part from main
-                    clean_main = re.sub(pattern, '', main_part, flags=re.IGNORECASE).strip()
-                    break
-            
-            parsed["main"] = clean_main
-            parsed["extension"] = extension_found
-            
-            # Parse options
-            for option_part in option_parts:
-                option_part = option_part.strip()
-                # Match "Option X: Description" or "Press X for Description"
-                option_match = re.match(r'Option\s+(\d+):\s*(.+)', option_part, re.IGNORECASE)
-                if option_match:
-                    parsed["options"].append({
-                        "number": option_match.group(1),
-                        "description": option_match.group(2).strip()
-                    })
-                else:
-                    # Try alternate format: "Press 1 for Alarm"
-                    press_match = re.match(r'(?:Press|Dial)\s+(\d+)\s+for\s+(.+)', option_part, re.IGNORECASE)
-                    if press_match:
+                
+                # Parse extension from main part
+                extension_patterns = [
+                    r'\(Extension:\s*([^)]+)\)',  # (Extension: 8088)
+                    r'\(ext\.?\s*([^)]+)\)',      # (ext 8088) or (ext. 8088)
+                    r'\(x\s*([^)]+)\)',           # (x 8088)
+                    r'ext\.?\s*(\d+)',            # ext 8088 or ext. 8088
+                    r'extension\s*(\d+)',         # extension 8088
+                ]
+                
+                extension_found = None
+                clean_main = main_part
+                
+                for pattern in extension_patterns:
+                    match = re.search(pattern, main_part, re.IGNORECASE)
+                    if match:
+                        extension_found = match.group(1).strip()
+                        # Remove the extension part from main
+                        clean_main = re.sub(pattern, '', main_part, flags=re.IGNORECASE).strip()
+                        break
+                
+                parsed["main"] = clean_main
+                parsed["extension"] = extension_found
+                
+                # Parse options
+                for option_part in option_parts:
+                    option_part = option_part.strip()
+                    # Match "Option X: Description" or "Press X for Description"
+                    option_match = re.match(r'Option\s+(\d+):\s*(.+)', option_part, re.IGNORECASE)
+                    if option_match:
                         parsed["options"].append({
-                            "number": press_match.group(1),
-                            "description": press_match.group(2).strip()
+                            "number": option_match.group(1),
+                            "description": option_match.group(2).strip()
                         })
-            
+                    else:
+                        # Try alternate format: "Press 1 for Alarm"
+                        press_match = re.match(r'(?:Press|Dial)\s+(\d+)\s+for\s+(.+)', option_part, re.IGNORECASE)
+                        if press_match:
+                            parsed["options"].append({
+                                "number": press_match.group(1),
+                                "description": press_match.group(2).strip()
+                            })
+                
                 hierarchical_contacts[name] = parsed
                 
             except Exception as e:
