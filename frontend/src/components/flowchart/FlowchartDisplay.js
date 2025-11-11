@@ -260,6 +260,7 @@ const FlowchartDisplay = ({ process, onNodeClick, onUpdateNode, selectedNodeId }
             criticalActions={quickReference.criticalActions || []}
             keyTimings={quickReference.keyTimings || []}
             recoverySteps={nodes.filter(n => n.status === 'recovery' || n.status === 'verification')}
+            supportingReferences={quickReference.supportingReferences || []}
           />
 
           {quickReference.emergencyContacts && Object.keys(quickReference.emergencyContacts).length > 0 && (
