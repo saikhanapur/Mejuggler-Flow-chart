@@ -1042,6 +1042,399 @@ class BackendTester:
         except Exception as e:
             self.log_result("Error Handling (Missing Fields)", False, f"Error: {str(e)}")
 
+    def test_manual_node_editing_feature(self):
+        """Test Manual Node Editing Feature (Action Item #2) - CRITICAL TEST"""
+        print("\n✏️ CRITICAL TEST: Manual Node Editing Feature (Action Item #2)")
+        print("=" * 90)
+        print("🎯 Testing Tesla-ready manual editing for flowchart nodes")
+        
+        # Step 1: Login as test user
+        print("\n🔐 Step 1: User Authentication...")
+        if not self.test_user_login():
+            self.log_result("Manual Node Editing - Authentication", False, "Failed to login test user")
+            return
+        
+        # Step 2: Get list of processes
+        print("\n📋 Step 2: Getting list of processes...")
+        processes = self.get_user_processes()
+        if not processes:
+            self.log_result("Manual Node Editing - Get Processes", False, "No processes available for testing")
+            return
+        
+        # Step 3: Select first process with nodes
+        print("\n🎯 Step 3: Selecting process with nodes...")
+        test_process = None
+        for process in processes:
+            if process.get('nodes') and len(process['nodes']) > 0:
+                test_process = process
+                break
+        
+        if not test_process:
+            self.log_result("Manual Node Editing - Process Selection", False, "No processes with nodes found")
+            return
+        
+        process_id = test_process['id']
+        first_node = test_process['nodes'][0]
+        first_node_id = first_node['id']
+        
+        print(f"   ✅ Selected process: {test_process.get('name', 'Unknown')} (ID: {process_id})")
+        print(f"   ✅ Selected node: {first_node.get('title', 'Unknown')} (ID: {first_node_id})")
+        
+        # Test 1: Priority Update
+        print("\n🔴 Test 1: Priority Update...")
+        self.test_node_priority_update(process_id, first_node_id)
+        
+        # Test 2: Title Update
+        print("\n📝 Test 2: Title Update...")
+        self.test_node_title_update(process_id, first_node_id)
+        
+        # Test 3: Description Update
+        print("\n📄 Test 3: Description Update...")
+        self.test_node_description_update(process_id, first_node_id)
+        
+        # Test 4: Error Handling
+        print("\n⚠️ Test 4: Error Handling...")
+        self.test_node_editing_error_handling(process_id, first_node_id)
+        
+        print("\n✅ Manual Node Editing Feature Testing Complete!")
+
+    def test_user_login(self):
+        """Helper: Login test user and store auth token"""
+        try:
+            # First try to signup (in case user doesn't exist)
+            signup_payload = {
+                "email": self.test_user_email,
+                "password": self.test_user_password,
+                "name": self.test_user_name
+            }
+            
+            signup_response = self.session.post(f"{self.base_url}/auth/signup", 
+                                              json=signup_payload, timeout=TIMEOUT)
+            
+            # Now login
+            login_payload = {
+                "email": self.test_user_email,
+                "password": self.test_user_password
+            }
+            
+            login_response = self.session.post(f"{self.base_url}/auth/login", 
+                                             json=login_payload, timeout=TIMEOUT)
+            
+            if login_response.status_code == 200:
+                result = login_response.json()
+                self.auth_token = result.get('token')
+                if self.auth_token:
+                    # Add auth header to session
+                    self.session.headers.update({
+                        'Authorization': f'Bearer {self.auth_token}'
+                    })
+                    print(f"   ✅ Logged in as: {self.test_user_email}")
+                    return True
+                else:
+                    print(f"   ❌ Login successful but no token received")
+                    return False
+            else:
+                print(f"   ❌ Login failed: HTTP {login_response.status_code}")
+                return False
+                
+        except Exception as e:
+            print(f"   ❌ Login error: {str(e)}")
+            return False
+
+    def get_user_processes(self):
+        """Helper: Get user's processes"""
+        try:
+            response = self.session.get(f"{self.base_url}/process", timeout=TIMEOUT)
+            if response.status_code == 200:
+                processes = response.json()
+                print(f"   ✅ Retrieved {len(processes)} processes")
+                return processes
+            else:
+                print(f"   ❌ Failed to get processes: HTTP {response.status_code}")
+                return []
+        except Exception as e:
+            print(f"   ❌ Error getting processes: {str(e)}")
+            return []
+
+    def test_node_priority_update(self, process_id, node_id):
+        """Test updating node priority"""
+        try:
+            # Update priority to P0
+            update_payload = {
+                "nodeId": node_id,
+                "field": "priority",
+                "value": "P0"
+            }
+            
+            response = self.session.patch(f"{self.base_url}/process/{process_id}/node", 
+                                        json=update_payload, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Verify response structure
+                if (result.get('success') and 
+                    result.get('message') == 'Node updated' and 
+                    'updatedNode' in result):
+                    
+                    updated_node = result['updatedNode']
+                    
+                    # Verify priority update
+                    priority = updated_node.get('priority', {})
+                    if (priority.get('level') == 'P0' and 
+                        priority.get('manualOverride') == True and
+                        'overrideAt' in priority):
+                        
+                        print(f"   ✅ Priority updated to P0 with manualOverride flag")
+                        
+                        # Verify persistence by getting process again
+                        verify_response = self.session.get(f"{self.base_url}/process/{process_id}", 
+                                                         timeout=TIMEOUT)
+                        if verify_response.status_code == 200:
+                            process = verify_response.json()
+                            node = next((n for n in process.get('nodes', []) if n.get('id') == node_id), None)
+                            if node and node.get('priority', {}).get('level') == 'P0':
+                                self.log_result("Node Priority Update", True, 
+                                              "Priority updated to P0 with manualOverride and persisted")
+                            else:
+                                self.log_result("Node Priority Update", False, 
+                                              "Priority update not persisted in database")
+                        else:
+                            self.log_result("Node Priority Update", False, 
+                                          "Could not verify persistence")
+                    else:
+                        self.log_result("Node Priority Update", False, 
+                                      f"Priority not properly updated: {priority}")
+                else:
+                    self.log_result("Node Priority Update", False, 
+                                  f"Invalid response structure: {result}")
+            else:
+                self.log_result("Node Priority Update", False, 
+                              f"HTTP {response.status_code}: {response.text}")
+                
+        except Exception as e:
+            self.log_result("Node Priority Update", False, f"Error: {str(e)}")
+
+    def test_node_title_update(self, process_id, node_id):
+        """Test updating node title"""
+        try:
+            new_title = "Updated Test Title"
+            update_payload = {
+                "nodeId": node_id,
+                "field": "title",
+                "value": new_title
+            }
+            
+            response = self.session.patch(f"{self.base_url}/process/{process_id}/node", 
+                                        json=update_payload, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Verify response structure
+                if (result.get('success') and 
+                    result.get('message') == 'Node updated' and 
+                    'updatedNode' in result):
+                    
+                    updated_node = result['updatedNode']
+                    
+                    # Verify title update
+                    if updated_node.get('title') == new_title:
+                        
+                        # Verify edit history tracking
+                        edit_history = updated_node.get('editHistory', [])
+                        title_edit = next((e for e in edit_history if e.get('field') == 'title'), None)
+                        
+                        if title_edit and title_edit.get('newValue') == new_title:
+                            print(f"   ✅ Title updated with edit history tracking")
+                            
+                            # Verify persistence
+                            verify_response = self.session.get(f"{self.base_url}/process/{process_id}", 
+                                                             timeout=TIMEOUT)
+                            if verify_response.status_code == 200:
+                                process = verify_response.json()
+                                node = next((n for n in process.get('nodes', []) if n.get('id') == node_id), None)
+                                if node and node.get('title') == new_title:
+                                    self.log_result("Node Title Update", True, 
+                                                  "Title updated with editHistory and persisted")
+                                else:
+                                    self.log_result("Node Title Update", False, 
+                                                  "Title update not persisted")
+                            else:
+                                self.log_result("Node Title Update", False, 
+                                              "Could not verify persistence")
+                        else:
+                            self.log_result("Node Title Update", False, 
+                                          "Edit history not properly tracked")
+                    else:
+                        self.log_result("Node Title Update", False, 
+                                      f"Title not updated. Expected: {new_title}, Got: {updated_node.get('title')}")
+                else:
+                    self.log_result("Node Title Update", False, 
+                                  f"Invalid response structure: {result}")
+            else:
+                self.log_result("Node Title Update", False, 
+                              f"HTTP {response.status_code}: {response.text}")
+                
+        except Exception as e:
+            self.log_result("Node Title Update", False, f"Error: {str(e)}")
+
+    def test_node_description_update(self, process_id, node_id):
+        """Test updating node description"""
+        try:
+            new_description = "Updated description text"
+            update_payload = {
+                "nodeId": node_id,
+                "field": "description",
+                "value": new_description
+            }
+            
+            response = self.session.patch(f"{self.base_url}/process/{process_id}/node", 
+                                        json=update_payload, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Verify response structure
+                if (result.get('success') and 
+                    result.get('message') == 'Node updated' and 
+                    'updatedNode' in result):
+                    
+                    updated_node = result['updatedNode']
+                    
+                    # Verify description update
+                    if updated_node.get('description') == new_description:
+                        
+                        # Verify persistence
+                        verify_response = self.session.get(f"{self.base_url}/process/{process_id}", 
+                                                         timeout=TIMEOUT)
+                        if verify_response.status_code == 200:
+                            process = verify_response.json()
+                            node = next((n for n in process.get('nodes', []) if n.get('id') == node_id), None)
+                            if node and node.get('description') == new_description:
+                                self.log_result("Node Description Update", True, 
+                                              "Description updated and persisted")
+                            else:
+                                self.log_result("Node Description Update", False, 
+                                              "Description update not persisted")
+                        else:
+                            self.log_result("Node Description Update", False, 
+                                          "Could not verify persistence")
+                    else:
+                        self.log_result("Node Description Update", False, 
+                                      f"Description not updated. Expected: {new_description}, Got: {updated_node.get('description')}")
+                else:
+                    self.log_result("Node Description Update", False, 
+                                  f"Invalid response structure: {result}")
+            else:
+                self.log_result("Node Description Update", False, 
+                              f"HTTP {response.status_code}: {response.text}")
+                
+        except Exception as e:
+            self.log_result("Node Description Update", False, f"Error: {str(e)}")
+
+    def test_node_editing_error_handling(self, process_id, node_id):
+        """Test error handling for node editing"""
+        
+        # Test 1: Invalid field
+        try:
+            update_payload = {
+                "nodeId": node_id,
+                "field": "invalid",
+                "value": "test"
+            }
+            
+            response = self.session.patch(f"{self.base_url}/process/{process_id}/node", 
+                                        json=update_payload, timeout=TIMEOUT)
+            
+            if response.status_code == 400:
+                self.log_result("Node Edit Error (Invalid Field)", True, 
+                              "Correctly returns 400 for invalid field")
+            else:
+                self.log_result("Node Edit Error (Invalid Field)", False, 
+                              f"Expected 400, got HTTP {response.status_code}")
+        except Exception as e:
+            self.log_result("Node Edit Error (Invalid Field)", False, f"Error: {str(e)}")
+        
+        # Test 2: Invalid priority value (should default to P3)
+        try:
+            update_payload = {
+                "nodeId": node_id,
+                "field": "priority",
+                "value": "P99"
+            }
+            
+            response = self.session.patch(f"{self.base_url}/process/{process_id}/node", 
+                                        json=update_payload, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                result = response.json()
+                updated_node = result.get('updatedNode', {})
+                priority_level = updated_node.get('priority', {}).get('level')
+                
+                if priority_level == 'P3':  # Should default to P3
+                    self.log_result("Node Edit Error (Invalid Priority)", True, 
+                                  "Invalid priority P99 correctly defaulted to P3")
+                else:
+                    self.log_result("Node Edit Error (Invalid Priority)", False, 
+                                  f"Expected P3 default, got {priority_level}")
+            else:
+                self.log_result("Node Edit Error (Invalid Priority)", False, 
+                              f"Expected 200 with default, got HTTP {response.status_code}")
+        except Exception as e:
+            self.log_result("Node Edit Error (Invalid Priority)", False, f"Error: {str(e)}")
+        
+        # Test 3: Non-existent node
+        try:
+            fake_node_id = "fake-node-id"
+            update_payload = {
+                "nodeId": fake_node_id,
+                "field": "title",
+                "value": "test"
+            }
+            
+            response = self.session.patch(f"{self.base_url}/process/{process_id}/node", 
+                                        json=update_payload, timeout=TIMEOUT)
+            
+            if response.status_code == 404:
+                self.log_result("Node Edit Error (Non-existent Node)", True, 
+                              "Correctly returns 404 for non-existent node")
+            else:
+                self.log_result("Node Edit Error (Non-existent Node)", False, 
+                              f"Expected 404, got HTTP {response.status_code}")
+        except Exception as e:
+            self.log_result("Node Edit Error (Non-existent Node)", False, f"Error: {str(e)}")
+        
+        # Test 4: Without auth token (should test owner-only access)
+        try:
+            # Temporarily remove auth header
+            original_headers = self.session.headers.copy()
+            if 'Authorization' in self.session.headers:
+                del self.session.headers['Authorization']
+            
+            update_payload = {
+                "nodeId": node_id,
+                "field": "title",
+                "value": "unauthorized test"
+            }
+            
+            response = self.session.patch(f"{self.base_url}/process/{process_id}/node", 
+                                        json=update_payload, timeout=TIMEOUT)
+            
+            # Restore headers
+            self.session.headers.update(original_headers)
+            
+            if response.status_code == 401:
+                self.log_result("Node Edit Error (No Auth)", True, 
+                              "Correctly returns 401 without auth token")
+            else:
+                self.log_result("Node Edit Error (No Auth)", False, 
+                              f"Expected 401, got HTTP {response.status_code}")
+        except Exception as e:
+            # Restore headers in case of error
+            self.session.headers.update(original_headers)
+            self.log_result("Node Edit Error (No Auth)", False, f"Error: {str(e)}")
+
     def test_smart_semantic_search_final_feature(self):
         """Test Smart Semantic Search (Feature 7 - Option B Phase 2 - FINAL FEATURE) - CRITICAL TEST"""
         print("\n🔍 CRITICAL TEST: Smart Semantic Search (Feature 7 - Option B Phase 2 - FINAL FEATURE)")
