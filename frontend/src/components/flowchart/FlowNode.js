@@ -253,14 +253,66 @@ const FlowNode = ({ node, onClick, isSelected }) => {
           <StatusIcon status={node.status} />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 
-            className="font-semibold text-sm leading-tight break-words"
-            style={{ fontFamily: 'Inter, sans-serif' }}
-          >
-            {node.title}
-          </h3>
+          <div className="flex items-start justify-between gap-2">
+            <h3 
+              className="font-semibold text-sm leading-tight break-words flex-1"
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            >
+              {node.title}
+            </h3>
+            
+            {/* Expand/Collapse button if node has sub-steps */}
+            {hasSubSteps && (
+              <button
+                onClick={handleExpandToggle}
+                className="flex-shrink-0 p-1 hover:bg-black/10 rounded transition-colors"
+                title={isExpanded ? "Collapse details" : "Expand details"}
+              >
+                <svg 
+                  className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            )}
+          </div>
+          
+          {/* Expandable sub-steps section */}
+          {hasSubSteps && isExpanded && (
+            <div 
+              className="mt-3 pt-3 border-t border-black/10 space-y-1.5"
+              style={{ animation: 'slideDown 0.3s ease-out' }}
+            >
+              <div className="text-xs font-semibold text-black/60 mb-2">
+                Detailed Steps:
+              </div>
+              {subSteps.map((step, idx) => (
+                <div key={idx} className="flex items-start gap-2 text-xs text-black/80">
+                  <span className="flex-shrink-0 font-semibold text-black/60">{idx + 1}.</span>
+                  <span className="flex-1">{step}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
+      
+      {/* CSS animation for slide down */}
+      <style jsx>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };
