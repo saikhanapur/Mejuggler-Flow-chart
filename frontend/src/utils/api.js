@@ -231,6 +231,16 @@ export const api = {
     return res.data;
   },
 
+  // Update specific node field (priority, title, description)
+  updateProcessNode: async (processId, nodeId, field, value) => {
+    const res = await axios.patch(`${API}/process/${processId}/node`, {
+      nodeId,
+      field,
+      value
+    });
+    return res.data;
+  },
+
   reorderNodes: async (processId, nodeIds) => {
     const res = await axios.patch(`${API}/process/${processId}/reorder`, { nodeIds });
     return res.data;
