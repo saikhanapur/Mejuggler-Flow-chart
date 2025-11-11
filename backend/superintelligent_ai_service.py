@@ -1174,10 +1174,15 @@ Analyze now:"""
                     if n.get("status") == "recovery"
                 ]
                 
+                # Parse contacts hierarchically (extensions + options)
+                hierarchical_contacts = self.parse_contacts_hierarchical(
+                    extracted.get("contacts", {})
+                )
+                
                 process["quickReference"] = {
                     "criticalActions": critical_actions_list,
                     "keyTimings": extracted.get("timings", []),
-                    "emergencyContacts": extracted.get("contacts", {}),
+                    "emergencyContacts": hierarchical_contacts,
                     "recoverySteps": recovery_steps_list
                 }
                 
@@ -1565,10 +1570,15 @@ Analyze now:"""
                     if n.get("status") == "recovery"
                 ]
                 
+                # Parse contacts hierarchically (extensions + options)
+                hierarchical_contacts = self.parse_contacts_hierarchical(
+                    extracted.get("contacts", {})
+                )
+                
                 process["quickReference"] = {
                     "criticalActions": critical_actions_list,
                     "keyTimings": extracted.get("timings", []),
-                    "emergencyContacts": extracted.get("contacts", {}),
+                    "emergencyContacts": hierarchical_contacts,
                     "recoverySteps": recovery_steps_list
                 }
                 
