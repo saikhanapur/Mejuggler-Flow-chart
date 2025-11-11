@@ -275,28 +275,31 @@ Return ONLY valid JSON."""
         # ============ POST-PROCESSING: FORCE DECISION & LOOP DETECTION ============
         # AI sometimes misses isDecisionPoint even when decisionCriteria exists
         # This ensures visual intelligence is always applied
-        nodes = enhanced.get('nodes', [])
-        for node in nodes:
-            # FORCE isDecisionPoint if any decision indicators present
-            decision_keywords = ['if', 'check if', 'verify', 'has ', ' or ', '?', 'yes/no', 'true/false', 'depends on']
-            title_lower = node.get('title', '').lower()
-            details_lower = node.get('details', '').lower()
-            criteria = node.get('decisionCriteria', '')
-            
-            # If ANY decision indicator, force it to true
-            if criteria or any(kw in title_lower for kw in decision_keywords) or any(kw in details_lower for kw in ['if ', 'check if', 'verify whether']):
-                node['isDecisionPoint'] = True
-                if not criteria:
-                    # Generate basic criteria if missing
-                    node['decisionCriteria'] = f"Based on {node.get('title', 'condition')}"
-                logger.info(f"✅ FORCED decision point: {node.get('title')}")
-            
-            # FORCE isLoop if loop indicators present
-            loop_keywords = ['loop', 'repeat', 'until', 'every', 'check again', 'monitor', 'continue', 'recurring']
-            if any(kw in title_lower for kw in loop_keywords) or any(kw in details_lower for kw in ['repeat', 'until', 'every ', 'loop back']):
-                if not node.get('isLoop'):
-                    node['isLoop'] = True
-                    logger.info(f"✅ FORCED loop detection: {node.get('title')}")
+        try:
+            nodes = enhanced.get('nodes', [])
+            for node in nodes:
+                # FORCE isDecisionPoint if any decision indicators present
+                decision_keywords = ['if', 'check if', 'verify', 'has ', ' or ', '?', 'yes/no', 'true/false', 'depends on']
+                title_lower = node.get('title', '').lower()
+                details_lower = node.get('details', '').lower()
+                criteria = node.get('decisionCriteria', '')
+                
+                # If ANY decision indicator, force it to true
+                if criteria or any(kw in title_lower for kw in decision_keywords) or any(kw in details_lower for kw in ['if ', 'check if', 'verify whether']):
+                    node['isDecisionPoint'] = True
+                    if not criteria:
+                        # Generate basic criteria if missing
+                        node['decisionCriteria'] = f"Based on {node.get('title', 'condition')}"
+                    logger.info(f"✅ FORCED decision point: {node.get('title')}")
+                
+                # FORCE isLoop if loop indicators present
+                loop_keywords = ['loop', 'repeat', 'until', 'every', 'check again', 'monitor', 'continue', 'recurring']
+                if any(kw in title_lower for kw in loop_keywords) or any(kw in details_lower for kw in ['repeat', 'until', 'every ', 'loop back']):
+                    if not node.get('isLoop'):
+                        node['isLoop'] = True
+                        logger.info(f"✅ FORCED loop detection: {node.get('title')}")
+        except Exception as e:
+            logger.warning(f"⚠️ Post-processing failed: {e}")
         
         # ============ FIX #1: SMART POSITIONING WITH MERGE POINT DETECTION ============
         # Enhanced positioning with:
