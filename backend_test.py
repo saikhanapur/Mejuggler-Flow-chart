@@ -1161,7 +1161,7 @@ RECOVERY:
 - Complete incident report"""
             
             payload = {
-                "documentText": wilsar_bcp_doc,
+                "text": wilsar_bcp_doc,
                 "inputType": "document"
             }
             
