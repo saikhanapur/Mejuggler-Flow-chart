@@ -31,31 +31,48 @@ const QuickReference = ({ criticalActions, keyTimings, recoverySteps }) => {
         </button>
         {isCriticalExpanded && (
           <div className="px-6 pb-6 animate-fade-in">
-        <div className="space-y-2 text-sm text-red-800">
-          {criticalActions && criticalActions.length > 0 ? (
-            criticalActions.map((action, idx) => (
-              <div key={idx} className="flex items-start gap-2">
-                <span className="text-red-600 font-bold">•</span>
-                <span>{action}</span>
-              </div>
-            ))
-          ) : (
-            <div className="flex items-start gap-2">
-              <span className="text-red-600 font-bold">•</span>
-              <span>No critical actions identified</span>
+            <div className="space-y-2 text-sm text-red-800">
+              {criticalActions && criticalActions.length > 0 ? (
+                criticalActions.map((action, idx) => (
+                  <div key={idx} className="flex items-start gap-2">
+                    <span className="text-red-600 font-bold">•</span>
+                    <span>{action}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-start gap-2">
+                  <span className="text-red-600 font-bold">•</span>
+                  <span>No critical actions identified</span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Key Timings */}
-      <div className="bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-300 rounded-xl p-6 shadow-lg">
-        <h3 className="font-bold text-amber-900 mb-4 flex items-center gap-2 text-lg">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <div className="bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-300 rounded-xl shadow-lg overflow-hidden">
+        <button
+          onClick={() => setIsTimingsExpanded(!isTimingsExpanded)}
+          className="w-full p-6 pb-4 text-left hover:bg-amber-100/50 transition-colors flex items-center justify-between group"
+        >
+          <h3 className="font-bold text-amber-900 flex items-center gap-2 text-lg">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Key Timings
+          </h3>
+          <svg 
+            className={`w-5 h-5 text-amber-700 transition-transform duration-300 ${isTimingsExpanded ? 'rotate-180' : ''}`}
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
-          Key Timings
-        </h3>
+        </button>
+        {isTimingsExpanded && (
+          <div className="px-6 pb-6 animate-fade-in">
         <div className="space-y-2 text-sm text-amber-800">
           {keyTimings && keyTimings.length > 0 ? (
             keyTimings.map((timing, idx) => (
