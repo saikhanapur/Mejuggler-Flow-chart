@@ -1835,7 +1835,17 @@ Analyze now:"""
                     # Try alternate format: "Press 1 for Alarm"
                     press_match = re.match(r'(?:Press|Dial)\s+(\d+)\s+for\s+(.+)', option_part, re.IGNORECASE)
                     if press_match:
-
+                        parsed["options"].append({
+                            "number": press_match.group(1),
+                            "description": press_match.group(2).strip()
+                        })
+            
+            return parsed
+        
+        except Exception as e:
+            logger.warning(f"Error parsing contact hierarchically: {e}")
+            # Fallback to simple format
+            return {"main": contact_text, "extension": None, "options": []}
 
     def extract_key_timings_enhanced(self, nodes: List[Dict], extracted_data: Dict) -> List[str]:
         """
