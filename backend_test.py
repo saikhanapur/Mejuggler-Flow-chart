@@ -1042,6 +1042,167 @@ class BackendTester:
         except Exception as e:
             self.log_result("Error Handling (Missing Fields)", False, f"Error: {str(e)}")
 
+    def test_intelligent_critical_actions_extraction(self):
+        """Test Intelligent Critical Actions Extraction (Feature 1 - Option B) - PRIORITY TEST"""
+        print("\n🎯 PRIORITY TEST: Intelligent Critical Actions Extraction (Feature 1 - Option B)")
+        print("=" * 80)
+        
+        # Test document with varying urgency levels from review request
+        emergency_response_doc = """Emergency Response Procedure
+        
+        1. Call 111 immediately if injury suspected
+        2. Notify on-duty manager within 5 minutes
+        3. Document incident details in system
+        4. Check every 30 minutes until resolved
+        5. Email stakeholder update
+        6. Create P1 ticket urgently
+        7. Monitor system status
+        8. Verify resolution
+        9. Complete final report
+        """
+        
+        try:
+            payload = {
+                "text": emergency_response_doc,
+                "inputType": "document"
+            }
+            
+            response = self.session.post(f"{self.base_url}/process/eroad-style", 
+                                       json=payload, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Check if we have processes array
+                if 'processes' in result and result['processes']:
+                    process = result['processes'][0]
+                    quick_reference = process.get('quickReference', {})
+                    critical_actions = quick_reference.get('criticalActions', [])
+                    
+                    validation_results = []
+                    
+                    # Test 1: Verify top 5 critical actions extracted
+                    if len(critical_actions) == 5:
+                        validation_results.append("✅ Critical Actions Count: Exactly 5 actions extracted")
+                    elif len(critical_actions) < 5:
+                        validation_results.append(f"⚠️ Critical Actions Count: {len(critical_actions)} actions (acceptable if <5 urgent actions exist)")
+                    else:
+                        validation_results.append(f"❌ Critical Actions Count: {len(critical_actions)} actions (expected max 5)")
+                    
+                    # Test 2: Verify urgency ranking (expected order from review request)
+                    expected_order = [
+                        "call 111 immediately",
+                        "create p1 ticket urgently", 
+                        "notify on-duty manager within 5 minutes",
+                        "check every 30 minutes",
+                        "email stakeholder"
+                    ]
+                    
+                    # Check if most urgent actions are at the top
+                    if critical_actions:
+                        first_action = critical_actions[0].lower()
+                        if "call 111" in first_action and "immediately" in first_action:
+                            validation_results.append("✅ Urgency Ranking: 'Call 111 immediately' is first (highest urgency)")
+                        else:
+                            validation_results.append(f"❌ Urgency Ranking: '{critical_actions[0]}' is first (expected 'Call 111 immediately')")
+                        
+                        # Check for P1 ticket in top 3
+                        top_3_text = " ".join(critical_actions[:3]).lower()
+                        if "p1" in top_3_text and "urgent" in top_3_text:
+                            validation_results.append("✅ Urgency Ranking: 'Create P1 ticket urgently' in top 3")
+                        else:
+                            validation_results.append("❌ Urgency Ranking: 'Create P1 ticket urgently' not in top 3")
+                        
+                        # Check for manager notification in top 3
+                        if "manager" in top_3_text and ("5 minutes" in top_3_text or "within" in top_3_text):
+                            validation_results.append("✅ Urgency Ranking: Manager notification with time window in top 3")
+                        else:
+                            validation_results.append("❌ Urgency Ranking: Manager notification with time window not in top 3")
+                    
+                    # Test 3: Verify time windows preserved
+                    all_actions_text = " ".join(critical_actions).lower()
+                    time_windows_found = []
+                    
+                    if "immediately" in all_actions_text:
+                        time_windows_found.append("immediately")
+                    if "within 5 minutes" in all_actions_text or "5 minutes" in all_actions_text:
+                        time_windows_found.append("within 5 minutes")
+                    if "asap" in all_actions_text or "urgently" in all_actions_text:
+                        time_windows_found.append("ASAP/urgently")
+                    if "30 minutes" in all_actions_text:
+                        time_windows_found.append("30 minutes")
+                    
+                    if len(time_windows_found) >= 3:
+                        validation_results.append(f"✅ Time Windows: {len(time_windows_found)} time constraints preserved: {time_windows_found}")
+                    else:
+                        validation_results.append(f"❌ Time Windows: Only {len(time_windows_found)} time constraints found: {time_windows_found}")
+                    
+                    # Test 4: Verify verb-first framing where possible
+                    verb_first_count = 0
+                    action_verbs = ['call', 'notify', 'create', 'check', 'email', 'monitor', 'verify', 'complete', 'document']
+                    
+                    for action in critical_actions:
+                        first_word = action.split()[0].lower() if action.split() else ""
+                        if first_word in action_verbs:
+                            verb_first_count += 1
+                    
+                    if verb_first_count >= 3:
+                        validation_results.append(f"✅ Verb-First Framing: {verb_first_count}/{len(critical_actions)} actions start with action verbs")
+                    else:
+                        validation_results.append(f"⚠️ Verb-First Framing: {verb_first_count}/{len(critical_actions)} actions start with action verbs")
+                    
+                    # Test 5: Verify NOT just returning all critical status nodes
+                    # This should be intelligent extraction, not simple status filtering
+                    if len(critical_actions) <= 5:
+                        validation_results.append("✅ Intelligent Extraction: Limited to top 5 (not returning all nodes)")
+                    else:
+                        validation_results.append("❌ Intelligent Extraction: Returning more than 5 actions (may be simple status filter)")
+                    
+                    # Test 6: Check recovery steps also extracted
+                    recovery_steps = quick_reference.get('recoverySteps', [])
+                    if recovery_steps:
+                        validation_results.append(f"✅ Recovery Steps: {len(recovery_steps)} recovery steps extracted")
+                    else:
+                        validation_results.append("⚠️ Recovery Steps: No recovery steps found (may be acceptable)")
+                    
+                    # Test 7: Verify response structure
+                    required_fields = ['criticalActions', 'keyTimings', 'emergencyContacts']
+                    missing_fields = [field for field in required_fields if field not in quick_reference]
+                    
+                    if not missing_fields:
+                        validation_results.append("✅ Response Structure: All required quickReference fields present")
+                    else:
+                        validation_results.append(f"❌ Response Structure: Missing fields: {missing_fields}")
+                    
+                    # Overall assessment
+                    failed_checks = [r for r in validation_results if r.startswith("❌")]
+                    warning_checks = [r for r in validation_results if r.startswith("⚠️")]
+                    
+                    if not failed_checks:
+                        if len(warning_checks) <= 1:
+                            self.log_result("Intelligent Critical Actions Extraction", True, 
+                                          f"All critical tests passed. {'; '.join(validation_results)}")
+                        else:
+                            self.log_result("Intelligent Critical Actions Extraction", True, 
+                                          f"Core functionality working with minor issues. {'; '.join(validation_results)}")
+                    else:
+                        self.log_result("Intelligent Critical Actions Extraction", False, 
+                                      f"Critical issues found: {'; '.join(failed_checks)}")
+                    
+                    # Log the actual critical actions for review
+                    print(f"\n📋 Extracted Critical Actions:")
+                    for i, action in enumerate(critical_actions, 1):
+                        print(f"   {i}. {action}")
+                    
+                else:
+                    self.log_result("Intelligent Critical Actions Extraction", False, 
+                                  "No processes found in response")
+            else:
+                self.log_result("Intelligent Critical Actions Extraction", False, 
+                              f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("Intelligent Critical Actions Extraction", False, f"Error: {str(e)}")
+
     def test_multi_process_detection_and_bcp_intelligence(self):
         """Test Multi-Process Detection & BCP Intelligence - PRIORITY TESTS from Review Request"""
         print("\n🎯 PRIORITY TESTS: Multi-Process Detection & BCP Intelligence")
