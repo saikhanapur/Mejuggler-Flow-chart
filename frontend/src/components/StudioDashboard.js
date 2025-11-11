@@ -191,16 +191,29 @@ const StudioDashboard = () => {
         )}
 
         {/* Search and Filters */}
-        <div className="mb-8 flex flex-col md:flex-row gap-4 items-center">
-          <div className="flex-1 relative w-full">
-            <Search className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-            <Input
-              placeholder="Search your flows..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-12 rounded-full border-2 border-slate-200 focus:border-purple-400 transition-all"
+        <div className="mb-6 space-y-4">
+          {/* AI Semantic Search */}
+          <div className="flex items-center justify-center">
+            <SemanticSearch 
+              workspaceId={currentStudio?.id}
+              onResultClick={(result) => {
+                // Navigate to the process
+                navigate(`/studio/flowchart/${result.processId}`);
+              }}
             />
           </div>
+          
+          {/* Traditional Search */}
+          <div className="flex flex-col md:flex-row gap-4 items-center">
+            <div className="flex-1 relative w-full">
+              <Search className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+              <Input
+                placeholder="Search your flows by name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-12 rounded-full border-2 border-slate-200 focus:border-purple-400 transition-all"
+              />
+            </div>
           <div className="flex gap-2">
             <Button
               variant={filterStatus === 'all' ? 'default' : 'outline'}
