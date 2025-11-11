@@ -324,12 +324,21 @@ class ManualNodeEditingTester:
         
         # Test 4d: Without auth token
         try:
-            # Remove auth header temporarily
+            # Remove auth header temporarily and clear cookies
             original_headers = self.session.headers.copy()
+            original_cookies = self.session.cookies.copy()
+            
             print(f"   🔍 Original headers: {list(original_headers.keys())}")
+            print(f"   🔍 Original cookies: {list(original_cookies.keys())}")
+            
             if 'Authorization' in self.session.headers:
                 del self.session.headers['Authorization']
+            
+            # Clear all cookies to ensure no session_token is sent
+            self.session.cookies.clear()
+            
             print(f"   🔍 Headers after removal: {list(self.session.headers.keys())}")
+            print(f"   🔍 Cookies after clearing: {list(self.session.cookies.keys())}")
             
             update_payload = {
                 "nodeId": node_id,
@@ -341,10 +350,10 @@ class ManualNodeEditingTester:
                                         json=update_payload, timeout=TIMEOUT)
             
             print(f"   🔍 Response status: {response.status_code}")
-            print(f"   🔍 Response text: {response.text}")
             
-            # Restore headers
+            # Restore headers and cookies
             self.session.headers.update(original_headers)
+            self.session.cookies.update(original_cookies)
             
             if response.status_code == 401:
                 results.append(self.log_result("Error Handling (No Auth)", True, 
