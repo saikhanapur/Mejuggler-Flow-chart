@@ -4,3 +4,6 @@
 🎯 Expected Patterns: every 30 minutes, hourly, within 5 minutes, twice per day, daily, by 2:00 PM
 
 🔍 Sending POST /api/process/eroad-style...
+❌ Test Error: HTTPSConnectionPool(host='flowchart-genius-2.preview.emergentagent.com', port=443): Read timed out. (read timeout=120)
+
+❌ Enhanced Key Timings Extraction: NEEDS ATTENTION
