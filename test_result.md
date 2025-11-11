@@ -469,15 +469,18 @@ frontend:
 
   - task: "Multi-Process Detection and Review"
     implemented: true
-    working: true
+    working: "NA"
     file: "/app/frontend/src/components/MultiProcessReview.js"
     stuck_count: 0
-    priority: "high"
-    needs_retesting: false
+    priority: "critical"
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
         comment: "Multi-process detection working. When document contains multiple processes (detected by AI), shows MultiProcessReview component allowing user to: 1) Review each detected process 2) Edit process names/descriptions 3) Create all or selected processes 4) Merge into one process. Successfully tested with Data Migration document (detected 4-5 processes). All processes assigned to current workspace. CREATE ALL and individual creation tested and working."
+      - working: "NA"
+        agent: "main"
+        comment: "CRITICAL FIX: User reported TypeError when uploading recruitment document with 9 processes. Fixed ProcessCreator.js to validate processes array before accessing processes[0]. Added defensive check (lines 645-650) to prevent crash when backend returns empty processes: [] for multi-process documents. Now shows proper error message if data is malformed. Need to test: 1) Multi-process detection endpoint with recruitment doc 2) MultiProcessReview UI rendering 3) Individual process creation flow."
 
   - task: "Authentication Flow (Email/Password)"
     implemented: true
