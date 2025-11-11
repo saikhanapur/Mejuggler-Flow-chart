@@ -3011,13 +3011,22 @@ async def semantic_search(
         
         # Generate embedding for query using OpenAI client
         from openai import OpenAI
-        openai_client = OpenAI(api_key=os.environ.get("EMERGENT_LLM_KEY"))
+        from dotenv import load_dotenv
+        load_dotenv()
+        
+        openai_key = os.environ.get("OPENAI_API_KEY")
+        if not openai_key:
+            raise HTTPException(status_code=500, detail="OpenAI API key not configured")
+        
+        openai_client = OpenAI(api_key=openai_key)
         
         query_response = openai_client.embeddings.create(
             model="text-embedding-3-small",
             input=query
         )
         query_embedding = query_response.data[0].embedding
+        
+        logger.info(f"✅ Generated query embedding (dimension: {len(query_embedding)})")
         
         # Find all processes for user (optionally filter by workspace)
         query_filter = {"userId": user_id} if user_id else {}
