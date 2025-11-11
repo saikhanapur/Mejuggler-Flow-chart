@@ -92,36 +92,28 @@ const MultiProcessReview = ({ processesData, onBack, currentWorkspace, selectedW
     const loadingToast = toast.loading('Merging processes into one...');
 
     try {
-      // Combine all selected processes into one
-      const selectedData = selectedProcesses.map(idx => processesData.processes[idx]);
+      // NEW: Merge multiple process TITLES into one document request
+      // Call backend to create merged flowchart from selected titles
+      const selectedTitles = selectedProcesses.map(idx => processTitles[idx]);
       
-      const allNodes = selectedData.flatMap((proc, procIdx) => 
-        proc.nodes.map((node, nodeIdx) => ({
-          ...node,
-          id: `${node.id}-proc${procIdx}`,
-          title: `${proc.processName}: ${node.title}`,
-          position: { x: 100, y: 100 + ((procIdx * 10 + nodeIdx) * 150) }
-        }))
+      // Call the backend to generate a single merged flowchart
+      const result = await api.generateEROADStyleFlowchart(
+        documentText || processesData.text,
+        'document',
+        {
+          mergeProcesses: true,
+          processTitles: selectedTitles
+        }
       );
 
-      const allActors = [...new Set(selectedData.flatMap(proc => proc.actors || []))];
-      const allGaps = selectedData.flatMap(proc => proc.criticalGaps || []);
-      const allOpportunities = selectedData.flatMap(proc => proc.improvementOpportunities || []);
+      if (!result || !result.processes || result.processes.length === 0) {
+        throw new Error('Failed to generate merged process');
+      }
 
       const mergedProcess = {
-        id: `process-${Date.now()}`,
-        name: selectedData.map(p => p.processName).join(' & '),
-        description: 'Combined process from multiple workflows',
-        workspaceId: selectedWorkspace || currentWorkspace?.id, // Use selected workspace first
-        nodes: allNodes,
-        actors: allActors,
-        criticalGaps: allGaps,
-        improvementOpportunities: allOpportunities,
-        status: 'draft',
-        theme: 'minimalist',
-        healthScore: 80,
-        views: 0,
-        version: 1
+        ...result.processes[0],
+        name: selectedTitles.join(' & '),
+        workspaceId: selectedWorkspace || currentWorkspace?.id
       };
 
       const created = await api.createProcess(mergedProcess);
@@ -130,7 +122,7 @@ const MultiProcessReview = ({ processesData, onBack, currentWorkspace, selectedW
       navigate(`/edit/${created.id}`);
     } catch (error) {
       toast.dismiss(loadingToast);
-      toast.error('Failed to merge processes');
+      toast.error('Failed to merge processes: ' + (error.message || 'Please try again'));
       console.error(error);
     } finally {
       setCreating(false);
