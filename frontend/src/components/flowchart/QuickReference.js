@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 
-const QuickReference = ({ criticalActions, keyTimings, recoverySteps }) => {
+const QuickReference = ({ criticalActions, keyTimings, recoverySteps, supportingReferences }) => {
   // Collapsible state - Critical Actions always expanded, others start collapsed
   const [isCriticalExpanded, setIsCriticalExpanded] = useState(true);
   const [isTimingsExpanded, setIsTimingsExpanded] = useState(false);
   const [isRecoveryExpanded, setIsRecoveryExpanded] = useState(false);
+  const [isReferencesExpanded, setIsReferencesExpanded] = useState(false);
   
   return (
-    <div className="grid grid-cols-3 gap-6 mt-6">
+    <>
+      <div className="grid grid-cols-3 gap-6 mt-6">
       {/* Critical Actions */}
       <div className="bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-300 rounded-xl shadow-lg overflow-hidden">
         <button
