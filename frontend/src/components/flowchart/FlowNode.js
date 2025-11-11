@@ -106,12 +106,11 @@ const StatusIcon = ({ status }) => {
   }
 };
 
-const FlowNode = ({ node, onClick, selectedNodeId, onUpdateNode }) => {
+const FlowNode = ({ node, onClick, onUpdateNode, isSelected, selectedNodeId, isOnCriticalPath }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(node.title);
   
-  const isSelected = selectedNodeId === node.id;
   const config = STATUS_CONFIG[node.status] || STATUS_CONFIG.operational;
   
   // Get coordinates from node (backend provides these)
