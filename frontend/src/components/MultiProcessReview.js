@@ -253,7 +253,8 @@ const MultiProcessReview = ({ processesData, onBack, currentWorkspace, selectedW
             {creating ? `Creating... ${Math.round(progress)}%` : `Create ${selectedProcesses.length} Process(es) Separately`}
           </Button>
 
-          {selectedProcesses.length > 1 && (
+          {/* MERGE FEATURE TEMPORARILY DISABLED - Backend support needed */}
+          {/* {selectedProcesses.length > 1 && (
             <Button
               onClick={handleMergeIntoOne}
               disabled={creating}
@@ -263,7 +264,7 @@ const MultiProcessReview = ({ processesData, onBack, currentWorkspace, selectedW
               <Combine className="w-5 h-5 mr-2" />
               Merge into Single Process
             </Button>
-          )}
+          )} */}
 
           <Button onClick={onBack} variant="ghost" size="lg">
             Back
