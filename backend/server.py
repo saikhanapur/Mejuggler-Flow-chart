@@ -2780,6 +2780,21 @@ async def semantic_search(
         workspace_id = search_request.workspace_id
         limit = search_request.limit
         
+        # CRITICAL: Check budget before expensive AI operations
+        from budget_monitor import BudgetMonitor
+        can_proceed, budget_message, budget_details = BudgetMonitor.check_budget()
+        
+        if not can_proceed:
+            logger.error(f"❌ Budget check failed: {budget_message}")
+            raise HTTPException(
+                status_code=402,  # Payment Required
+                detail=budget_message
+            )
+        
+        # Log budget warning if low
+        if "warning" in budget_message.lower() or "critical" in budget_message.lower():
+            logger.warning(f"⚠️ Budget warning: {budget_message}")
+        
         logger.info(f"🔍 Semantic search: '{query}' (workspace: {workspace_id})")
         
         # Generate embedding for query using OpenAI client
