@@ -224,6 +224,8 @@ class Process(BaseModel):
     isGuest: bool = False  # Guest mode flag
     guestCreatedAt: Optional[str] = None  # When guest process was created
     guestEditCount: int = 0  # Track edits in guest mode (limit to 1)
+    quickReference: Optional[Dict[str, Any]] = None  # NEW: Quick reference panels (critical actions, contacts, timings, recovery)
+    progressStages: Optional[List[Dict[str, Any]]] = []  # NEW: Progress stage badges
 
 class ProcessInput(BaseModel):
     text: str
