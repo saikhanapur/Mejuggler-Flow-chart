@@ -646,6 +646,19 @@ frontend:
         comment: "✅ EROAD-STYLE SAMPLE FLOWCHART GENERATION - COMPLETE JSON STRUCTURE CAPTURED. Successfully tested POST /api/process/eroad-style with 3-step Emergency Response Procedure document from review request. FULL JSON RESPONSE CAPTURED: 1) Process Structure: Generated 7 nodes (expanded from 3 input steps) with complete operational details. 2) Node Fields: All nodes contain id, title, description, type, status, x, y, position, actors, subSteps, dependencies, operationalDetails with purpose, specificActions, contactInfo, timeline, currentState, idealState, gap. 3) Coordinate System: Perfect X=330, Y=0/150/300/450/600/750/900 positioning. 4) Edges: 6 properly structured edges connecting sequential nodes. 5) QuickReference: Contains criticalActions, keyTimings, emergencyContacts with actual contact data (Emergency Services: 111, Manager: 0800 123 456). 6) ProgressStages: 3 stages (IMMEDIATE ACTION, ONGOING, RECOVERY COMPLETE) with proper positioning. 7) Status Classification: Varied status types (critical, communication, action, monitoring, verification, recovery). EXACT JSON structure documented for user reference - all required fields present and properly formatted."
 
 
+  - task: "Intelligent Critical Actions Extraction (Feature 1 - Option B)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/superintelligent_ai_service.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NEW FEATURE: Intelligent critical actions extraction replacing simple status=='critical' filter. Implemented extract_critical_actions_intelligent() method that analyzes ALL nodes with urgency scoring. Scoring factors: urgency keywords ('immediately', 'urgent', 'emergency', 'call 111'), time sensitivity ('within X min'), impact keywords ('all', 'entire'), action verbs ('call', 'notify', 'raise'). Returns top 5 most urgent actions ranked by composite score. Integrated into quickReference generation in both generate_eroad_style_flowchart() and generate_eroad_style_single_process() methods. Added logging for transparency. Also added recovery steps extraction (status=='recovery'). TESTING NEEDED: 1) Create new process via POST /api/process/eroad-style 2) Verify quickReference.criticalActions contains top 5 most urgent (not all critical nodes) 3) Check verb-first framing 4) Verify time windows preserved ('immediately', 'within X min') 5) Confirm actions ranked by urgency score 6) Test with complex BCP document (multiple urgency levels)"
+
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
