@@ -1042,6 +1042,420 @@ class BackendTester:
         except Exception as e:
             self.log_result("Error Handling (Missing Fields)", False, f"Error: {str(e)}")
 
+    def test_multi_process_detection_and_bcp_intelligence(self):
+        """Test Multi-Process Detection & BCP Intelligence - PRIORITY TESTS from Review Request"""
+        print("\n🎯 PRIORITY TESTS: Multi-Process Detection & BCP Intelligence")
+        print("=" * 60)
+        
+        # Test 1: Multi-Process Detection (Recruitment document with 9 processes)
+        print("\n📊 Test 1: Multi-Process Detection")
+        try:
+            recruitment_doc = """RECRUITMENT PROCESS MAPS
+
+1. PROCESS: Job Requisition
+Steps: Create requisition, Get approval, Post job
+
+2. PROCESS: Candidate Screening
+Steps: Review applications, Phone screen, Assessment
+
+3. PROCESS: Interview Process
+Steps: Schedule interview, Conduct interview, Gather feedback
+
+4. PROCESS: Offer Management
+Steps: Prepare offer, Send offer, Negotiate
+
+5. PROCESS: Onboarding
+Steps: Prepare workspace, Schedule orientation, Assign buddy"""
+            
+            payload = {
+                "documentText": recruitment_doc,
+                "inputType": "document"
+            }
+            
+            response = self.session.post(f"{self.base_url}/process/eroad-style", 
+                                       json=payload, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Expected Response validation
+                expected_checks = {
+                    "multipleProcesses": True,
+                    "processCount": 5,
+                    "processTitles_length": 5,
+                    "processes_empty": True,  # Should be empty array
+                    "autoDecision_present": True
+                }
+                
+                validation_results = []
+                
+                # Check multipleProcesses
+                if result.get('multipleProcesses') == expected_checks["multipleProcesses"]:
+                    validation_results.append("✅ multipleProcesses: true")
+                else:
+                    validation_results.append(f"❌ multipleProcesses: {result.get('multipleProcesses')} (expected True)")
+                
+                # Check processCount
+                if result.get('processCount') == expected_checks["processCount"]:
+                    validation_results.append("✅ processCount: 5")
+                else:
+                    validation_results.append(f"❌ processCount: {result.get('processCount')} (expected 5)")
+                
+                # Check processTitles array
+                process_titles = result.get('processTitles', [])
+                if len(process_titles) == expected_checks["processTitles_length"]:
+                    validation_results.append(f"✅ processTitles: {len(process_titles)} titles")
+                else:
+                    validation_results.append(f"❌ processTitles: {len(process_titles)} titles (expected 5)")
+                
+                # Check processes array is empty
+                processes = result.get('processes', [])
+                if len(processes) == 0:
+                    validation_results.append("✅ processes: [] (empty array)")
+                else:
+                    validation_results.append(f"❌ processes: {len(processes)} items (expected empty)")
+                
+                # Check autoDecision
+                if 'autoDecision' in result:
+                    validation_results.append(f"✅ autoDecision: '{result.get('autoDecision')}'")
+                else:
+                    validation_results.append("❌ autoDecision: missing")
+                
+                # Overall result
+                failed_checks = [r for r in validation_results if r.startswith("❌")]
+                if not failed_checks:
+                    self.log_result("Multi-Process Detection", True, 
+                                  f"All validation checks passed: {'; '.join(validation_results)}")
+                else:
+                    self.log_result("Multi-Process Detection", False, 
+                                  f"Validation failures: {'; '.join(failed_checks)}")
+            else:
+                self.log_result("Multi-Process Detection", False, 
+                              f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("Multi-Process Detection", False, f"Error: {str(e)}")
+        
+        # Test 2: Single Process with BCP Patterns (Swim Lanes)
+        print("\n🏊 Test 2: BCP Patterns - Swim Lanes")
+        try:
+            wilsar_bcp_doc = """WILSAR OUTAGE BUSINESS CONTINUITY PLAN
+
+IDENTIFY (Dispatch Team):
+- Monitor Wilsar status
+- Detect outage
+- Trigger BCP
+
+ONSHORE ACTIONS (Onshore Supervisor):
+- Call emergency contact
+- Setup manual dispatch board
+- Notify stakeholders
+
+OFFSHORE ACTIONS (Offshore Team):
+- Switch to backup system
+- Monitor alternative channels
+- Update status every 30 minutes
+
+RECOVERY:
+- Test Wilsar restoration
+- Resume normal operations
+- Complete incident report"""
+            
+            payload = {
+                "documentText": wilsar_bcp_doc,
+                "inputType": "document"
+            }
+            
+            response = self.session.post(f"{self.base_url}/process/eroad-style", 
+                                       json=payload, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                validation_results = []
+                
+                # Check multipleProcesses is false
+                if result.get('multipleProcesses') == False:
+                    validation_results.append("✅ multipleProcesses: false")
+                else:
+                    validation_results.append(f"❌ multipleProcesses: {result.get('multipleProcesses')} (expected false)")
+                
+                # Check processCount is 1
+                if result.get('processCount') == 1:
+                    validation_results.append("✅ processCount: 1")
+                else:
+                    validation_results.append(f"❌ processCount: {result.get('processCount')} (expected 1)")
+                
+                # Check detection object exists
+                detection = result.get('detection', {})
+                if detection:
+                    # Check swim lanes detection
+                    swim_lanes = detection.get('swimLanes', [])
+                    if len(swim_lanes) >= 3:
+                        validation_results.append(f"✅ detection.swimLanes: {len(swim_lanes)} swim lanes detected")
+                    else:
+                        validation_results.append(f"❌ detection.swimLanes: {len(swim_lanes)} (expected ≥3)")
+                    
+                    # Check monitoring loops
+                    monitoring_loops = detection.get('monitoringLoops', [])
+                    if len(monitoring_loops) >= 1:
+                        validation_results.append(f"✅ detection.monitoringLoops: {len(monitoring_loops)} loops detected")
+                    else:
+                        validation_results.append(f"❌ detection.monitoringLoops: {len(monitoring_loops)} (expected ≥1)")
+                else:
+                    validation_results.append("❌ detection: missing object")
+                
+                # Check nodes have swim lane positioning
+                if 'processes' in result and result['processes']:
+                    process = result['processes'][0]
+                    nodes = process.get('nodes', [])
+                    
+                    if len(nodes) >= 7:
+                        validation_results.append(f"✅ nodes: {len(nodes)} nodes (expected 7-10)")
+                        
+                        # Check for swim lane fields and X positioning
+                        swim_lane_nodes = [n for n in nodes if n.get('swimLane')]
+                        x_positions = [n.get('x') for n in nodes if n.get('x')]
+                        expected_x_positions = [150, 380, 610]  # Swim lane X positions
+                        
+                        if swim_lane_nodes:
+                            validation_results.append(f"✅ swimLane fields: {len(swim_lane_nodes)} nodes have swimLane")
+                        else:
+                            validation_results.append("❌ swimLane fields: no nodes have swimLane field")
+                        
+                        # Check if any X positions match expected swim lane positions
+                        matching_x = [x for x in x_positions if x in expected_x_positions]
+                        if matching_x:
+                            validation_results.append(f"✅ X positioning: swim lane positions detected {matching_x}")
+                        else:
+                            validation_results.append(f"❌ X positioning: no swim lane positions found (got {set(x_positions)})")
+                    else:
+                        validation_results.append(f"❌ nodes: {len(nodes)} (expected 7-10)")
+                
+                # Overall result
+                failed_checks = [r for r in validation_results if r.startswith("❌")]
+                if not failed_checks:
+                    self.log_result("BCP Swim Lanes Detection", True, 
+                                  f"All validation checks passed: {'; '.join(validation_results)}")
+                else:
+                    self.log_result("BCP Swim Lanes Detection", False, 
+                                  f"Validation failures: {'; '.join(failed_checks)}")
+            else:
+                self.log_result("BCP Swim Lanes Detection", False, 
+                              f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("BCP Swim Lanes Detection", False, f"Error: {str(e)}")
+        
+        # Test 3: Decision Points and Loops
+        print("\n🔄 Test 3: Decision Points and Loops")
+        try:
+            incident_response_doc = """SYSTEM INCIDENT RESPONSE
+
+1. Detect Incident
+2. Check if Critical: Has Wilsar Outage? YES/NO
+   - YES: Trigger emergency protocol
+   - NO: Continue standard procedure
+3. Monitor Status (Check every 30 minutes until resolved)
+4. If resolved: Go to step 5
+   If not resolved: Loop back to step 3
+5. Document and close"""
+            
+            payload = {
+                "documentText": incident_response_doc,
+                "inputType": "document"
+            }
+            
+            response = self.session.post(f"{self.base_url}/process/eroad-style", 
+                                       json=payload, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                validation_results = []
+                
+                # Check detection object
+                detection = result.get('detection', {})
+                if detection:
+                    # Check decision points
+                    decision_points = detection.get('decisionPoints', [])
+                    if len(decision_points) >= 1:
+                        validation_results.append(f"✅ detection.decisionPoints: {len(decision_points)} decisions detected")
+                        
+                        # Check for "Has Wilsar Outage?" decision
+                        wilsar_decision = any('Wilsar' in str(dp) for dp in decision_points)
+                        if wilsar_decision:
+                            validation_results.append("✅ Wilsar decision: detected in decision points")
+                        else:
+                            validation_results.append("❌ Wilsar decision: not found in decision points")
+                    else:
+                        validation_results.append(f"❌ detection.decisionPoints: {len(decision_points)} (expected ≥1)")
+                    
+                    # Check monitoring loops
+                    monitoring_loops = detection.get('monitoringLoops', [])
+                    if len(monitoring_loops) >= 1:
+                        validation_results.append(f"✅ detection.monitoringLoops: {len(monitoring_loops)} loops detected")
+                        
+                        # Check for "30 minutes" loop
+                        thirty_min_loop = any('30' in str(loop) for loop in monitoring_loops)
+                        if thirty_min_loop:
+                            validation_results.append("✅ 30-minute loop: detected in monitoring loops")
+                        else:
+                            validation_results.append("❌ 30-minute loop: not found in monitoring loops")
+                    else:
+                        validation_results.append(f"❌ detection.monitoringLoops: {len(monitoring_loops)} (expected ≥1)")
+                else:
+                    validation_results.append("❌ detection: missing object")
+                
+                # Check nodes for decision and loop markers
+                if 'processes' in result and result['processes']:
+                    process = result['processes'][0]
+                    nodes = process.get('nodes', [])
+                    
+                    # Check for decision point nodes
+                    decision_nodes = [n for n in nodes if n.get('isDecisionPoint') == True]
+                    if decision_nodes:
+                        validation_results.append(f"✅ decision nodes: {len(decision_nodes)} nodes with isDecisionPoint=true")
+                        
+                        # Check for human-readable decision criteria
+                        criteria_nodes = [n for n in decision_nodes if n.get('decisionCriteria')]
+                        if criteria_nodes:
+                            validation_results.append(f"✅ decisionCriteria: {len(criteria_nodes)} nodes have human-readable criteria")
+                        else:
+                            validation_results.append("❌ decisionCriteria: no nodes have human-readable criteria")
+                    else:
+                        validation_results.append("❌ decision nodes: no nodes with isDecisionPoint=true")
+                    
+                    # Check for loop nodes
+                    loop_nodes = [n for n in nodes if n.get('isLoop') == True]
+                    if loop_nodes:
+                        validation_results.append(f"✅ loop nodes: {len(loop_nodes)} nodes with isLoop=true")
+                        
+                        # Check for loopBackTo field
+                        loop_back_nodes = [n for n in loop_nodes if n.get('loopBackTo')]
+                        if loop_back_nodes:
+                            validation_results.append(f"✅ loopBackTo: {len(loop_back_nodes)} nodes have loopBackTo field")
+                        else:
+                            validation_results.append("❌ loopBackTo: no loop nodes have loopBackTo field")
+                    else:
+                        validation_results.append("❌ loop nodes: no nodes with isLoop=true")
+                
+                # Overall result
+                failed_checks = [r for r in validation_results if r.startswith("❌")]
+                if not failed_checks:
+                    self.log_result("Decision Points and Loops", True, 
+                                  f"All validation checks passed: {'; '.join(validation_results)}")
+                else:
+                    self.log_result("Decision Points and Loops", False, 
+                                  f"Validation failures: {'; '.join(failed_checks)}")
+            else:
+                self.log_result("Decision Points and Loops", False, 
+                              f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("Decision Points and Loops", False, f"Error: {str(e)}")
+        
+        # Test 4: Phased Structure (DR SOP)
+        print("\n📋 Test 4: Phased Structure (DR SOP)")
+        try:
+            dr_sop_doc = """IT DISASTER RECOVERY PLAN
+
+Phase 0: Preparedness
+- Maintain backup systems
+- Train staff
+- Test recovery procedures
+
+Phase 1: Incident Declaration
+- Detect incident
+- Declare DR event
+- Activate DR team
+
+Phase 2: Initial Response
+- Assess damage
+- Activate backup site
+- Restore critical systems
+
+Phase 3: Recovery
+- Restore all systems
+- Validate data integrity
+- Return to normal operations"""
+            
+            payload = {
+                "documentText": dr_sop_doc,
+                "inputType": "document"
+            }
+            
+            response = self.session.post(f"{self.base_url}/process/eroad-style", 
+                                       json=payload, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                validation_results = []
+                
+                # Check detection object for phases
+                detection = result.get('detection', {})
+                if detection:
+                    phases = detection.get('phases', [])
+                    if len(phases) >= 4:
+                        validation_results.append(f"✅ detection.phases: {len(phases)} phases detected")
+                        
+                        # Check for phases 0, 1, 2, 3
+                        phase_numbers = [p for p in phases if isinstance(p, (int, str)) and str(p) in ['0', '1', '2', '3']]
+                        if len(phase_numbers) >= 4:
+                            validation_results.append(f"✅ phase numbers: phases 0-3 detected {phase_numbers}")
+                        else:
+                            validation_results.append(f"❌ phase numbers: only {phase_numbers} detected (expected 0,1,2,3)")
+                    else:
+                        validation_results.append(f"❌ detection.phases: {len(phases)} (expected ≥4)")
+                else:
+                    validation_results.append("❌ detection: missing object")
+                
+                # Check autoDecision
+                auto_decision = result.get('autoDecision', '')
+                if 'phase' in auto_decision.lower():
+                    validation_results.append(f"✅ autoDecision: mentions phases - '{auto_decision}'")
+                else:
+                    validation_results.append(f"❌ autoDecision: doesn't mention phases - '{auto_decision}'")
+                
+                # Check nodes for phase field
+                if 'processes' in result and result['processes']:
+                    process = result['processes'][0]
+                    nodes = process.get('nodes', [])
+                    
+                    # Check for phase fields in nodes
+                    phase_nodes = [n for n in nodes if n.get('phase') is not None]
+                    if phase_nodes:
+                        validation_results.append(f"✅ node phases: {len(phase_nodes)} nodes have phase field")
+                        
+                        # Check phase values
+                        phase_values = [n.get('phase') for n in phase_nodes]
+                        unique_phases = set(str(p) for p in phase_values if p is not None)
+                        if len(unique_phases) >= 3:
+                            validation_results.append(f"✅ phase variety: {len(unique_phases)} different phases in nodes")
+                        else:
+                            validation_results.append(f"❌ phase variety: only {len(unique_phases)} different phases")
+                    else:
+                        validation_results.append("❌ node phases: no nodes have phase field")
+                    
+                    # Check progressStages reflect phases
+                    progress_stages = process.get('progressStages', [])
+                    if len(progress_stages) >= 3:
+                        validation_results.append(f"✅ progressStages: {len(progress_stages)} stages reflect phases")
+                    else:
+                        validation_results.append(f"❌ progressStages: {len(progress_stages)} (expected ≥3)")
+                
+                # Overall result
+                failed_checks = [r for r in validation_results if r.startswith("❌")]
+                if not failed_checks:
+                    self.log_result("Phased Structure (DR SOP)", True, 
+                                  f"All validation checks passed: {'; '.join(validation_results)}")
+                else:
+                    self.log_result("Phased Structure (DR SOP)", False, 
+                                  f"Validation failures: {'; '.join(failed_checks)}")
+            else:
+                self.log_result("Phased Structure (DR SOP)", False, 
+                              f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("Phased Structure (DR SOP)", False, f"Error: {str(e)}")
+
     def test_eroad_flowchart_sample_generation(self):
         """Test EROAD-Style Flowchart Generation with Sample Document - Capture EXACT JSON Response"""
         print("\n🎯 TESTING: EROAD-Style Flowchart Generation - Sample Document...")
