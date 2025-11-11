@@ -1931,6 +1931,154 @@ Analyze now:"""
         Format timing with context by extracting action and method.
         
         Example:
+
+
+    def calculate_node_priority(self, node: Dict) -> Dict:
+        """
+        Calculate priority (P0-P4) for a node based on multiple factors.
+        
+        Priority Levels:
+        - P0 (90-100): IMMEDIATE - Life/safety critical, system-wide failures
+        - P1 (70-89): URGENT - Time-sensitive, high-impact actions
+        - P2 (50-69): HIGH - Important but not immediate
+        - P3 (30-49): MEDIUM - Standard operational tasks
+        - P4 (0-29): LOW - Informational, optional steps
+        
+        Scoring Factors:
+        - Severity: Impact of NOT doing this (0-100)
+        - Urgency: Time sensitivity (0-100)
+        - Frequency: How often needed (0-100)
+        - Visibility: Stakeholder impact (0-100)
+        
+        Returns: {level: "P0", score: 95, emoji: "🔴", color: "red"}
+        """
+        title = node.get("title", "").lower()
+        description = node.get("details", node.get("description", "")).lower()
+        status = node.get("status", "")
+        timing = node.get("timing", "").lower() if node.get("timing") else ""
+        
+        full_text = f"{title} {description} {timing}"
+        
+        # Initialize score
+        score = 0
+        
+        # SEVERITY SCORING (0-100)
+        severity_keywords = {
+            'life-threatening': 100, 'injury': 95, 'safety': 90, 'death': 100,
+            'emergency': 90, 'critical': 85, 'failure': 80, 'outage': 85,
+            'down': 75, 'broken': 70, 'error': 60, 'issue': 50,
+            'system-wide': 85, 'entire': 70, 'all': 60
+        }
+        severity_score = 0
+        for keyword, weight in severity_keywords.items():
+            if keyword in full_text:
+                severity_score = max(severity_score, weight)
+        
+        # URGENCY SCORING (0-100)
+        urgency_keywords = {
+            'immediately': 100, 'now': 95, 'asap': 90, 'urgent': 85,
+            'call 111': 100, 'call 911': 100, '911': 100, '111': 100,
+            'first': 80, 'before': 75, 'priority': 70
+        }
+        urgency_score = 0
+        for keyword, weight in urgency_keywords.items():
+            if keyword in full_text:
+                urgency_score = max(urgency_score, weight)
+        
+        # Time-based urgency
+        if 'within' in full_text:
+            # Extract minutes if present
+            time_match = re.search(r'within\s+(\d+)\s*min', full_text)
+            if time_match:
+                minutes = int(time_match.group(1))
+                # Shorter time = higher urgency
+                urgency_score = max(urgency_score, 100 - minutes)
+        
+        # FREQUENCY SCORING (0-100)
+        frequency_score = 0
+        if any(word in full_text for word in ['always', 'every', 'continuous', 'constant']):
+            frequency_score = 80
+        elif any(word in full_text for word in ['often', 'regular', 'frequent']):
+            frequency_score = 60
+        elif any(word in full_text for word in ['sometimes', 'occasional']):
+            frequency_score = 40
+        elif any(word in full_text for word in ['rarely', 'seldom']):
+            frequency_score = 20
+        
+        # VISIBILITY/STAKEHOLDER IMPACT (0-100)
+        visibility_keywords = {
+            'stakeholder': 70, 'customer': 80, 'client': 80, 'executive': 75,
+            'management': 65, 'team': 50, 'public': 85, 'external': 70
+        }
+        visibility_score = 0
+        for keyword, weight in visibility_keywords.items():
+            if keyword in full_text:
+                visibility_score = max(visibility_score, weight)
+        
+        # STATUS-BASED BASELINE
+        status_baseline = {
+            'critical': 50,
+            'trigger': 50,
+            'action': 30,
+            'communication': 20,
+            'operational': 15,
+            'monitoring': 25,
+            'verification': 20,
+            'recovery': 40
+        }
+        baseline = status_baseline.get(status, 10)
+        
+        # CALCULATE COMPOSITE SCORE (weighted average)
+        composite_score = (
+            severity_score * 0.40 +    # Severity most important (40%)
+            urgency_score * 0.30 +     # Urgency second (30%)
+            frequency_score * 0.15 +   # Frequency third (15%)
+            visibility_score * 0.15 +  # Visibility fourth (15%)
+            baseline                   # Status baseline added
+        )
+        
+        # Classify into P0-P4
+        if composite_score >= 90:
+            level = "P0"
+            emoji = "🔴"
+            color = "red"
+            label = "IMMEDIATE"
+        elif composite_score >= 70:
+            level = "P1"
+            emoji = "🟠"
+            color = "orange"
+            label = "URGENT"
+        elif composite_score >= 50:
+            level = "P2"
+            emoji = "🟡"
+            color = "yellow"
+            label = "HIGH"
+        elif composite_score >= 30:
+            level = "P3"
+            emoji = "🔵"
+            color = "blue"
+            label = "MEDIUM"
+        else:
+            level = "P4"
+            emoji = "⚪"
+            color = "gray"
+            label = "LOW"
+        
+        return {
+            "level": level,
+            "score": round(composite_score, 1),
+            "emoji": emoji,
+            "color": color,
+            "label": label,
+            "breakdown": {
+                "severity": round(severity_score, 1),
+                "urgency": round(urgency_score, 1),
+                "frequency": round(frequency_score, 1),
+                "visibility": round(visibility_score, 1),
+                "baseline": baseline
+            }
+        }
+
         before = "Check MyIT ticket status"
         timing = "every 30 minutes"
         after = "via portal"
