@@ -600,13 +600,25 @@ frontend:
         agent: "main"
         comment: "FIX #1 & #2 IMPLEMENTED: User reported overlapping parallel nodes and non-uniform connection lines. Backend changes in eroad_style_enhancer.py: 1) PARALLEL NODE SPACING: Moved nodes further from center (X=40 left, X=620 right vs X=80/X=580). Provides 50px clearance from center line vs 10px. 2) UNIFORM SPACING: Standardized ALL Y increments to 150px (was 150px, 160px, +30px for merges). Removed extra merge spacing for consistency. Need testing: Generate flowchart with parallel nodes, verify visual spacing, verify uniform line lengths."
   
+  - task: "BCP Intelligence - Swim Lanes, Decisions, Loops, Parallel Activities"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/superintelligent_ai_service.py, /app/backend/eroad_style_enhancer.py"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "COMPREHENSIVE BCP DETECTION ALREADY IMPLEMENTED: superintelligent_ai_service.py lines 758-960 contains detect_multiple_processes_and_structure() that detects: 1) Swim lanes/role sections (Onshore/Offshore, QA/DR Manager) 2) Phased structures (Phase 0, 1, 2) 3) Decision points (Has Wilsar Outage? YES/NO) 4) Monitoring loops (Check every 30 minutes) 5) Parallel activities (simultaneous actions by teams) 6) RACI tables 7) Gates/approvals 8) Referenced procedures. Enhancer (eroad_style_enhancer.py lines 27-415) uses detection to: Apply swim lane positioning (X=150/380/610), Mark decision points with criteria, Add loop markers, Position parallel nodes. Need to test: 1) Wilsar BCP (3 swim lanes) 2) GDS BCP (decisions, loops) 3) Recruitment (9 processes) 4) Product Recall SOP (parallel, RACI) 5) IT DR SOP (20+ pages, 7 phases)."
+
   - task: "EROAD-Style Flowchart Generation Endpoint"
     implemented: true
     working: true
     file: "/app/backend/server.py, /app/backend/superintelligent_ai_service.py, /app/backend/eroad_style_enhancer.py"
     stuck_count: 0
     priority: "critical"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
