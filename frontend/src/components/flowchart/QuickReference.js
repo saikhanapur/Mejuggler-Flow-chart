@@ -115,23 +115,23 @@ const QuickReference = ({ criticalActions, keyTimings, recoverySteps }) => {
         </button>
         {isRecoveryExpanded && (
           <div className="px-6 pb-6 animate-fade-in">
-        <div className="space-y-2.5 text-sm text-emerald-800">
-          {recoverySteps && recoverySteps.length > 0 ? (
-            recoverySteps.map((step, idx) => (
-              <div key={idx} className="flex items-start gap-3 p-2 bg-white/40 rounded-lg hover:bg-white/60 transition-colors">
-                <div className="flex-shrink-0 w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                  {idx + 1}
+            <div className="space-y-2.5 text-sm text-emerald-800">
+              {recoverySteps && recoverySteps.length > 0 ? (
+                recoverySteps.map((step, idx) => (
+                  <div key={idx} className="flex items-start gap-3 p-2 bg-white/40 rounded-lg hover:bg-white/60 transition-colors">
+                    <div className="flex-shrink-0 w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                      {idx + 1}
+                    </div>
+                    <span className="flex-1 leading-relaxed">{step.title || step}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-start gap-3 p-2 bg-white/40 rounded-lg">
+                  <div className="flex-shrink-0 w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                    ✓
+                  </div>
+                  <span className="flex-1 leading-relaxed">Complete process and document outcomes</span>
                 </div>
-                <span className="flex-1 leading-relaxed">{step.title || step}</span>
-              </div>
-            ))
-          ) : (
-            <div className="flex items-start gap-3 p-2 bg-white/40 rounded-lg">
-              <div className="flex-shrink-0 w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                ✓
-              </div>
-              <span className="flex-1 leading-relaxed">Complete process and document outcomes</span>
-            </div>
           )}
         </div>
       </div>
