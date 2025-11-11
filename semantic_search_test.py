@@ -113,32 +113,58 @@ def test_semantic_search():
     
     # Create System Monitoring Process
     try:
+        # First parse the process
         payload = {
             "text": monitoring_process_doc,
             "inputType": "document"
         }
         
-        response = session.post(f"{BASE_URL}/process/eroad-style", 
+        response = session.post(f"{BASE_URL}/process/parse", 
                                json=payload, timeout=TIMEOUT)
         
         if response.status_code == 200:
             result = response.json()
-            print(f"   Debug - Response keys: {list(result.keys())}")
+            
+            # Extract process data from parse response
+            process_data = None
             if 'processes' in result and result['processes']:
-                process = result['processes'][0]
-                print(f"   Debug - Process keys: {list(process.keys())}")
-                process_id = process.get('id')
-                if process_id:
-                    created_process_ids.append(process_id)
-                    print(f"✅ Created System Monitoring Process: {process_id}")
+                process_data = result['processes'][0]
+            elif 'processName' in result:
+                process_data = result
+            
+            if process_data:
+                # Now create the actual process in database
+                process_payload = {
+                    "id": str(uuid.uuid4()),
+                    "name": process_data.get('processName', process_data.get('name', 'System Monitoring Process')),
+                    "description": process_data.get('description', 'System monitoring procedure'),
+                    "status": "draft",
+                    "nodes": process_data.get('nodes', []),
+                    "actors": process_data.get('actors', []),
+                    "criticalGaps": process_data.get('criticalGaps', []),
+                    "improvementOpportunities": process_data.get('improvementOpportunities', []),
+                    "theme": "minimalist",
+                    "healthScore": 85,
+                    "views": 0
+                }
+                
+                create_response = session.post(f"{BASE_URL}/process", 
+                                             json=process_payload, timeout=TIMEOUT)
+                
+                if create_response.status_code == 200:
+                    created_process = create_response.json()
+                    process_id = created_process.get('id')
+                    if process_id:
+                        created_process_ids.append(process_id)
+                        print(f"✅ Created System Monitoring Process: {process_id}")
+                    else:
+                        print("❌ System Monitoring Process created but no ID returned")
                 else:
-                    print("❌ System Monitoring Process created but no ID returned")
-                    print(f"   Debug - Process data: {json.dumps(process, indent=2)[:500]}")
+                    print(f"❌ Failed to create System Monitoring Process: HTTP {create_response.status_code}")
             else:
-                print("❌ System Monitoring Process creation failed - no processes in response")
-                print(f"   Debug - Full response: {json.dumps(result, indent=2)[:500]}")
+                print("❌ System Monitoring Process parsing failed - no process data")
         else:
-            print(f"❌ System Monitoring Process creation failed: HTTP {response.status_code}")
+            print(f"❌ System Monitoring Process parsing failed: HTTP {response.status_code}")
             print(f"   Response: {response.text}")
     except Exception as e:
         print(f"❌ System Monitoring Process creation error: {str(e)}")
