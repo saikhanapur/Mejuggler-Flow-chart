@@ -1982,6 +1982,4 @@ Analyze now:"""
             result = result[0].upper() + result[1:]
         
         return result
-        logger.info(f"✅ Parsed {len(hierarchical_contacts)} contacts")
-        return hierarchical_contacts
 
