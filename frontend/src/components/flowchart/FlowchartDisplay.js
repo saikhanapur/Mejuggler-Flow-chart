@@ -244,6 +244,8 @@ const FlowchartDisplay = ({ process, onNodeClick, onUpdateNode, selectedNodeId }
               onClick={() => onNodeClick && onNodeClick(node)}
               onUpdateNode={onUpdateNode}
               isSelected={selectedNodeId === node.id}
+              selectedNodeId={selectedNodeId}
+              isOnCriticalPath={process.criticalPath?.includes(node.id)}
             />
           ))}
 
