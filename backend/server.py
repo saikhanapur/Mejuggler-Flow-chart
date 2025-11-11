@@ -4598,6 +4598,21 @@ async def transcribe_audio(file: UploadFile = File(...)):
         raise HTTPException(status_code=501, detail="OpenAI transcription not available")
     
     try:
+        # CRITICAL: Check budget before expensive AI operations
+        from budget_monitor import BudgetMonitor
+        can_proceed, budget_message, budget_details = BudgetMonitor.check_budget()
+        
+        if not can_proceed:
+            logger.error(f"❌ Budget check failed: {budget_message}")
+            raise HTTPException(
+                status_code=402,  # Payment Required
+                detail=budget_message
+            )
+        
+        # Log budget warning if low
+        if "warning" in budget_message.lower() or "critical" in budget_message.lower():
+            logger.warning(f"⚠️ Budget warning: {budget_message}")
+        
         # Get Emergent LLM key
         api_key = os.environ.get('EMERGENT_LLM_KEY')
         if not api_key:
