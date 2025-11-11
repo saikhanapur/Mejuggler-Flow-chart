@@ -1166,10 +1166,23 @@ Analyze now:"""
                     extracted
                 )
                 
-                # Format for frontend (simple string array for now, can enhance later)
+                # Format for frontend with priority information
                 critical_actions_list = []
                 for action_data in critical_actions_data:
-                    action_text = action_data["action"]
+                    # Find the corresponding node to get priority
+                    node_id = action_data.get("nodeId")
+                    priority_emoji = "🔴"  # Default
+                    priority_level = "P0"
+                    
+                    # Find the processed node with this ID
+                    for proc_node in process["nodes"]:
+                        if proc_node["id"] == node_id:
+                            priority_emoji = proc_node["priority"]["emoji"]
+                            priority_level = proc_node["priority"]["level"]
+                            break
+                    
+                    # Format: "🔴 P0: Call 111 immediately (immediately)"
+                    action_text = f"{priority_emoji} {priority_level}: {action_data['action']}"
                     if action_data.get("timeWindow"):
                         action_text += f" ({action_data['timeWindow']})"
                     critical_actions_list.append(action_text)
@@ -1572,10 +1585,23 @@ Analyze now:"""
                     extracted
                 )
                 
-                # Format for frontend (simple string array for now, can enhance later)
+                # Format for frontend with priority information
                 critical_actions_list = []
                 for action_data in critical_actions_data:
-                    action_text = action_data["action"]
+                    # Find the corresponding node to get priority
+                    node_id = action_data.get("nodeId")
+                    priority_emoji = "🔴"  # Default
+                    priority_level = "P0"
+                    
+                    # Find the processed node with this ID
+                    for proc_node in process["nodes"]:
+                        if proc_node["id"] == node_id:
+                            priority_emoji = proc_node["priority"]["emoji"]
+                            priority_level = proc_node["priority"]["level"]
+                            break
+                    
+                    # Format: "🔴 P0: Call 111 immediately (immediately)"
+                    action_text = f"{priority_emoji} {priority_level}: {action_data['action']}"
                     if action_data.get("timeWindow"):
                         action_text += f" ({action_data['timeWindow']})"
                     critical_actions_list.append(action_text)
