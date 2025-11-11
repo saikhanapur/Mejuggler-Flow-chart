@@ -121,6 +121,16 @@ const FlowNode = ({ node, onClick, isSelected }) => {
   const isCritical = node.status === 'critical' || node.status === 'trigger';
   const isLoop = node.isLoop || false;
   const hasGap = node.operationalDetails?.gap || false;
+  
+  // Check if node has sub-steps to show
+  const subSteps = node.operationalDetails?.specificActions || node.subSteps || [];
+  const hasSubSteps = subSteps.length > 0;
+  
+  // Handle expand/collapse (prevent event bubbling to onClick)
+  const handleExpandToggle = (e) => {
+    e.stopPropagation();
+    setIsExpanded(!isExpanded);
+  };
 
   // Decision nodes still render as diamonds
   if (isDecision) {
