@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 // Status configurations matching reference design
 const STATUS_CONFIG = {
