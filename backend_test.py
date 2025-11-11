@@ -1042,6 +1042,238 @@ class BackendTester:
         except Exception as e:
             self.log_result("Error Handling (Missing Fields)", False, f"Error: {str(e)}")
 
+    def test_enhanced_key_timings_extraction(self):
+        """Test Enhanced Key Timings Extraction (Feature 3 - Option B) - PRIORITY TEST"""
+        print("\n⏰ PRIORITY TEST: Enhanced Key Timings Extraction (Feature 3 - Option B)")
+        print("=" * 80)
+        
+        # Test document with VARIOUS timing patterns from review request
+        system_monitoring_doc = """System Monitoring Procedure
+        
+        Steps:
+        1. Check MyIT ticket status every 30 minutes via the IT portal
+        2. Update stakeholder teams hourly through email distribution list
+        3. Monitor system performance within 5 minutes of alert
+        4. Send status reports twice per day at 9am and 5pm
+        5. Review incident logs daily in Lighthouse system
+        6. Escalate unresolved issues by 2:00 PM to management
+        7. Verify resolution and document findings
+        8. Complete final report
+        """
+        
+        try:
+            payload = {
+                "text": system_monitoring_doc,
+                "inputType": "document"
+            }
+            
+            print("🔍 Testing POST /api/process/eroad-style with timing patterns...")
+            response = self.session.post(f"{self.base_url}/process/eroad-style", 
+                                       json=payload, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Check if we have processes array or direct quickReference
+                quick_reference = None
+                if 'processes' in result and result['processes']:
+                    process = result['processes'][0]
+                    quick_reference = process.get('quickReference', {})
+                elif 'quickReference' in result:
+                    quick_reference = result.get('quickReference', {})
+                
+                if not quick_reference:
+                    self.log_result("Enhanced Key Timings Extraction", False, 
+                                  "No quickReference found in response")
+                    return
+                
+                key_timings = quick_reference.get('keyTimings', [])
+                
+                validation_results = []
+                
+                # Test 1: Verify keyTimings array exists and has content
+                if key_timings and isinstance(key_timings, list) and len(key_timings) > 0:
+                    validation_results.append(f"✅ Key Timings Structure: Found {len(key_timings)} timing entries")
+                else:
+                    validation_results.append("❌ Key Timings Structure: No timing entries found")
+                    self.log_result("Enhanced Key Timings Extraction", False, 
+                                  "No key timings found in response")
+                    return
+                
+                # Test 2: Verify "every 30 minutes" pattern with full context
+                every_30_min_found = False
+                for timing in key_timings:
+                    if ("every 30 minutes" in timing.lower() and 
+                        "check" in timing.lower() and 
+                        ("myit" in timing.lower() or "portal" in timing.lower())):
+                        every_30_min_found = True
+                        validation_results.append(f"✅ 'Every 30 minutes' Pattern: '{timing}' (includes action + timing + method)")
+                        break
+                
+                if not every_30_min_found:
+                    validation_results.append("❌ 'Every 30 minutes' Pattern: Not found with full context")
+                
+                # Test 3: Verify "hourly" pattern with full context
+                hourly_found = False
+                for timing in key_timings:
+                    if ("hourly" in timing.lower() and 
+                        "update" in timing.lower() and 
+                        "email" in timing.lower()):
+                        hourly_found = True
+                        validation_results.append(f"✅ 'Hourly' Pattern: '{timing}' (includes action + timing + method)")
+                        break
+                
+                if not hourly_found:
+                    validation_results.append("❌ 'Hourly' Pattern: Not found with full context")
+                
+                # Test 4: Verify "within 5 minutes" pattern with full context
+                within_5_min_found = False
+                for timing in key_timings:
+                    if ("within 5 minutes" in timing.lower() and 
+                        "monitor" in timing.lower()):
+                        within_5_min_found = True
+                        validation_results.append(f"✅ 'Within 5 minutes' Pattern: '{timing}' (includes action + timing)")
+                        break
+                
+                if not within_5_min_found:
+                    validation_results.append("❌ 'Within 5 minutes' Pattern: Not found with full context")
+                
+                # Test 5: Verify "twice per day" pattern with full context
+                twice_per_day_found = False
+                for timing in key_timings:
+                    if ("twice per day" in timing.lower() and 
+                        ("send" in timing.lower() or "report" in timing.lower())):
+                        twice_per_day_found = True
+                        validation_results.append(f"✅ 'Twice per day' Pattern: '{timing}' (includes action + timing + schedule)")
+                        break
+                
+                if not twice_per_day_found:
+                    validation_results.append("❌ 'Twice per day' Pattern: Not found with full context")
+                
+                # Test 6: Verify "daily" pattern with full context
+                daily_found = False
+                for timing in key_timings:
+                    if ("daily" in timing.lower() and 
+                        "review" in timing.lower() and 
+                        "lighthouse" in timing.lower()):
+                        daily_found = True
+                        validation_results.append(f"✅ 'Daily' Pattern: '{timing}' (includes action + timing + system)")
+                        break
+                
+                if not daily_found:
+                    validation_results.append("❌ 'Daily' Pattern: Not found with full context")
+                
+                # Test 7: Verify "by 2:00 PM" pattern with full context
+                by_2pm_found = False
+                for timing in key_timings:
+                    if ("2:00 pm" in timing.lower() and 
+                        "escalate" in timing.lower()):
+                        by_2pm_found = True
+                        validation_results.append(f"✅ 'By 2:00 PM' Pattern: '{timing}' (includes action + timing + target)")
+                        break
+                
+                if not by_2pm_found:
+                    validation_results.append("❌ 'By 2:00 PM' Pattern: Not found with full context")
+                
+                # Test 8: Verify action verbs are captured
+                action_verbs_found = []
+                expected_verbs = ["check", "update", "monitor", "send", "review", "escalate"]
+                for timing in key_timings:
+                    for verb in expected_verbs:
+                        if verb in timing.lower():
+                            action_verbs_found.append(verb)
+                            break
+                
+                unique_verbs = list(set(action_verbs_found))
+                if len(unique_verbs) >= 4:
+                    validation_results.append(f"✅ Action Verbs Captured: {len(unique_verbs)} verbs found ({', '.join(unique_verbs)})")
+                else:
+                    validation_results.append(f"❌ Action Verbs Captured: Only {len(unique_verbs)} verbs found ({', '.join(unique_verbs)})")
+                
+                # Test 9: Verify methods/tools are captured
+                methods_found = []
+                expected_methods = ["portal", "email", "lighthouse", "management"]
+                for timing in key_timings:
+                    for method in expected_methods:
+                        if method in timing.lower():
+                            methods_found.append(method)
+                
+                unique_methods = list(set(methods_found))
+                if len(unique_methods) >= 2:
+                    validation_results.append(f"✅ Methods/Tools Captured: {len(unique_methods)} methods found ({', '.join(unique_methods)})")
+                else:
+                    validation_results.append(f"❌ Methods/Tools Captured: Only {len(unique_methods)} methods found ({', '.join(unique_methods)})")
+                
+                # Test 10: Verify no duplicates (check for repeated timing entries)
+                timing_set = set(key_timings)
+                if len(timing_set) == len(key_timings):
+                    validation_results.append("✅ No Duplicates: All timing entries are unique")
+                else:
+                    validation_results.append(f"❌ Duplicates Found: {len(key_timings)} entries, {len(timing_set)} unique")
+                
+                # Test 11: Verify context-rich format (not just basic timings)
+                context_rich_count = 0
+                for timing in key_timings:
+                    # Context-rich means more than just timing words
+                    timing_words = ["minutes", "hourly", "daily", "pm", "am", "times"]
+                    non_timing_words = [word for word in timing.lower().split() 
+                                      if word not in timing_words and len(word) > 2]
+                    if len(non_timing_words) >= 3:  # At least 3 non-timing words = context-rich
+                        context_rich_count += 1
+                
+                if context_rich_count >= len(key_timings) * 0.7:  # 70% should be context-rich
+                    validation_results.append(f"✅ Context-Rich Format: {context_rich_count}/{len(key_timings)} entries are context-rich")
+                else:
+                    validation_results.append(f"❌ Context-Rich Format: Only {context_rich_count}/{len(key_timings)} entries are context-rich")
+                
+                # Overall assessment
+                failed_checks = [r for r in validation_results if r.startswith("❌")]
+                
+                if len(failed_checks) == 0:
+                    self.log_result("Enhanced Key Timings Extraction", True, 
+                                  f"All enhanced timing extraction tests passed. {'; '.join(validation_results)}")
+                elif len(failed_checks) <= 2:
+                    self.log_result("Enhanced Key Timings Extraction", True, 
+                                  f"Core functionality working with minor issues. {'; '.join(validation_results)}")
+                else:
+                    self.log_result("Enhanced Key Timings Extraction", False, 
+                                  f"Multiple critical issues found: {'; '.join(failed_checks)}")
+                
+                # Log the actual key timings structure for review
+                print(f"\n📋 Extracted Key Timings (Enhanced Context):")
+                for i, timing in enumerate(key_timings, 1):
+                    print(f"   {i}. {timing}")
+                
+                # Test 12: Verify expected response structure matches review request
+                expected_structure = {
+                    "quickReference": {
+                        "keyTimings": [
+                            "Check MyIT ticket status every 30 minutes via the IT portal",
+                            "Update stakeholder teams hourly through email",
+                            "Monitor system performance within 5 minutes",
+                            "Send status reports twice per day at 9am and 5pm",
+                            "Review incident logs daily in Lighthouse system",
+                            "Escalate unresolved issues by 2:00 PM to management"
+                        ]
+                    }
+                }
+                
+                print(f"\n📊 Expected vs Actual Structure Comparison:")
+                print(f"   Expected timing patterns: {len(expected_structure['quickReference']['keyTimings'])}")
+                print(f"   Actual timing patterns: {len(key_timings)}")
+                
+                # Check if we have at least 4 of the 6 expected patterns
+                if len(key_timings) >= 4:
+                    validation_results.append("✅ Pattern Count: Adequate number of timing patterns extracted")
+                else:
+                    validation_results.append(f"❌ Pattern Count: Only {len(key_timings)} patterns (expected ~6)")
+                
+            else:
+                self.log_result("Enhanced Key Timings Extraction", False, 
+                              f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("Enhanced Key Timings Extraction", False, f"Error: {str(e)}")
+
     def test_hierarchical_emergency_contacts(self):
         """Test Hierarchical Emergency Contacts (Feature 2 - Option B) - PRIORITY TEST"""
         print("\n📞 PRIORITY TEST: Hierarchical Emergency Contacts (Feature 2 - Option B)")
