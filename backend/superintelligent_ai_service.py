@@ -1746,3 +1746,94 @@ Analyze now:"""
         
         return top_5
 
+
+    
+    def parse_contacts_hierarchical(self, contacts_dict: Dict[str, str]) -> Dict[str, Any]:
+        """
+        Parse contacts into hierarchical structure with extensions and options.
+        
+        Input format: {"Name": "phone (Extension: X) | Option 1: Description"}
+        Output format: {"Name": {"main": "phone", "extension": "X", "options": [...]}}
+        
+        Handles multiple formats:
+        - "Wilson IT: 0061 8 9415 2888 (Extension: 8088)"
+        - "Dispatch: 0800 347 787 | Option 1: Alarm | Option 2: Council"
+        - "Support: 0800 123 456" (simple format)
+        """
+        logger.info("📞 Parsing contacts hierarchically...")
+        
+        hierarchical_contacts = {}
+        
+        for name, contact_info in contacts_dict.items():
+            parsed = {
+                "main": contact_info,  # Default to full string
+                "extension": None,
+                "options": []
+            }
+            
+            # Split by pipe to separate main number from options
+            parts = contact_info.split(" | ")
+            main_part = parts[0].strip()
+            option_parts = parts[1:] if len(parts) > 1 else []
+            
+            # Parse extension from main part
+            extension_patterns = [
+                r'\(Extension:\s*([^)]+)\)',  # (Extension: 8088)
+                r'\(ext\.?\s*([^)]+)\)',      # (ext 8088) or (ext. 8088)
+                r'\(x\s*([^)]+)\)',           # (x 8088)
+                r'ext\.?\s*(\d+)',            # ext 8088 or ext. 8088
+                r'extension\s*(\d+)',         # extension 8088
+            ]
+            
+            extension_found = None
+            clean_main = main_part
+            
+            for pattern in extension_patterns:
+                match = re.search(pattern, main_part, re.IGNORECASE)
+                if match:
+                    extension_found = match.group(1).strip()
+                    # Remove the extension part from main
+                    clean_main = re.sub(pattern, '', main_part, flags=re.IGNORECASE).strip()
+                    break
+            
+            parsed["main"] = clean_main
+            parsed["extension"] = extension_found
+            
+            # Parse options
+            for option_part in option_parts:
+                option_part = option_part.strip()
+                # Match "Option X: Description" or "Press X for Description"
+                option_match = re.match(r'Option\s+(\d+):\s*(.+)', option_part, re.IGNORECASE)
+                if option_match:
+                    parsed["options"].append({
+                        "number": option_match.group(1),
+                        "description": option_match.group(2).strip()
+                    })
+                else:
+                    # Try alternate format: "Press 1 for Alarm"
+                    press_match = re.match(r'(?:Press|Dial)\s+(\d+)\s+for\s+(.+)', option_part, re.IGNORECASE)
+                    if press_match:
+                        parsed["options"].append({
+                            "number": press_match.group(1),
+                            "description": press_match.group(2).strip()
+                        })
+                    else:
+                        # Generic option without number
+                        parsed["options"].append({
+                            "number": None,
+                            "description": option_part
+                        })
+            
+            hierarchical_contacts[name] = parsed
+            
+            # Log the parsing result
+            if parsed["extension"] or parsed["options"]:
+                logger.info(f"   ✅ {name}: {parsed['main']}")
+                if parsed["extension"]:
+                    logger.info(f"      → Extension: {parsed['extension']}")
+                for opt in parsed["options"]:
+                    logger.info(f"      → Option {opt['number']}: {opt['description']}" if opt['number'] else f"      → {opt['description']}")
+        
+        logger.info(f"✅ Parsed {len(hierarchical_contacts)} contacts")
+        return hierarchical_contacts
+
