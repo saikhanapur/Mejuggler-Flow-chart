@@ -235,18 +235,6 @@ const MultiProcessReview = ({ processesData, onBack, currentWorkspace, selectedW
                         </div>
                       </div>
                     )}
-                                </li>
-                              ))}
-                              {proc.nodes.length > 5 && (
-                                <li className="text-sm text-slate-500 italic">
-                                  + {proc.nodes.length - 5} more steps...
-                                </li>
-                              )}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </div>
                 </div>
               </Card>
