@@ -226,6 +226,7 @@ class Process(BaseModel):
     guestEditCount: int = 0  # Track edits in guest mode (limit to 1)
     quickReference: Optional[Dict[str, Any]] = None  # NEW: Quick reference panels (critical actions, contacts, timings, recovery)
     progressStages: Optional[List[Dict[str, Any]]] = []  # NEW: Progress stage badges
+    metadata: Optional[Dict[str, Any]] = None  # NEW: Verification metadata (coverage, AI model, generation time)
 
 class ProcessInput(BaseModel):
     text: str
