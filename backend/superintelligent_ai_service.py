@@ -2169,7 +2169,7 @@ Analyze now:"""
     
     async def generate_node_embedding(self, node: Dict) -> List[float]:
         """
-        Generate vector embedding for a node using OpenAI embeddings.
+        Generate vector embedding for a node using OpenAI embeddings via Emergent integrations.
         
         Combines node title, description, and actions into searchable text.
         Uses text-embedding-3-small model for efficiency.
@@ -2188,10 +2188,10 @@ Analyze now:"""
         search_text = search_text.strip()
         
         try:
-            import openai
-            openai.api_key = self.api_key  # Using Emergent LLM key
+            from openai import OpenAI
+            client = OpenAI(api_key=self.api_key)  # Using Emergent LLM key
             
-            response = openai.embeddings.create(
+            response = client.embeddings.create(
                 model="text-embedding-3-small",
                 input=search_text
             )
