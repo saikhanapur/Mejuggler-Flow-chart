@@ -140,6 +140,54 @@ const QuickReference = ({ criticalActions, keyTimings, recoverySteps, supporting
         )}
       </div>
     </div>
+    
+    {/* Supporting References - Full width section below */}
+    {supportingReferences && supportingReferences.length > 0 && (
+      <div className="mt-6 bg-gradient-to-br from-indigo-50 to-indigo-100 border-2 border-indigo-300 rounded-xl shadow-lg overflow-hidden">
+        <button
+          onClick={() => setIsReferencesExpanded(!isReferencesExpanded)}
+          className="w-full p-6 pb-4 text-left hover:bg-indigo-100/50 transition-colors flex items-center justify-between group"
+        >
+          <h3 className="font-bold text-indigo-900 flex items-center gap-2 text-lg">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Supporting References & Document Sections
+            <span className="text-sm font-normal text-indigo-700">
+              ({supportingReferences.length} sections)
+            </span>
+          </h3>
+          <svg 
+            className={`w-5 h-5 text-indigo-700 transition-transform duration-300 ${isReferencesExpanded ? 'rotate-180' : ''}`}
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {isReferencesExpanded && (
+          <div className="px-6 pb-6 animate-fade-in">
+            <div className="grid grid-cols-2 gap-4">
+              {supportingReferences.map((section, idx) => (
+                <div key={idx} className="bg-white/60 rounded-lg p-4 border border-indigo-200 hover:bg-white/80 transition-colors">
+                  <h4 className="font-bold text-indigo-900 mb-2 flex items-center gap-2">
+                    <span className="flex-shrink-0 w-6 h-6 bg-indigo-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                      {idx + 1}
+                    </span>
+                    {section.title || `Section ${idx + 1}`}
+                  </h4>
+                  <p className="text-sm text-indigo-800 whitespace-pre-wrap leading-relaxed">
+                    {section.content || 'No content provided'}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    )}
+    </>
   );
 };
 
