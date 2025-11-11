@@ -294,7 +294,7 @@ const FlowNode = ({ node, onClick, selectedNodeId, onUpdateNode }) => {
                 onBlur={handleTitleSave}
                 onKeyDown={handleTitleKeyDown}
                 onClick={(e) => e.stopPropagation()}
-                className="font-semibold text-sm leading-tight break-words flex-1 border-2 border-blue-400 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="font-semibold text-sm leading-tight break-words flex-1 border-2 border-blue-400 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900"
                 style={{ fontFamily: 'Inter, sans-serif' }}
                 autoFocus
               />
