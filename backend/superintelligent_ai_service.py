@@ -1530,6 +1530,46 @@ Analyze now:"""
                     
                     process["edges"].append(edge)
             
+            # Populate quickReference with intelligent extraction
+            if process.get("_pendingQuickReference"):
+                logger.info("🎯 Generating intelligent quickReference...")
+                
+                # Extract critical actions intelligently (top 5 most urgent)
+                critical_actions_data = self.extract_critical_actions_intelligent(
+                    enhanced.get("nodes", []), 
+                    extracted
+                )
+                
+                # Format for frontend (simple string array for now, can enhance later)
+                critical_actions_list = []
+                for action_data in critical_actions_data:
+                    action_text = action_data["action"]
+                    if action_data.get("timeWindow"):
+                        action_text += f" ({action_data['timeWindow']})"
+                    critical_actions_list.append(action_text)
+                
+                # Extract recovery steps (nodes with status="recovery")
+                recovery_steps_list = [
+                    {"title": n["title"], "id": n["id"]} 
+                    for n in enhanced.get("nodes", []) 
+                    if n.get("status") == "recovery"
+                ]
+                
+                process["quickReference"] = {
+                    "criticalActions": critical_actions_list,
+                    "keyTimings": extracted.get("timings", []),
+                    "emergencyContacts": extracted.get("contacts", {}),
+                    "recoverySteps": recovery_steps_list
+                }
+                
+                # Remove the flag
+                del process["_pendingQuickReference"]
+                
+                logger.info(f"   ✅ Critical Actions: {len(critical_actions_list)}")
+                logger.info(f"   ✅ Key Timings: {len(extracted.get('timings', []))}")
+                logger.info(f"   ✅ Emergency Contacts: {len(extracted.get('contacts', {}))}")
+                logger.info(f"   ✅ Recovery Steps: {len(recovery_steps_list)}")
+            
             logger.info(f"✅ EROAD-style flowchart complete for '{process_title}': {len(process['nodes'])} nodes")
             return {"processes": [process], "multipleProcesses": False}
             
