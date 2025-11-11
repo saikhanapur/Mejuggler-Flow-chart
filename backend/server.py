@@ -2445,6 +2445,21 @@ async def generate_flowchart_from_analysis(
         user = await get_current_user(request)
         user_id = user.get("id") if user else None
         
+        # CRITICAL: Check budget before expensive AI operations
+        from budget_monitor import BudgetMonitor
+        can_proceed, budget_message, budget_details = BudgetMonitor.check_budget()
+        
+        if not can_proceed:
+            logger.error(f"❌ Budget check failed: {budget_message}")
+            raise HTTPException(
+                status_code=402,  # Payment Required
+                detail=budget_message
+            )
+        
+        # Log budget warning if low
+        if "warning" in budget_message.lower() or "critical" in budget_message.lower():
+            logger.warning(f"⚠️ Budget warning: {budget_message}")
+        
         logger.info(f"🏗️ Generating flowchart from approved analysis")
         
         superintelligent_service = SuperintelligentAIService(
