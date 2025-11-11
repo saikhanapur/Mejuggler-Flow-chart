@@ -2165,23 +2165,4 @@ Analyze now:"""
                 "baseline": baseline
             }
         }
-                # Take from this keyword onwards (next 2-3 words)
-                method = ' '.join(after.split()[i:i+3])
-                break
-        
-        # Construct the timing string
-        parts = []
-        if action:
-            parts.append(action.strip())
-        parts.append(timing.strip())
-        if method:
-            parts.append(method.strip())
-        
-        result = ' '.join(parts)
-        
-        # Capitalize first letter
-        if result:
-            result = result[0].upper() + result[1:]
-        
-        return result
 
