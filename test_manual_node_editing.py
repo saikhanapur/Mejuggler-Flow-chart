@@ -115,12 +115,17 @@ class ManualNodeEditingTester:
                         if verify_response.status_code == 200:
                             process = verify_response.json()
                             node = next((n for n in process.get('nodes', []) if n.get('id') == node_id), None)
-                            if node and node.get('priority', {}).get('level') == 'P0':
-                                return self.log_result("Priority Update", True, 
-                                                     "Priority updated to P0 with manualOverride flag and persisted")
+                            if node:
+                                node_priority = node.get('priority', {})
+                                if isinstance(node_priority, dict) and node_priority.get('level') == 'P0':
+                                    return self.log_result("Priority Update", True, 
+                                                         "Priority updated to P0 with manualOverride flag and persisted")
+                                else:
+                                    return self.log_result("Priority Update", False, 
+                                                         f"Priority update not persisted. Found: {node_priority}")
                             else:
                                 return self.log_result("Priority Update", False, 
-                                                     "Priority update not persisted")
+                                                     f"Node {node_id} not found in process")
                         else:
                             return self.log_result("Priority Update", False, 
                                                  "Could not verify persistence")
