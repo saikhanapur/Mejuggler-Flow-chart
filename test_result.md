@@ -716,6 +716,14 @@ frontend:
     stuck_count: 0
     priority: "critical"
     needs_retesting: true
+    
+  - task: "Manual Node Editing - Priority Override & Title Edit (Action Item #2)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/process_editor.py, /app/backend/server.py, /app/frontend/src/components/flowchart/FlowNode.js, /app/frontend/src/components/flowchart/FlowchartDisplay.js, /app/frontend/src/components/flowchart/FlowchartCanvas.js, /app/frontend/src/utils/api.js"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
