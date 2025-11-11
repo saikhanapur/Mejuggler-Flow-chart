@@ -70,17 +70,27 @@ DOCUMENT:
 EXTRACT:
 1. **All Steps**: List every procedural step (maintain order)
 2. **Decision Points**: Any if/then/else logic
-3. **Contacts**: Names, phone numbers, emails
+3. **Contacts**: Names, phone numbers, emails WITH context (extensions, options)
 4. **Systems**: Software, tools, platforms mentioned
 5. **Timings**: Time constraints, frequencies
 6. **Parallel Processes**: Steps that happen simultaneously
+
+CONTACT EXTRACTION RULES (CRITICAL):
+- Preserve ALL context: extensions, options, instructions
+- Extensions: "ext 8088", "extension 8088", "x8088" → Include in contact value
+- Options: "Option 1:", "Press 1 for", "Dial 1:" → Include as separate note
+- Format: "Name: Number (Extension: X) | Option 1: Description"
+- Examples:
+  * "Wilson IT: 0061 8 9415 2888 ext 8088" → {{"Wilson IT": "0061 8 9415 2888 (Extension: 8088)"}}
+  * "Dispatch: 0800 347 787 - Press 1 for Alarm" → {{"Dispatch": "0800 347 787 | Option 1: Alarm Response"}}
+  * "Support: 0800 123 456 (Option 1: Technical, Option 2: Billing)" → {{"Support": "0800 123 456 | Option 1: Technical | Option 2: Billing"}}
 
 RETURN JSON (MUST BE VALID JSON):
 {{
   "documentSummary": "Brief overview",
   "steps": ["Step 1", "Step 2",...],
   "decisions": [{{"condition": "...", "ifYes": "...", "ifNo": "..."}}],
-  "contacts": {{"ContactName1": "contact_info", "ContactName2": "contact_info"}},
+  "contacts": {{"ContactName1": "phone (Extension: X) | Option 1: Description", "ContactName2": "phone"}},
   "systems": ["System1", "System2"],
   "timings": ["Every 30 minutes", "Within 2 hours"],
   "parallelProcesses": [["Step A", "Step B"]]
@@ -88,8 +98,8 @@ RETURN JSON (MUST BE VALID JSON):
 
 CRITICAL: 
 - contacts MUST be a JSON object with key-value pairs, NOT an array
-- contacts example: {{"Emergency": "111", "Support": "0800 347 788"}}
-- DO NOT mix array and object syntax
+- PRESERVE extensions and options in the contact value string
+- Use " | " as separator between number and options
 - Return ONLY valid JSON, no explanatory text
 
 Be thorough. Return valid JSON only."""
