@@ -3498,5 +3498,27 @@ Contacts:
 if __name__ == "__main__":
     tester = BackendTester()
     
-    # Run only the EROAD sample generation test
-    result = tester.run_sample_generation_only()
+    # Run Hierarchical Emergency Contacts test only
+    print("📞 Running Hierarchical Emergency Contacts Test Only...")
+    print(f"🌐 Testing against: {tester.base_url}")
+    print("=" * 80)
+    
+    tester.test_hierarchical_emergency_contacts()
+    
+    print("\n" + "=" * 80)
+    print("📊 TEST SUMMARY")
+    print("=" * 80)
+    
+    passed = sum(1 for r in tester.test_results if r['success'])
+    total = len(tester.test_results)
+    
+    print(f"📊 Tests Passed: {passed}/{total} ({passed/total*100:.1f}%)")
+    
+    for test_result in tester.test_results:
+        status = "✅ PASS" if test_result['success'] else "❌ FAIL"
+        print(f"{status} {test_result['test']}: {test_result['details']}")
+    
+    if passed == total:
+        print("\n🎉 Hierarchical Emergency Contacts working correctly!")
+    else:
+        print("\n⚠️ Issues found with Hierarchical Emergency Contacts")
