@@ -3899,6 +3899,9 @@ Contacts:
         print("\n📞 NEW FEATURES - Hierarchical Emergency Contacts...")
         self.test_hierarchical_emergency_contacts()
         
+        print("\n🚨 NEW FEATURES - AI Priority Detection P0-P4...")
+        self.test_ai_priority_detection_p0_p4()
+        
         print("\n📢 NEW FEATURES - Publish/Unpublish Workflow...")
         self.test_publish_unpublish_workflow()
         
