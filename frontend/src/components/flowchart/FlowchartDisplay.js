@@ -3,10 +3,9 @@ import FlowNode from './FlowNode';
 import ConnectionLine from './ConnectionLine';
 import ProgressBadge from './ProgressBadge';
 import Legend from './Legend';
-import QuickReference from './QuickReference';
-import EmergencyContacts from './EmergencyContacts';
 import CoverageBadge from './CoverageBadge';
 import ProcessMetricsDashboard from './ProcessMetricsDashboard';
+import ReferencesModal from './ReferencesModal';
 import { api } from '../../utils/api';
 
 /**
