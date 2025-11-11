@@ -183,16 +183,17 @@ const FlowNode = ({ node, onClick, isSelected }) => {
   }
 
   // ALL other nodes use consistent rounded rectangle shape
-  // Differentiate by: border thickness, shadow size, colors
+  // Differentiate by: border thickness, shadow size, colors, gap indicator
   const borderStyle = isCritical ? 'border-4' : 'border-2';
   const shadowStyle = isCritical ? 'shadow-2xl' : 'shadow-lg';
+  const gapBorderStyle = hasGap ? 'border-l-4 border-l-amber-500' : '';
   
   return (
     <div
       data-testid={`flow-node-${node.id}`}
       className={`absolute transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer rounded-xl p-4 ${
         config.container
-      } ${borderStyle} ${shadowStyle} ${config.pulse ? 'animate-pulse-glow' : ''} ${
+      } ${borderStyle} ${shadowStyle} ${gapBorderStyle} ${config.pulse ? 'animate-pulse-glow' : ''} ${
         isSelected ? 'ring-4 ring-blue-400 ring-offset-2' : ''
       } ${isMerge ? 'ring-2 ring-purple-400 ring-offset-2' : ''}`}
       style={{
@@ -204,6 +205,22 @@ const FlowNode = ({ node, onClick, isSelected }) => {
       }}
       onClick={onClick}
     >
+      {/* Gap indicator badge */}
+      {hasGap && (
+        <div className="absolute -top-3 -left-3 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg flex items-center gap-1">
+          <span>⚠️</span>
+          <span>GAP</span>
+        </div>
+      )}
+      
+      {/* Loop indicator badge */}
+      {isLoop && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg flex items-center gap-1">
+          <span>↻</span>
+          <span>LOOP</span>
+        </div>
+      )}
+      
       {/* Merge indicator badge */}
       {isMerge && (
         <div className="absolute -top-3 -right-3 bg-purple-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
