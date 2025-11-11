@@ -132,7 +132,8 @@ Return this exact JSON structure (no additional text):
   "contacts": {{}},
   "systems": [],
   "timings": [],
-  "parallelProcesses": []
+  "parallelProcesses": [],
+  "documentSections": []
 }}
 
 Return ONLY the JSON, nothing else."""
