@@ -1502,3 +1502,163 @@ Analyze now:"""
         except Exception as e:
             logger.error(f"❌ Single process generation failed for '{process_title}': {e}", exc_info=True)
             raise
+
+    
+    def extract_critical_actions_intelligent(self, nodes: List[Dict], extracted_data: Dict) -> List[Dict]:
+        """
+        Intelligently extract top 5 most critical actions from ALL nodes.
+        
+        Unlike simple extraction (status=="critical"), this analyzes:
+        - Urgency keywords: "immediately", "first", "urgent", "ASAP"
+        - Time sensitivity: "within X minutes", "before", "as soon as"
+        - Emergency indicators: "call 111", "P1 ticket", "emergency"
+        - Impact: "all", "entire", "whole system"
+        - Verbs: Action-oriented language
+        
+        Returns top 5 actions ranked by urgency score.
+        """
+        logger.info("🎯 Extracting critical actions intelligently...")
+        
+        # Urgency keywords and their weights
+        urgency_keywords = {
+            'immediately': 100,
+            'urgent': 90,
+            'emergency': 95,
+            'critical': 85,
+            'first': 80,
+            'asap': 90,
+            'now': 85,
+            'call 111': 100,
+            'call 911': 100,
+            'p1': 90,
+            'p0': 100,
+            'life-threatening': 100,
+            'safety': 85,
+            'injury': 90,
+        }
+        
+        # Time sensitivity patterns
+        time_patterns = [
+            (r'within\s+(\d+)\s*min', lambda m: 100 - int(m.group(1))),  # within 5 min = 95
+            (r'within\s+(\d+)\s*hour', lambda m: 70 - (int(m.group(1)) * 5)),  # within 2 hours = 60
+            (r'before\s+', 80),
+            (r'as soon as', 85),
+        ]
+        
+        # Impact keywords
+        impact_keywords = {
+            'all': 20,
+            'entire': 20,
+            'whole': 15,
+            'every': 15,
+            'system-wide': 25,
+        }
+        
+        # Action verbs (for verb extraction)
+        action_verbs = [
+            'call', 'notify', 'alert', 'contact', 'raise', 'create',
+            'send', 'email', 'inform', 'activate', 'initiate', 'check',
+            'verify', 'confirm', 'document', 'screenshot', 'escalate'
+        ]
+        
+        scored_actions = []
+        
+        for node in nodes:
+            title = node.get("title", "").lower()
+            description = node.get("details", node.get("description", "")).lower()
+            status = node.get("status", "")
+            actions = node.get("actions", [])
+            timing = node.get("timing", "").lower() if node.get("timing") else ""
+            
+            # Combine all text for analysis
+            full_text = f"{title} {description} {timing}"
+            
+            # Calculate urgency score
+            score = 0
+            reasons = []
+            
+            # Base score from status
+            if status == "critical":
+                score += 50
+                reasons.append("Critical status")
+            elif status == "action":
+                score += 30
+                reasons.append("Action required")
+            
+            # Check urgency keywords
+            for keyword, weight in urgency_keywords.items():
+                if keyword in full_text:
+                    score += weight
+                    reasons.append(f"Contains '{keyword}'")
+            
+            # Check time sensitivity
+            for pattern, weight_func in time_patterns:
+                if isinstance(weight_func, int):
+                    if re.search(pattern, full_text):
+                        score += weight_func
+                        reasons.append(f"Time-sensitive: {pattern}")
+                else:
+                    match = re.search(pattern, full_text)
+                    if match:
+                        score += weight_func(match)
+                        reasons.append(f"Time-sensitive: {match.group(0)}")
+            
+            # Check impact keywords
+            for keyword, weight in impact_keywords.items():
+                if keyword in full_text:
+                    score += weight
+                    reasons.append(f"High impact: '{keyword}'")
+            
+            # Extract verb from title (for action framing)
+            verb = None
+            title_words = node.get("title", "").split()
+            for word in title_words:
+                if word.lower() in action_verbs:
+                    verb = word.capitalize()
+                    break
+            
+            # If score > 0, this is a potential critical action
+            if score > 0:
+                # Extract action text (prefer title, fallback to first action)
+                action_text = node.get("title", "")
+                
+                # Ensure verb-first framing
+                if verb and not action_text.startswith(verb):
+                    # Check if there's a specific action in the actions array
+                    if actions and len(actions) > 0:
+                        first_action = actions[0]
+                        # Check if first action starts with verb
+                        for v in action_verbs:
+                            if first_action.lower().startswith(v):
+                                action_text = first_action
+                                break
+                
+                # Extract time window if mentioned
+                time_window = None
+                time_match = re.search(r'within\s+(\d+\s+(?:min|hour|day)s?)', full_text)
+                if time_match:
+                    time_window = time_match.group(1)
+                elif 'immediately' in full_text:
+                    time_window = "immediately"
+                elif 'urgent' in full_text or 'asap' in full_text:
+                    time_window = "ASAP"
+                
+                scored_actions.append({
+                    "action": action_text,
+                    "score": score,
+                    "timeWindow": time_window,
+                    "reasoning": "; ".join(reasons[:3]),  # Top 3 reasons
+                    "nodeId": node.get("id"),
+                    "status": status
+                })
+        
+        # Sort by score (descending) and take top 5
+        scored_actions.sort(key=lambda x: x["score"], reverse=True)
+        top_5 = scored_actions[:5]
+        
+        logger.info(f"✅ Extracted {len(top_5)} critical actions from {len(nodes)} nodes")
+        for i, action in enumerate(top_5, 1):
+            logger.info(f"   {i}. {action['action']} (score: {action['score']}, {action['timeWindow'] or 'no time constraint'})")
+        
+        return top_5
+
