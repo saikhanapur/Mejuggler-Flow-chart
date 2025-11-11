@@ -89,26 +89,57 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
         // EROAD-style: Extract → Enhance → Display
         const result = await api.generateEROADStyleFlowchart(input, inputType);
         
-        console.log('EROAD result:', result);
+        console.log('=== EROAD GENERATION RESULT ===');
+        console.log('Full result:', JSON.stringify(result, null, 2));
+        console.log('multipleProcesses:', result.multipleProcesses);
+        console.log('processCount:', result.processCount);
+        console.log('processTitles:', result.processTitles);
+        console.log('processes array length:', result.processes?.length);
+        
+        // VALIDATION: Check response structure
+        if (!result) {
+          throw new Error('No response from server');
+        }
         
         // Check if multiple processes detected
         if (result.multipleProcesses) {
-          console.log(`Multiple processes detected: ${result.processCount}`);
-          setExtractedData({
+          console.log(`✅ Multiple processes detected: ${result.processCount}`);
+          
+          // VALIDATION: Ensure we have processTitles
+          if (!result.processTitles || !Array.isArray(result.processTitles)) {
+            console.error('❌ processTitles missing or invalid:', result.processTitles);
+            throw new Error('Invalid multi-process detection: processTitles missing');
+          }
+          
+          if (result.processTitles.length === 0) {
+            console.error('❌ processTitles array is empty');
+            throw new Error('Invalid multi-process detection: no process titles found');
+          }
+          
+          console.log(`✅ Setting extracted data with ${result.processTitles.length} processes`);
+          
+          // Build extractedData with all required fields and defaults
+          const extractedData = {
             text: input,
             inputType: inputType,
             multipleProcesses: true,
-            processCount: result.processCount,
+            processCount: result.processCount || result.processTitles.length,
             processTitles: result.processTitles,
-            processDescriptions: result.processDescriptions || [],
-            recommendation: result.recommendation,
-            complexity: result.complexity,
-            reasoning: result.reasoning,
-            autoDecision: result.autoDecision,
-            detection: result.detection
-          });
+            processDescriptions: result.processDescriptions || result.processTitles.map(() => ''),
+            recommendation: result.recommendation || 'multiple_flowcharts',
+            complexity: result.complexity || 'unknown',
+            reasoning: result.reasoning || 'Multiple distinct processes detected',
+            autoDecision: result.autoDecision || 'Create each process as a separate flowchart',
+            detection: result.detection || {}
+          };
+          
+          console.log('✅ Extracted data prepared:', extractedData);
+          
+          setExtractedData(extractedData);
           setProcessing(false);
           toast.info(`${result.processCount} processes detected in document!`);
+          
+          console.log('✅ State updated, should show MultiProcessReview');
           return;
         }
         
