@@ -2768,10 +2768,24 @@ async def update_process_node(
         
         # Update process in database
         process["updatedAt"] = datetime.now(timezone.utc)
+        
+        # Debug logging
+        logger.info(f"🔍 About to update node {update.nodeId} with field {update.field}")
+        logger.info(f"🔍 Updated node data: {json.dumps(updated_node, default=str)}")
+        
         await db.processes.update_one(
             {"id": process_id},
             {"$set": {"nodes": nodes, "updatedAt": process["updatedAt"]}}
         )
+        
+        # Verify the update was saved
+        verification = await db.processes.find_one({"id": process_id})
+        if verification:
+            saved_node = next((n for n in verification.get('nodes', []) if n.get('id') == update.nodeId), None)
+            if saved_node:
+                logger.info(f"🔍 Verified saved node: {json.dumps(saved_node, default=str)}")
+            else:
+                logger.error(f"🔍 Node {update.nodeId} not found in saved process")
         
         logger.info(f"✅ Node updated successfully")
         
