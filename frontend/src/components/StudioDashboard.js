@@ -237,6 +237,7 @@ const StudioDashboard = () => {
               ✨ Live
             </Button>
           </div>
+          </div>
         </div>
 
         {/* Process Grid */}
