@@ -342,12 +342,31 @@ const FlowNode = ({ node, onClick, selectedNodeId, onUpdateNode }) => {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <h3 
-              className="font-semibold text-sm leading-tight break-words flex-1"
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              {node.title}
-            </h3>
+            {isEditingTitle ? (
+              <input
+                type="text"
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                onBlur={handleTitleSave}
+                onKeyDown={handleTitleKeyDown}
+                onClick={(e) => e.stopPropagation()}
+                className="font-semibold text-sm leading-tight break-words flex-1 border-2 border-blue-400 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+                autoFocus
+              />
+            ) : (
+              <h3 
+                className="font-semibold text-sm leading-tight break-words flex-1 hover:bg-blue-50 hover:cursor-text rounded px-2 py-1 -mx-2 -my-1 transition-colors group"
+                style={{ fontFamily: 'Inter, sans-serif' }}
+                onClick={handleTitleEdit}
+                title="Click to edit"
+              >
+                {node.title}
+                <svg className="inline-block w-3 h-3 ml-1 opacity-0 group-hover:opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </h3>
+            )}
             
             {/* Expand/Collapse button if node has sub-steps */}
             {hasSubSteps && (
