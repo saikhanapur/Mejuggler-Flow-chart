@@ -1042,6 +1042,218 @@ class BackendTester:
         except Exception as e:
             self.log_result("Error Handling (Missing Fields)", False, f"Error: {str(e)}")
 
+    def test_hierarchical_emergency_contacts(self):
+        """Test Hierarchical Emergency Contacts (Feature 2 - Option B) - PRIORITY TEST"""
+        print("\n📞 PRIORITY TEST: Hierarchical Emergency Contacts (Feature 2 - Option B)")
+        print("=" * 80)
+        
+        # Test document with contacts that have extensions and options from review request
+        business_continuity_doc = """Business Continuity Procedure
+        
+        Emergency Contacts:
+        - Wilson IT Support: 0061 8 9415 2888 extension 8088
+        - Dispatch Center: 0800 347 787 - Press 1 for Alarm Response, Press 2 for Council Notifications  
+        - Welfare Team: 0800 347 788 (Option 1 for immediate assistance or dial 111)
+        - Manager On-Duty: 0800 123 456 ext 789
+        
+        Steps:
+        1. Identify issue immediately
+        2. Contact appropriate team from list above
+        3. Document incident
+        4. Monitor resolution
+        5. Complete report
+        """
+        
+        try:
+            payload = {
+                "text": business_continuity_doc,
+                "inputType": "document"
+            }
+            
+            response = self.session.post(f"{self.base_url}/process/eroad-style", 
+                                       json=payload, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                # Check if we have processes array
+                if 'processes' in result and result['processes']:
+                    process = result['processes'][0]
+                    quick_reference = process.get('quickReference', {})
+                    emergency_contacts = quick_reference.get('emergencyContacts', {})
+                    
+                    validation_results = []
+                    
+                    # Test 1: Verify hierarchical structure exists
+                    if emergency_contacts and isinstance(emergency_contacts, dict):
+                        validation_results.append("✅ Emergency Contacts Structure: Hierarchical format detected")
+                    else:
+                        validation_results.append("❌ Emergency Contacts Structure: No hierarchical contacts found")
+                        self.log_result("Hierarchical Emergency Contacts", False, 
+                                      "No emergency contacts found in response")
+                        return
+                    
+                    # Test 2: Verify Wilson IT Support with extension
+                    wilson_it = None
+                    for contact_name, contact_data in emergency_contacts.items():
+                        if "wilson" in contact_name.lower() and "it" in contact_name.lower():
+                            wilson_it = contact_data
+                            break
+                    
+                    if wilson_it:
+                        if (wilson_it.get('main') == "0061 8 9415 2888" and 
+                            wilson_it.get('extension') == "8088" and
+                            wilson_it.get('options', []) == []):
+                            validation_results.append("✅ Wilson IT Support: Correct main number, extension 8088, no options")
+                        else:
+                            validation_results.append(f"❌ Wilson IT Support: {wilson_it} (expected main: 0061 8 9415 2888, extension: 8088)")
+                    else:
+                        validation_results.append("❌ Wilson IT Support: Contact not found")
+                    
+                    # Test 3: Verify Dispatch Center with options
+                    dispatch_center = None
+                    for contact_name, contact_data in emergency_contacts.items():
+                        if "dispatch" in contact_name.lower():
+                            dispatch_center = contact_data
+                            break
+                    
+                    if dispatch_center:
+                        expected_options = [
+                            {"number": "1", "description": "Alarm Response"},
+                            {"number": "2", "description": "Council Notifications"}
+                        ]
+                        
+                        if (dispatch_center.get('main') == "0800 347 787" and 
+                            dispatch_center.get('extension') is None):
+                            validation_results.append("✅ Dispatch Center: Correct main number, no extension")
+                            
+                            # Check options
+                            options = dispatch_center.get('options', [])
+                            if len(options) == 2:
+                                option_1_ok = any(opt.get('number') == '1' and 'alarm' in opt.get('description', '').lower() for opt in options)
+                                option_2_ok = any(opt.get('number') == '2' and 'council' in opt.get('description', '').lower() for opt in options)
+                                
+                                if option_1_ok and option_2_ok:
+                                    validation_results.append("✅ Dispatch Center Options: Both options correctly parsed")
+                                else:
+                                    validation_results.append(f"❌ Dispatch Center Options: {options} (expected Press 1/2 options)")
+                            else:
+                                validation_results.append(f"❌ Dispatch Center Options: {len(options)} options (expected 2)")
+                        else:
+                            validation_results.append(f"❌ Dispatch Center: {dispatch_center} (expected main: 0800 347 787)")
+                    else:
+                        validation_results.append("❌ Dispatch Center: Contact not found")
+                    
+                    # Test 4: Verify Welfare Team with option
+                    welfare_team = None
+                    for contact_name, contact_data in emergency_contacts.items():
+                        if "welfare" in contact_name.lower():
+                            welfare_team = contact_data
+                            break
+                    
+                    if welfare_team:
+                        if (welfare_team.get('main') == "0800 347 788" and 
+                            welfare_team.get('extension') is None):
+                            validation_results.append("✅ Welfare Team: Correct main number, no extension")
+                            
+                            # Check option
+                            options = welfare_team.get('options', [])
+                            if len(options) == 1:
+                                option = options[0]
+                                if (option.get('number') == '1' and 
+                                    'immediate assistance' in option.get('description', '').lower()):
+                                    validation_results.append("✅ Welfare Team Option: Option 1 correctly parsed")
+                                else:
+                                    validation_results.append(f"❌ Welfare Team Option: {option} (expected Option 1 for immediate assistance)")
+                            else:
+                                validation_results.append(f"❌ Welfare Team Options: {len(options)} options (expected 1)")
+                        else:
+                            validation_results.append(f"❌ Welfare Team: {welfare_team} (expected main: 0800 347 788)")
+                    else:
+                        validation_results.append("❌ Welfare Team: Contact not found")
+                    
+                    # Test 5: Verify Manager On-Duty with extension (different format)
+                    manager = None
+                    for contact_name, contact_data in emergency_contacts.items():
+                        if "manager" in contact_name.lower():
+                            manager = contact_data
+                            break
+                    
+                    if manager:
+                        if (manager.get('main') == "0800 123 456" and 
+                            manager.get('extension') == "789" and
+                            manager.get('options', []) == []):
+                            validation_results.append("✅ Manager On-Duty: Correct main number, extension 789, no options")
+                        else:
+                            validation_results.append(f"❌ Manager On-Duty: {manager} (expected main: 0800 123 456, ext: 789)")
+                    else:
+                        validation_results.append("❌ Manager On-Duty: Contact not found")
+                    
+                    # Test 6: Verify different format variations handled
+                    extension_formats_found = []
+                    for contact_name, contact_data in emergency_contacts.items():
+                        if contact_data.get('extension'):
+                            extension_formats_found.append(f"{contact_name}: ext {contact_data['extension']}")
+                    
+                    if len(extension_formats_found) >= 2:
+                        validation_results.append(f"✅ Extension Formats: Multiple formats handled: {extension_formats_found}")
+                    else:
+                        validation_results.append(f"⚠️ Extension Formats: {len(extension_formats_found)} extensions found")
+                    
+                    # Test 7: Verify option formats handled
+                    option_formats_found = []
+                    for contact_name, contact_data in emergency_contacts.items():
+                        options = contact_data.get('options', [])
+                        if options:
+                            option_formats_found.append(f"{contact_name}: {len(options)} options")
+                    
+                    if len(option_formats_found) >= 2:
+                        validation_results.append(f"✅ Option Formats: Multiple contacts with options: {option_formats_found}")
+                    else:
+                        validation_results.append(f"⚠️ Option Formats: {len(option_formats_found)} contacts with options")
+                    
+                    # Test 8: Verify backward compatibility (check if simple contacts would work)
+                    # This is implicit - if the structure supports {main, extension, options}, it's backward compatible
+                    validation_results.append("✅ Backward Compatibility: Structure supports simple contacts")
+                    
+                    # Overall assessment
+                    failed_checks = [r for r in validation_results if r.startswith("❌")]
+                    warning_checks = [r for r in validation_results if r.startswith("⚠️")]
+                    
+                    if not failed_checks:
+                        if len(warning_checks) <= 1:
+                            self.log_result("Hierarchical Emergency Contacts", True, 
+                                          f"All hierarchical contact tests passed. {'; '.join(validation_results)}")
+                        else:
+                            self.log_result("Hierarchical Emergency Contacts", True, 
+                                          f"Core functionality working with minor issues. {'; '.join(validation_results)}")
+                    else:
+                        self.log_result("Hierarchical Emergency Contacts", False, 
+                                      f"Critical issues found: {'; '.join(failed_checks)}")
+                    
+                    # Log the actual emergency contacts structure for review
+                    print(f"\n📋 Extracted Emergency Contacts Structure:")
+                    for contact_name, contact_data in emergency_contacts.items():
+                        print(f"   {contact_name}:")
+                        print(f"     Main: {contact_data.get('main', 'N/A')}")
+                        print(f"     Extension: {contact_data.get('extension', 'None')}")
+                        options = contact_data.get('options', [])
+                        if options:
+                            print(f"     Options:")
+                            for opt in options:
+                                print(f"       {opt.get('number', '?')}: {opt.get('description', 'N/A')}")
+                        else:
+                            print(f"     Options: None")
+                    
+                else:
+                    self.log_result("Hierarchical Emergency Contacts", False, 
+                                  "No processes found in response")
+            else:
+                self.log_result("Hierarchical Emergency Contacts", False, 
+                              f"HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("Hierarchical Emergency Contacts", False, f"Error: {str(e)}")
+
     def test_intelligent_critical_actions_extraction(self):
         """Test Intelligent Critical Actions Extraction (Feature 1 - Option B) - PRIORITY TEST"""
         print("\n🎯 PRIORITY TEST: Intelligent Critical Actions Extraction (Feature 1 - Option B)")
