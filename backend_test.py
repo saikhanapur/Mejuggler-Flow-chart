@@ -1068,7 +1068,7 @@ Steps: Prepare offer, Send offer, Negotiate
 Steps: Prepare workspace, Schedule orientation, Assign buddy"""
             
             payload = {
-                "documentText": recruitment_doc,
+                "text": recruitment_doc,
                 "inputType": "document"
             }
             
