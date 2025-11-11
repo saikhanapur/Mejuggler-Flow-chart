@@ -657,6 +657,19 @@ frontend:
       - working: "NA"
         agent: "main"
         comment: "NEW FEATURE: Intelligent critical actions extraction replacing simple status=='critical' filter. Implemented extract_critical_actions_intelligent() method that analyzes ALL nodes with urgency scoring. Scoring factors: urgency keywords ('immediately', 'urgent', 'emergency', 'call 111'), time sensitivity ('within X min'), impact keywords ('all', 'entire'), action verbs ('call', 'notify', 'raise'). Returns top 5 most urgent actions ranked by composite score. Integrated into quickReference generation in both generate_eroad_style_flowchart() and generate_eroad_style_single_process() methods. Added logging for transparency. Also added recovery steps extraction (status=='recovery'). TESTING NEEDED: 1) Create new process via POST /api/process/eroad-style 2) Verify quickReference.criticalActions contains top 5 most urgent (not all critical nodes) 3) Check verb-first framing 4) Verify time windows preserved ('immediately', 'within X min') 5) Confirm actions ranked by urgency score 6) Test with complex BCP document (multiple urgency levels)"
+
+  - task: "Hierarchical Emergency Contacts (Feature 2 - Option B)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/superintelligent_ai_service.py, /app/frontend/src/components/flowchart/EmergencyContacts.js"
+    stuck_count: 0
+    priority: "critical"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NEW FEATURE: Hierarchical emergency contacts with extensions and options. Backend changes: 1) Enhanced analyze_document() prompt to extract contacts with context (extensions, options) 2) Added parse_contacts_hierarchical() method to parse formats like '(Extension: 8088)', '| Option 1: Alarm' 3) Returns structured format: {main, extension, options: [{number, description}]} 4) Integrated into both flowchart generation methods. Frontend changes: 1) Updated EmergencyContacts.js component 2) Detects hierarchical vs simple format (backward compatible) 3) Displays main number prominently 4) Shows extension in blue badge with lightning icon 5) Shows options hierarchically with arrow icons and left border 6) Responsive grid layout. TESTING NEEDED: 1) Create process with document containing extensions/options 2) Example: 'Wilson IT: 0061 8 9415 2888 ext 8088, Dispatch: 0800 347 787 - Press 1 for Alarm, Press 2 for Council' 3) Verify backend logs show '📞 Parsing contacts hierarchically...' 4) Verify frontend displays extensions in badge 5) Verify options shown with indentation 6) Verify backward compatibility with simple contacts"
+
       - working: true
         agent: "testing"
         comment: "✅ INTELLIGENT CRITICAL ACTIONS EXTRACTION - FULLY FUNCTIONAL. Comprehensive testing with Emergency Response Procedure (9-step document): 1) Critical Actions Count: Exactly 5 actions extracted as designed ✅ 2) Perfect Urgency Ranking: Emergency/injury action with 'immediately' is FIRST (score: 335), P1 escalation with 'urgently' is SECOND (score: 230), Manager notification with '5 min' is THIRD (score: 125) - ranking perfectly matches urgency levels ✅ 3) Time Windows: 3 time constraints preserved ('immediately', 'within 5 min', 'urgently') ✅ 4) Verb-First Framing: 5/5 actions start with action verbs ('Call', 'Create', 'Notify', 'Check', 'Email') ✅ 5) Intelligent Extraction: Limited to top 5 (not returning all nodes) ✅ 6) Recovery Steps: 1 recovery step extracted ✅ 7) Response Structure: All required quickReference fields present ✅ Backend logs show transparent scoring: 'Call 111 immediately' (335), 'Create P1 ticket urgently' (230), 'Notify on-duty manager within 5 minutes' (125). Feature exceeds expectations - intelligent urgency analysis working perfectly!"
