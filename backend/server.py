@@ -2790,6 +2790,9 @@ async def create_selected_processes(
     }
     """
     try:
+        # Import superintelligent service
+        from superintelligent_ai_service import SuperintelligentAIService
+        
         user = await get_current_user(request)
         user_id = user.get("id") if user else None
         
