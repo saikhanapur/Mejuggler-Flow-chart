@@ -1982,22 +1982,6 @@ Analyze now:"""
             result = result[0].upper() + result[1:]
         
         return result
-
-                        parsed["options"].append({
-                            "number": press_match.group(1),
-                            "description": press_match.group(2).strip()
-                        })
-                    else:
-                        # Generic option without number
-                        parsed["options"].append({
-                            "number": None,
-                            "description": option_part
-                        })
-            
-            hierarchical_contacts[name] = parsed
-            
-            # Log the parsing result
-            if parsed["extension"] or parsed["options"]:
                 logger.info(f"   ✅ {name}: {parsed['main']}")
                 if parsed["extension"]:
                     logger.info(f"      → Extension: {parsed['extension']}")
