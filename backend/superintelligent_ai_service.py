@@ -1968,6 +1968,56 @@ Analyze now:"""
         Format timing with context by extracting action and method.
         
         Example:
+        before = "Check MyIT ticket status"
+        timing = "every 30 minutes"
+        after = "via portal"
+        
+        Returns: "Check MyIT ticket status every 30 minutes via portal"
+        """
+        # Clean up before/after text
+        before = before.strip()
+        after = after.strip()
+        
+        # Extract action verb from before (if present)
+        action_verbs = ['check', 'update', 'monitor', 'verify', 'send', 'email', 'call', 
+                       'notify', 'review', 'document', 'log', 'report', 'escalate']
+        
+        words_before = before.lower().split()
+        action = None
+        for i, word in enumerate(words_before):
+            if word in action_verbs:
+                # Take from this verb onwards
+                action = ' '.join(before.split()[i:])
+                break
+        
+        if not action:
+            # No verb found, take last few words
+            action = ' '.join(before.split()[-5:]) if before else ""
+        
+        # Extract method from after (if present)
+        method_keywords = ['via', 'in', 'using', 'through', 'on', 'by']
+        method = None
+        words_after = after.lower().split()
+        for i, word in enumerate(words_after):
+            if word in method_keywords:
+                # Take from this keyword onwards
+                method = ' '.join(after.split()[i:])
+                break
+        
+        if not method and after:
+            # No method keyword found, but we have after text
+            method = f"via {after}"
+        
+        # Combine parts
+        parts = []
+        if action:
+            parts.append(action)
+        if timing:
+            parts.append(timing)
+        if method:
+            parts.append(method)
+        
+        return ' '.join(parts) if parts else timing
 
 
     def calculate_node_priority(self, node: Dict) -> Dict:
