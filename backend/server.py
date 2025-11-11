@@ -2877,9 +2877,6 @@ async def delete_process_node(
 
 # ==================== END MANUAL EDITING ====================
 
-
-        )
-        
         # Save to MongoDB for later retrieval
         from datetime import datetime, timezone
         import uuid
