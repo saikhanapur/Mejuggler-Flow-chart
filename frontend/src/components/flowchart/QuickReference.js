@@ -73,31 +73,48 @@ const QuickReference = ({ criticalActions, keyTimings, recoverySteps }) => {
         </button>
         {isTimingsExpanded && (
           <div className="px-6 pb-6 animate-fade-in">
-        <div className="space-y-2 text-sm text-amber-800">
-          {keyTimings && keyTimings.length > 0 ? (
-            keyTimings.map((timing, idx) => (
-              <div key={idx} className="flex items-start gap-2">
-                <span className="text-amber-600 font-bold">•</span>
-                <span>{timing}</span>
-              </div>
-            ))
-          ) : (
-            <div className="flex items-start gap-2">
-              <span className="text-amber-600 font-bold">•</span>
-              <span>No specific timings mentioned</span>
+            <div className="space-y-2 text-sm text-amber-800">
+              {keyTimings && keyTimings.length > 0 ? (
+                keyTimings.map((timing, idx) => (
+                  <div key={idx} className="flex items-start gap-2">
+                    <span className="text-amber-600 font-bold">•</span>
+                    <span>{timing}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="flex items-start gap-2">
+                  <span className="text-amber-600 font-bold">•</span>
+                  <span>No specific timings mentioned</span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Recovery Steps */}
-      <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-300 rounded-xl p-6 shadow-lg">
-        <h3 className="font-bold text-emerald-900 mb-4 flex items-center gap-2 text-lg">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-300 rounded-xl shadow-lg overflow-hidden">
+        <button
+          onClick={() => setIsRecoveryExpanded(!isRecoveryExpanded)}
+          className="w-full p-6 pb-4 text-left hover:bg-emerald-100/50 transition-colors flex items-center justify-between group"
+        >
+          <h3 className="font-bold text-emerald-900 flex items-center gap-2 text-lg">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Recovery Steps
+          </h3>
+          <svg 
+            className={`w-5 h-5 text-emerald-700 transition-transform duration-300 ${isRecoveryExpanded ? 'rotate-180' : ''}`}
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
-          Recovery Steps
-        </h3>
+        </button>
+        {isRecoveryExpanded && (
+          <div className="px-6 pb-6 animate-fade-in">
         <div className="space-y-2.5 text-sm text-emerald-800">
           {recoverySteps && recoverySteps.length > 0 ? (
             recoverySteps.map((step, idx) => (
