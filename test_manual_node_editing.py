@@ -326,8 +326,10 @@ class ManualNodeEditingTester:
         try:
             # Remove auth header temporarily
             original_headers = self.session.headers.copy()
+            print(f"   🔍 Original headers: {list(original_headers.keys())}")
             if 'Authorization' in self.session.headers:
                 del self.session.headers['Authorization']
+            print(f"   🔍 Headers after removal: {list(self.session.headers.keys())}")
             
             update_payload = {
                 "nodeId": node_id,
@@ -338,6 +340,9 @@ class ManualNodeEditingTester:
             response = self.session.patch(f"{self.base_url}/process/{process_id}/node", 
                                         json=update_payload, timeout=TIMEOUT)
             
+            print(f"   🔍 Response status: {response.status_code}")
+            print(f"   🔍 Response text: {response.text}")
+            
             # Restore headers
             self.session.headers.update(original_headers)
             
@@ -346,7 +351,7 @@ class ManualNodeEditingTester:
                                              "Correctly returns 401 without auth token"))
             else:
                 results.append(self.log_result("Error Handling (No Auth)", False, 
-                                             f"Expected 401, got HTTP {response.status_code}"))
+                                             f"Expected 401, got HTTP {response.status_code}: {response.text}"))
         except Exception as e:
             # Restore headers in case of error
             self.session.headers.update(original_headers)
