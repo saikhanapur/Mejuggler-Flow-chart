@@ -2164,6 +2164,7 @@ Analyze now:"""
                 "visibility": round(visibility_score, 1),
                 "baseline": baseline
             }
+        }
 
     
     async def generate_node_embedding(self, node: Dict) -> List[float]:
