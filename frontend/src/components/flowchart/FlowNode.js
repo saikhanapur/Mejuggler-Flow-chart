@@ -110,7 +110,6 @@ const FlowNode = ({ node, onClick, selectedNodeId, onUpdateNode }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(node.title);
-  const [isEditingPriority, setIsEditingPriority] = useState(false);
   
   const isSelected = selectedNodeId === node.id;
   const config = STATUS_CONFIG[node.status] || STATUS_CONFIG.operational;
