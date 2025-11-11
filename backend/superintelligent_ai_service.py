@@ -1841,12 +1841,14 @@ Analyze now:"""
                             "description": press_match.group(2).strip()
                         })
             
-            return parsed
+                hierarchical_contacts[name] = parsed
+                
+            except Exception as e:
+                logger.warning(f"Error parsing contact '{name}': {e}")
+                # Fallback to simple format
+                hierarchical_contacts[name] = {"main": contact_info, "extension": None, "options": []}
         
-        except Exception as e:
-            logger.warning(f"Error parsing contact hierarchically: {e}")
-            # Fallback to simple format
-            return {"main": contact_text, "extension": None, "options": []}
+        return hierarchical_contacts
 
     def extract_key_timings_enhanced(self, nodes: List[Dict], extracted_data: Dict) -> List[str]:
         """
