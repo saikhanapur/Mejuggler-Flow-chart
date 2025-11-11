@@ -21,7 +21,7 @@ import { api } from '../../utils/api';
  * - Zoom and pan controls
  */
 
-const FlowchartDisplay = ({ process, onNodeClick, selectedNodeId }) => {
+const FlowchartDisplay = ({ process, onNodeClick, onUpdateNode, selectedNodeId }) => {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
