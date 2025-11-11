@@ -107,6 +107,8 @@ const StatusIcon = ({ status }) => {
 };
 
 const FlowNode = ({ node, onClick, isSelected }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
   const config = STATUS_CONFIG[node.status] || STATUS_CONFIG.operational;
   
   // Get coordinates from node (backend provides these)
