@@ -3388,6 +3388,9 @@ Contacts:
         print("\n🎯 NEW FEATURES - Intelligent Critical Actions Extraction...")
         self.test_intelligent_critical_actions_extraction()
         
+        print("\n📞 NEW FEATURES - Hierarchical Emergency Contacts...")
+        self.test_hierarchical_emergency_contacts()
+        
         print("\n📢 NEW FEATURES - Publish/Unpublish Workflow...")
         self.test_publish_unpublish_workflow()
         
