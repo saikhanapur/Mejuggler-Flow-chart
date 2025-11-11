@@ -268,7 +268,24 @@ Extract from the document:
 Return ONLY valid JSON."""
         
         message = UserMessage(text=prompt)
-        response = await chat.send_message(message)
+        
+        # Retry logic for API failures (502, 503, timeout)
+        max_retries = 3
+        retry_delay = 2  # seconds
+        
+        for attempt in range(max_retries):
+            try:
+                response = await chat.send_message(message)
+                break  # Success, exit retry loop
+            except Exception as retry_error:
+                error_msg = str(retry_error)
+                if "502" in error_msg or "503" in error_msg or "timeout" in error_msg.lower():
+                    if attempt < max_retries - 1:
+                        logger.warning(f"API error (attempt {attempt + 1}/{max_retries}): {error_msg}. Retrying in {retry_delay}s...")
+                        await asyncio.sleep(retry_delay)
+                        retry_delay *= 2  # Exponential backoff
+                        continue
+                raise  # Re-raise if not retryable or max retries reached
         
         # Parse response
         enhanced = self._parse_json_response(response)
