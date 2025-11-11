@@ -139,7 +139,7 @@ const MultiProcessReview = ({ processesData, onBack, currentWorkspace, selectedW
           </div>
           <div className="flex-1">
             <h2 className="text-2xl font-bold text-slate-800">
-              Found {processesData.processCount} Distinct Processes!
+              Found {processTitles.length} Distinct Processes!
             </h2>
             <p className="text-slate-600">
               Review and select which processes to create
