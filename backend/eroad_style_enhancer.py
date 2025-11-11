@@ -538,6 +538,38 @@ Return ONLY valid JSON."""
             except json.JSONDecodeError:
                 pass
             
+            try:
+                # Handle truncated JSON - common with long responses
+                # Find last complete key-value pair and close properly
+                start = response_text.find('{')
+                if start != -1:
+                    # Find last valid closing point
+                    last_complete = response_text.rfind('}')
+                    if last_complete == -1:
+                        # No closing brace at all - add one
+                        fixed = response_text + '}'
+                    else:
+                        fixed = response_text[:last_complete+1]
+                    
+                    # Try parsing
+                    try:
+                        return json.loads(fixed)
+                    except:
+                        # Still broken, try adding closing braces for nested structures
+                        open_braces = fixed.count('{') - fixed.count('}')
+                        open_brackets = fixed.count('[') - fixed.count(']')
+                        
+                        # Close all open structures
+                        for _ in range(open_brackets):
+                            fixed += ']'
+                        for _ in range(open_braces):
+                            fixed += '}'
+                        
+                        return json.loads(fixed)
+            except (json.JSONDecodeError, ValueError):
+                pass
+            
             # If all repairs fail, raise original error
             logger.error(f"❌ Could not repair JSON. First 500 chars: {response_text[:500]}")
+            logger.error(f"❌ Last 500 chars: {response_text[-500:]}")
             raise ValueError(f"Failed to parse JSON response: {e}")
