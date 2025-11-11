@@ -1311,7 +1311,40 @@ Analyze now:"""
             logger.info("💡 Generating AI recommendations for process improvement...")
             process['nodes'] = await self.generate_contextual_recommendations(process['nodes'])
             
-            logger.info(f"✅ EROAD-style flowchart complete: {len(process['nodes'])} nodes")
+            # WORLD-CLASS ANALYSIS: Calculate comprehensive metrics
+            logger.info("📊 Calculating world-class process metrics...")
+            
+            # Complexity Score
+            process['complexityScore'] = self.calculate_complexity_score({"nodes": process['nodes'], "_extracted_data": extracted})
+            logger.info(f"   Complexity: {process['complexityScore']['score']}/10 ({process['complexityScore']['level']})")
+            
+            # Process Health Score
+            process['healthScore'] = self.calculate_process_health_score(process)
+            logger.info(f"   Health: {process['healthScore']['score']}/100 ({process['healthScore']['level']})")
+            
+            # Execution Time Estimate
+            process['executionTime'] = self.estimate_execution_time(process['nodes'])
+            logger.info(f"   Est. Time: {process['executionTime']['average']} (avg)")
+            
+            # Multi-Lens Gap Analysis
+            process['gapAnalysis'] = self.multi_lens_gap_analysis(process['nodes'], extracted)
+            total_gaps = sum(len(gaps) for gaps in process['gapAnalysis'].values())
+            logger.info(f"   Gaps Found: {total_gaps} across 4 lenses")
+            
+            # Critical Path Detection
+            process['criticalPath'] = self.detect_critical_path(process['nodes'])
+            logger.info(f"   Critical Path: {len(process['criticalPath'])} blocking steps")
+            
+            # Process Metrics Summary
+            process['processMetrics'] = {
+                "totalNodes": len(process['nodes']),
+                "decisionPoints": len([n for n in process['nodes'] if n.get('isDecisionPoint')]),
+                "loops": len([n for n in process['nodes'] if n.get('isLoop')]),
+                "avgAutomation": round(sum([n.get('aiRecommendations', {}).get('automationScore', 0) for n in process['nodes']]) / len(process['nodes']), 1) if process['nodes'] else 0,
+                "criticalSteps": len([n for n in process['nodes'] if n.get('status') == 'critical'])
+            }
+            
+            logger.info(f"✅ EROAD-style flowchart complete: {len(process['nodes'])} nodes with world-class intelligence")
             return {"processes": [process], "multipleProcesses": False}
             
         except Exception as e:
