@@ -212,8 +212,10 @@ const FlowNode = ({ node, onClick, isSelected }) => {
         left: `${x}px`,
         top: `${y}px`,
         width: '240px',
-        minHeight: '80px',
-        zIndex: 10,
+        minHeight: isExpanded ? 'auto' : '80px',
+        maxHeight: isExpanded ? '400px' : '120px',
+        overflow: isExpanded ? 'visible' : 'hidden',
+        zIndex: isExpanded ? 20 : 10, // Bring expanded nodes to front
       }}
       onClick={onClick}
     >
