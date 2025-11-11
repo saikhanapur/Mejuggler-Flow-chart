@@ -670,6 +670,19 @@ frontend:
         agent: "main"
         comment: "NEW FEATURE: Hierarchical emergency contacts with extensions and options. Backend changes: 1) Enhanced analyze_document() prompt to extract contacts with context (extensions, options) 2) Added parse_contacts_hierarchical() method to parse formats like '(Extension: 8088)', '| Option 1: Alarm' 3) Returns structured format: {main, extension, options: [{number, description}]} 4) Integrated into both flowchart generation methods. Frontend changes: 1) Updated EmergencyContacts.js component 2) Detects hierarchical vs simple format (backward compatible) 3) Displays main number prominently 4) Shows extension in blue badge with lightning icon 5) Shows options hierarchically with arrow icons and left border 6) Responsive grid layout. TESTING NEEDED: 1) Create process with document containing extensions/options 2) Example: 'Wilson IT: 0061 8 9415 2888 ext 8088, Dispatch: 0800 347 787 - Press 1 for Alarm, Press 2 for Council' 3) Verify backend logs show '📞 Parsing contacts hierarchically...' 4) Verify frontend displays extensions in badge 5) Verify options shown with indentation 6) Verify backward compatibility with simple contacts"
 
+
+  - task: "Enhanced Key Timings Extraction (Feature 3 - Option B)"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/superintelligent_ai_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NEW FEATURE: Enhanced key timings extraction with full context. Added extract_key_timings_enhanced() method that analyzes ALL nodes for timing patterns and captures surrounding context (action + timing + method). Timing patterns detected: 'every X min/hours', 'within X min/hours', 'at/by X am/pm', 'hourly/daily/weekly', 'X times per day'. Context extraction: captures action verb (check, update, monitor), timing constraint, and method/tool (via email, in system). Example output: 'Check MyIT ticket status every 30 minutes via portal' instead of just 'every 30 minutes'. Helper method _format_timing_context() cleans and formats extracted text. Integrated into both quickReference generation locations. Includes fallback to basic timings from extracted_data. TESTING NEEDED: 1) Create process with document containing various timing patterns 2) Verify backend logs show '⏰ Extracting key timings with context...' 3) Check timing extraction includes action + timing + method 4) Verify patterns detected: every, within, hourly, at/by 5) Confirm no duplicates (uses seen_timings set) 6) Verify fallback to basic timings if no patterns found"
+
       - working: true
         agent: "testing"
         comment: "✅ HIERARCHICAL EMERGENCY CONTACTS FULLY FUNCTIONAL. Comprehensive testing completed with Business Continuity Procedure document containing complex contact formats: 1) Extensions Extracted: Wilson IT Support (ext 8088) and Manager On-Duty (ext 789) correctly parsed and separated from main numbers ✅ 2) Options Parsed: Dispatch Center with 2 options (Press 1 for Alarm Response, Press 2 for Council Notifications) and Welfare Team with Option 1 for immediate assistance ✅ 3) Multiple Format Support: Handles 'extension 8088', 'ext 789', 'Press 1 for', 'Option 1 for' variations ✅ 4) Structured Response: All contacts return {main, extension, options} format with proper null/empty values ✅ 5) Backend Logs: Confirmed '📞 Parsing contacts hierarchically...' with detailed parsing output ✅ 6) Data Quality: Extensions properly separated, options with number+description structure, multiple options per contact supported ✅ 7) Backward Compatibility: Structure supports simple contacts (main number only) ✅ Feature working perfectly - hierarchical contact parsing with extensions and options fully operational!"
