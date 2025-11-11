@@ -280,6 +280,41 @@ const FlowNode = ({ node, onClick, selectedNodeId, onUpdateNode }) => {
         </div>
       )}
       
+      {/* AI Recommendations badges - bottom right */}
+      {node.aiRecommendations && (
+        <div className="absolute -bottom-2 -right-2 flex gap-1">
+          {/* Automation Score Badge */}
+          {node.aiRecommendations.automationScore > 0 && (
+            <div 
+              className={`text-xs font-bold px-2 py-1 rounded-full shadow-md flex items-center gap-1 ${
+                node.aiRecommendations.automationScore >= 80 ? 'bg-green-500 text-white' :
+                node.aiRecommendations.automationScore >= 50 ? 'bg-yellow-500 text-white' :
+                'bg-gray-400 text-white'
+              }`}
+              title={`Automation Potential: ${node.aiRecommendations.automationScore}%`}
+            >
+              <span>🤖</span>
+              <span>{node.aiRecommendations.automationScore}</span>
+            </div>
+          )}
+          
+          {/* Bottleneck Risk Badge */}
+          {node.aiRecommendations.bottleneckRisk > 40 && (
+            <div 
+              className={`text-xs font-bold px-2 py-1 rounded-full shadow-md flex items-center gap-1 ${
+                node.aiRecommendations.bottleneckRisk >= 80 ? 'bg-red-500 text-white' :
+                node.aiRecommendations.bottleneckRisk >= 60 ? 'bg-orange-500 text-white' :
+                'bg-yellow-500 text-white'
+              }`}
+              title={`Bottleneck Risk: ${node.aiRecommendations.bottleneckRisk}%`}
+            >
+              <span>⚠️</span>
+              <span>{node.aiRecommendations.bottleneckRisk}</span>
+            </div>
+          )}
+        </div>
+      )}
+      
       <div className="flex items-start gap-3">
         <div className="mt-0.5 flex-shrink-0">
           <StatusIcon status={node.status} />
