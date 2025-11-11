@@ -132,8 +132,10 @@ const QuickReference = ({ criticalActions, keyTimings, recoverySteps }) => {
                   </div>
                   <span className="flex-1 leading-relaxed">Complete process and document outcomes</span>
                 </div>
-          )}
-        </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
