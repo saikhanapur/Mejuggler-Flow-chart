@@ -334,14 +334,22 @@ const FlowNode = ({ node, onClick, selectedNodeId, onUpdateNode }) => {
           {/* Expandable sub-steps section */}
           {hasSubSteps && isExpanded && (
             <div 
-              className="mt-3 pt-3 border-t border-black/10 space-y-1.5 animate-fade-in"
+              className={`mt-3 pt-3 space-y-1.5 animate-fade-in ${
+                isCritical ? 'border-t border-white/30' : 'border-t border-black/10'
+              }`}
             >
-              <div className="text-xs font-semibold text-black/60 mb-2">
+              <div className={`text-xs font-semibold mb-2 ${
+                isCritical ? 'text-white/90' : 'text-black/60'
+              }`}>
                 Detailed Steps:
               </div>
               {subSteps.map((step, idx) => (
-                <div key={idx} className="flex items-start gap-2 text-xs text-black/80">
-                  <span className="flex-shrink-0 font-semibold text-black/60">{idx + 1}.</span>
+                <div key={idx} className={`flex items-start gap-2 text-xs ${
+                  isCritical ? 'text-white/95' : 'text-black/80'
+                }`}>
+                  <span className={`flex-shrink-0 font-semibold ${
+                    isCritical ? 'text-white/80' : 'text-black/60'
+                  }`}>{idx + 1}.</span>
                   <span className="flex-1">{step}</span>
                 </div>
               ))}
