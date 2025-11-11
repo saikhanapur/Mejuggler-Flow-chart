@@ -2165,39 +2165,6 @@ Analyze now:"""
                 "baseline": baseline
             }
         }
-
-        before = "Check MyIT ticket status"
-        timing = "every 30 minutes"
-        after = "via portal"
-        
-        Returns: "Check MyIT ticket status every 30 minutes via portal"
-        """
-        # Clean up before/after text
-        before = before.strip()
-        after = after.strip()
-        
-        # Extract action verb from before (if present)
-        action_verbs = ['check', 'update', 'monitor', 'verify', 'send', 'email', 'call', 
-                       'notify', 'review', 'document', 'log', 'report', 'escalate']
-        
-        words_before = before.lower().split()
-        action = None
-        for i, word in enumerate(words_before):
-            if word in action_verbs:
-                # Take from this verb onwards
-                action = ' '.join(before.split()[i:])
-                break
-        
-        if not action:
-            # No verb found, take last few words
-            action = ' '.join(before.split()[-5:]) if before else ""
-        
-        # Extract method from after (if present)
-        method_keywords = ['via', 'in', 'using', 'through', 'on', 'by']
-        method = None
-        words_after = after.lower().split()
-        for i, word in enumerate(words_after):
-            if word in method_keywords:
                 # Take from this keyword onwards (next 2-3 words)
                 method = ' '.join(after.split()[i:i+3])
                 break
