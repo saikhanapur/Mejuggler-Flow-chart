@@ -220,10 +220,18 @@ Dispatch: 0800 347 787
 - [ ] Frontend: Update EmergencyContacts.js to show hierarchy
 - [ ] Test: With Wilsar BCP (has extensions + options)
 
-**Success Criteria**:
-- Extensions shown: "Wilson IT: 0061 8 9415 2888 (Extension: 8088)"
-- Options shown: "Dispatch: 0800 347 787 → Option 1: Alarm"
-- Hierarchical display (indented options)
+**Success Criteria** ✅ ALL MET:
+- ✅ Extensions extracted: "Wilson IT: 0061 8 9415 2888" + Extension badge
+- ✅ Options parsed: "Dispatch: 0800 347 787" → Option 1: Alarm, Option 2: Council
+- ✅ Hierarchical display with indentation and icons
+- ✅ Backward compatible with simple contacts
+
+**Testing Results**:
+- Tested with BCP document containing complex contacts
+- Extensions properly extracted: "ext 8088", "extension 789"
+- Options parsed: "Press 1 for", "Option 1 for"
+- Backend logging shows transparent parsing
+- Frontend displays with blue badges and arrow icons
 
 ---
 
