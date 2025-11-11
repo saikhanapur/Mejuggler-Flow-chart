@@ -2746,6 +2746,7 @@ async def update_process_node(
         # Find and update the node
         nodes = process.get("nodes", [])
         node_updated = False
+        updated_node = None
         
         for i, node in enumerate(nodes):
             if node.get("id") == update.nodeId:
@@ -2758,6 +2759,7 @@ async def update_process_node(
                 else:
                     raise HTTPException(status_code=400, detail=f"Invalid field: {update.field}")
                 
+                updated_node = nodes[i]
                 node_updated = True
                 break
         
@@ -2773,7 +2775,7 @@ async def update_process_node(
         
         logger.info(f"✅ Node updated successfully")
         
-        return {"success": True, "message": "Node updated", "updatedNode": nodes[i]}
+        return {"success": True, "message": "Node updated", "updatedNode": updated_node}
         
     except HTTPException:
         raise
