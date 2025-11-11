@@ -237,7 +237,7 @@ const MultiProcessReview = ({ processesData, onBack, currentWorkspace, selectedW
         {/* Selection Summary */}
         <div className="bg-slate-50 rounded-xl p-4 mb-6">
           <p className="text-sm font-medium text-slate-700">
-            <strong>{selectedProcesses.length}</strong> of <strong>{processesData.processCount}</strong> processes selected
+            <strong>{selectedProcesses.length}</strong> of <strong>{processTitles.length}</strong> processes selected
           </p>
         </div>
 
