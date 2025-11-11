@@ -2472,3 +2472,249 @@ Analyze ONLY the nodes shown above. Return valid JSON array."""
             # Return nodes unchanged if recommendations fail
             return nodes
 
+    def calculate_complexity_score(self, process_data: Dict) -> Dict[str, Any]:
+        """
+        Calculate process complexity score (0-10) based on multiple factors.
+        
+        Higher complexity = more decisions, loops, parallel processes, stakeholders
+        """
+        nodes = process_data.get("nodes", [])
+        extracted = process_data.get("_extracted_data", {})
+        
+        # Count complexity factors
+        decision_count = len([n for n in nodes if n.get("isDecisionPoint")])
+        loop_count = len([n for n in nodes if n.get("isLoop")])
+        parallel_count = len(extracted.get("parallelProcesses", []))
+        stakeholder_count = len(set([actor for n in nodes for actor in n.get("actors", [])]))
+        branch_count = sum([len(n.get("connections", [])) for n in nodes if n.get("isDecisionPoint")])
+        
+        # Calculate weighted score (0-10)
+        score = min(10, (
+            (decision_count * 1.5) +
+            (loop_count * 2.0) +
+            (parallel_count * 1.0) +
+            (stakeholder_count * 0.3) +
+            (branch_count * 0.5)
+        ) / 2)
+        
+        # Determine complexity level
+        if score >= 8:
+            level = "Very High"
+            color = "red"
+        elif score >= 6:
+            level = "High"
+            color = "orange"
+        elif score >= 4:
+            level = "Medium"
+            color = "yellow"
+        else:
+            level = "Low"
+            color = "green"
+        
+        return {
+            "score": round(score, 1),
+            "level": level,
+            "color": color,
+            "factors": {
+                "decisions": decision_count,
+                "loops": loop_count,
+                "parallelProcesses": parallel_count,
+                "stakeholders": stakeholder_count,
+                "branches": branch_count
+            },
+            "reasoning": f"{level} complexity due to {decision_count} decisions, {loop_count} loops, and {stakeholder_count} stakeholders"
+        }
+    
+    def calculate_process_health_score(self, process_data: Dict) -> Dict[str, Any]:
+        """
+        Calculate overall process health score (0-100) combining multiple metrics.
+        
+        Higher score = better health (low complexity, high automation, low bottleneck risk, few gaps)
+        """
+        nodes = process_data.get("nodes", [])
+        complexity = process_data.get("complexityScore", {}).get("score", 5)
+        
+        # Calculate component scores
+        automation_scores = [n.get("aiRecommendations", {}).get("automationScore", 50) for n in nodes if n.get("aiRecommendations")]
+        avg_automation = sum(automation_scores) / len(automation_scores) if automation_scores else 50
+        
+        bottleneck_scores = [n.get("aiRecommendations", {}).get("bottleneckRisk", 50) for n in nodes if n.get("aiRecommendations")]
+        avg_bottleneck = sum(bottleneck_scores) / len(bottleneck_scores) if bottleneck_scores else 50
+        
+        # Count gaps
+        gap_count = len([n for n in nodes if n.get("operationalDetails", {}).get("gap")])
+        gap_penalty = min(30, gap_count * 10)
+        
+        # Health formula (0-100)
+        health_score = (
+            (100 - (complexity * 10)) * 0.3 +  # Lower complexity = better
+            avg_automation * 0.3 +                # Higher automation = better
+            (100 - avg_bottleneck) * 0.3 +       # Lower bottleneck = better
+            (100 - gap_penalty) * 0.1             # Fewer gaps = better
+        )
+        
+        health_score = max(0, min(100, health_score))
+        
+        # Determine health level
+        if health_score >= 80:
+            level = "Excellent"
+            color = "green"
+            emoji = "💚"
+        elif health_score >= 60:
+            level = "Good"
+            color = "blue"
+            emoji = "💙"
+        elif health_score >= 40:
+            level = "Fair"
+            color = "yellow"
+            emoji = "💛"
+        else:
+            level = "Needs Work"
+            color = "red"
+            emoji = "❤️"
+        
+        return {
+            "score": round(health_score, 1),
+            "level": level,
+            "color": color,
+            "emoji": emoji,
+            "breakdown": {
+                "complexity": round(100 - (complexity * 10), 1),
+                "automation": round(avg_automation, 1),
+                "efficiency": round(100 - avg_bottleneck, 1),
+                "completeness": round(100 - gap_penalty, 1)
+            }
+        }
+    
+    def estimate_execution_time(self, nodes: List[Dict]) -> Dict[str, Any]:
+        """
+        Estimate total process execution time based on node timings.
+        
+        Returns best case, average case, and worst case estimates.
+        """
+        total_minutes = 0
+        timing_found = False
+        
+        for node in nodes:
+            # Extract timing from operationalDetails
+            timing = node.get("operationalDetails", {}).get("estimatedDuration", "")
+            if not timing:
+                timing = node.get("timing", "")
+            
+            if timing:
+                timing_found = True
+                # Parse timing strings
+                if "minute" in timing.lower() or "min" in timing.lower():
+                    import re
+                    match = re.search(r'(\d+)', timing)
+                    if match:
+                        total_minutes += int(match.group(1))
+                elif "hour" in timing.lower() or "hr" in timing.lower():
+                    import re
+                    match = re.search(r'(\d+)', timing)
+                    if match:
+                        total_minutes += int(match.group(1)) * 60
+        
+        if not timing_found or total_minutes == 0:
+            # Fallback: estimate based on node count (avg 15 min per node)
+            total_minutes = len(nodes) * 15
+        
+        # Calculate estimates
+        best_case = total_minutes * 0.7  # Optimistic
+        average_case = total_minutes
+        worst_case = total_minutes * 1.5  # Delays, issues
+        
+        def format_time(minutes):
+            if minutes < 60:
+                return f"{int(minutes)} min"
+            else:
+                hours = minutes / 60
+                return f"{hours:.1f} hours" if hours < 10 else f"{int(hours)} hours"
+        
+        return {
+            "bestCase": format_time(best_case),
+            "average": format_time(average_case),
+            "worstCase": format_time(worst_case),
+            "totalMinutes": int(average_case),
+            "confidence": "high" if timing_found else "estimated"
+        }
+    
+    def multi_lens_gap_analysis(self, nodes: List[Dict], extracted_data: Dict) -> Dict[str, List[str]]:
+        """
+        Analyze process from 4 different lenses:
+        - Operational: bottlenecks, delays, resource constraints
+        - Risk: single points of failure, error handling
+        - Compliance: SLA, audit, documentation
+        - Stakeholder: communication, escalation
+        """
+        gaps = {
+            "operational": [],
+            "risk": [],
+            "compliance": [],
+            "stakeholder": []
+        }
+        
+        # Operational lens
+        manual_nodes = [n for n in nodes if "manual" in n.get("title", "").lower() or "manual" in n.get("description", "").lower()]
+        if len(manual_nodes) > 3:
+            gaps["operational"].append(f"{len(manual_nodes)} manual steps could cause delays")
+        
+        single_actor_nodes = [n for n in nodes if len(n.get("actors", [])) == 1]
+        if len(single_actor_nodes) > 0:
+            gaps["operational"].append(f"{len(single_actor_nodes)} steps depend on single person")
+        
+        # Risk lens
+        critical_nodes = [n for n in nodes if n.get("status") == "critical"]
+        for node in critical_nodes:
+            if len(node.get("operationalDetails", {}).get("contactInfo", {})) == 0:
+                gaps["risk"].append(f"Critical step '{node.get('title')}' has no backup contact")
+        
+        decision_nodes = [n for n in nodes if n.get("isDecisionPoint")]
+        unclear_decisions = [n for n in decision_nodes if not n.get("description")]
+        if unclear_decisions:
+            gaps["risk"].append(f"{len(unclear_decisions)} decisions lack clear criteria")
+        
+        # Compliance lens
+        if not any("document" in n.get("title", "").lower() for n in nodes):
+            gaps["compliance"].append("No documentation step found")
+        
+        if not any("sla" in str(extracted_data).lower() or "service level" in str(extracted_data).lower()):
+            gaps["compliance"].append("No SLA commitments mentioned")
+        
+        # Stakeholder lens
+        external_mentions = [n for n in nodes if "customer" in str(n).lower() or "client" in str(n).lower()]
+        if external_mentions and not any("notify" in n.get("title", "").lower() for n in nodes):
+            gaps["stakeholder"].append("Customer involved but no notification step")
+        
+        escalation_nodes = [n for n in nodes if "escalat" in n.get("title", "").lower()]
+        if len(escalation_nodes) == 0:
+            gaps["stakeholder"].append("No escalation path defined")
+        
+        return gaps
+    
+    def detect_critical_path(self, nodes: List[Dict]) -> List[str]:
+        """
+        Identify critical path - steps that must complete for process to succeed.
+        These are blocking steps that gate everything else.
+        """
+        critical_path = []
+        
+        for node in nodes:
+            # Mark as critical if:
+            # 1. Status is critical/trigger
+            # 2. Is a decision point (blocks progress)
+            # 3. Has dependencies from multiple other nodes
+            # 4. Is mentioned in multiple connections
+            
+            is_blocking = (
+                node.get("status") in ["critical", "trigger"] or
+                node.get("isDecisionPoint") or
+                len(node.get("connections", [])) > 1
+            )
+            
+            if is_blocking:
+                critical_path.append(node.get("id"))
+        
+        return critical_path
+
+
