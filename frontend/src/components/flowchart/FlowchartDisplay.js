@@ -110,6 +110,12 @@ const FlowchartDisplay = ({ process, onNodeClick, selectedNodeId }) => {
 
   return (
     <div className="w-full">
+      {/* Coverage Badge */}
+      <CoverageBadge 
+        metadata={process?.metadata}
+        totalNodes={nodes?.length || 0}
+      />
+      
       {/* Legend Bar */}
       <Legend statuses={uniqueStatuses} />
 
