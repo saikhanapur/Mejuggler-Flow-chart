@@ -719,11 +719,11 @@ frontend:
     
   - task: "Manual Node Editing - Priority Override & Title Edit (Action Item #2)"
     implemented: true
-    working: true
+    working: "NA"
     file: "/app/backend/process_editor.py, /app/backend/server.py"
     stuck_count: 0
     priority: "critical"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
@@ -737,6 +737,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ MANUAL NODE EDITING BACKEND FULLY FUNCTIONAL. Comprehensive testing completed with all 4 test scenarios: 1) Priority Update: Successfully updated node priority to P0 with manualOverride flag and overrideAt timestamp. Priority persists correctly in database with proper structure {level, emoji, color, label, score, manualOverride, overrideAt} ✅ 2) Title Update: Successfully updated node title with editHistory tracking. Edit history properly records {field, oldValue, newValue, editedAt} and persists in database ✅ 3) Description Update: Successfully updated node description and persists correctly in database ✅ 4) Error Handling: All error scenarios work correctly - Invalid field returns 400, Invalid priority (P99) defaults to P3, Non-existent node returns 404, No authentication returns 401 ✅ 5) Data Persistence: All changes verified to persist correctly in MongoDB after API calls ✅ 6) Authentication: Owner-only access properly enforced with JWT token validation ✅ 7) API Response Structure: All responses contain {success: true, message: 'Node updated', updatedNode: {...}} as specified ✅ Backend manual node editing feature is production-ready and meets all success criteria from the review request!"
+      - working: "NA"
+        agent: "testing"
+        comment: "⚠️ FRONTEND INTEGRATION TESTING BLOCKED - AUTHENTICATION/ROUTING ISSUE. Comprehensive TIER 1 testing attempted but unable to access flowchart editor due to persistent routing to landing page. FINDINGS: 1) Backend Authentication: ✅ Working - logs show successful JWT authentication for test@superhumanly.ai (ID: cce96199-695e-4f47-8c3f-760d93f5d7fe) 2) Frontend Code Review: ✅ Manual editing implementation complete - FlowNode.js has priority dropdown (lines 284-327) with P0-P4 options, inline title editing (lines 345-369) with click-to-edit functionality, handleUpdateNode integration in FlowchartCanvas (lines 47-65) 3) API Integration: ✅ api.updateProcessNode() method exists (lines 235-242 in api.js) 4) Component Hierarchy: ✅ Proper data flow FlowchartCanvas → FlowchartDisplay → FlowNode with onUpdateNode handler 5) UI Testing Blocked: ❌ Unable to reach /edit/{process_id} route - all navigation attempts redirect to landing page despite successful authentication 6) Process Access: ❌ No processes available for testing (GET /api/process returns empty array) RECOMMENDATION: Main agent should investigate frontend routing issue and create test processes with priority badges for comprehensive UI testing. Backend manual editing is production-ready, frontend implementation is complete, but UI testing requires process data and proper routing."
     status_history:
       - working: "NA"
         agent: "main"
