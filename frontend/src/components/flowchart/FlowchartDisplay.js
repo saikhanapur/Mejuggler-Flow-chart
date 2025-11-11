@@ -6,6 +6,7 @@ import Legend from './Legend';
 import QuickReference from './QuickReference';
 import EmergencyContacts from './EmergencyContacts';
 import CoverageBadge from './CoverageBadge';
+import ProcessMetricsDashboard from './ProcessMetricsDashboard';
 import { api } from '../../utils/api';
 
 /**
