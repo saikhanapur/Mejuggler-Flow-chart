@@ -547,6 +547,31 @@ Return ONLY valid JSON."""
                 pass
             
             try:
+                # Try to complete truncated JSON by finding last complete object
+                # If response is truncated at line 332, try to close it
+                logger.warning("⚠️ Attempting to close truncated JSON...")
+                
+                # Count braces to determine what's missing
+                open_braces = response_text.count('{') - response_text.count('}')
+                open_brackets = response_text.count('[') - response_text.count(']')
+                
+                # Try to close the structure
+                completed = response_text.rstrip()
+                # Remove trailing comma if exists
+                if completed.endswith(','):
+                    completed = completed[:-1]
+                
+                # Close arrays and objects
+                for _ in range(open_brackets):
+                    completed += ']'
+                for _ in range(open_braces):
+                    completed += '}'
+                
+                return json.loads(completed)
+            except json.JSONDecodeError:
+                pass
+            
+            try:
                 # Try to extract just the JSON object
                 start = response_text.find('{')
                 end = response_text.rfind('}')
