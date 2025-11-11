@@ -20,6 +20,7 @@ import SmartQuestionPanel from './SmartQuestionPanel';
 import LiveProgressPanel from './LiveProgressPanel';
 import DocumentAnalysisReview from './DocumentAnalysisReview';
 import CoverageReportPanel from './CoverageReportPanel';
+import DynamicLoadingScreen from './DynamicLoadingScreen';
 import { api } from '@/utils/api';
 import { streamDocumentAnalysis } from '@/utils/sseClient';
 import { toast } from 'sonner';
