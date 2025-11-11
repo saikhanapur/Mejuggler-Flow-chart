@@ -26,6 +26,7 @@ const FlowchartDisplay = ({ process, onNodeClick, onUpdateNode, selectedNodeId }
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [showReferencesModal, setShowReferencesModal] = useState(false);
 
   if (!process || !process.nodes || process.nodes.length === 0) {
     return (
