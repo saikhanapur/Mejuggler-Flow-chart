@@ -2734,10 +2734,11 @@ async def semantic_search(
         
         logger.info(f"🔍 Semantic search: '{query}' (workspace: {workspace_id})")
         
-        # Generate embedding for query
-        openai.api_key = os.environ.get("EMERGENT_LLM_KEY")
+        # Generate embedding for query using OpenAI client
+        from openai import OpenAI
+        openai_client = OpenAI(api_key=os.environ.get("EMERGENT_LLM_KEY"))
         
-        query_response = openai.embeddings.create(
+        query_response = openai_client.embeddings.create(
             model="text-embedding-3-small",
             input=query
         )
