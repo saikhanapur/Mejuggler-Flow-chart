@@ -2212,27 +2212,50 @@ Analyze now:"""
     
     async def generate_node_embedding(self, node: Dict) -> List[float]:
         """
-        Generate vector embedding for a node using OpenAI embeddings via Emergent integrations.
+        Generate vector embedding for a node using OpenAI embeddings.
         
         Combines node title, description, and actions into searchable text.
         Uses text-embedding-3-small model for efficiency.
         
-        Returns: List of floats representing the embedding vector
+        Returns: List of floats representing the embedding vector (1536 dimensions)
         """
         # Combine all searchable text from node
         title = node.get("title", "")
         description = node.get("description", node.get("details", ""))
-        actions = " ".join(node.get("subSteps", node.get("actions", [])))
+        
+        # Extract operational details
+        op_details = node.get("operationalDetails", {})
+        actions = " ".join(op_details.get("specificActions", []) if isinstance(op_details.get("specificActions"), list) else [])
+        systems = " ".join(op_details.get("systems", []) if isinstance(op_details.get("systems"), list) else [])
+        
+        # Extract contacts
         contacts = " ".join(str(c) for c in node.get("actors", []))
-        systems = " ".join(node.get("operationalDetails", {}).get("systems", []))
+        
+        # Get priority info
+        priority = node.get("priority", {})
+        priority_text = f"{priority.get('level', '')} {priority.get('label', '')}" if priority else ""
         
         # Create comprehensive search text
-        search_text = f"{title}. {description}. Actions: {actions}. Contacts: {contacts}. Systems: {systems}"
+        search_text = f"{title}. {description}. {priority_text}. Actions: {actions}. Contacts: {contacts}. Systems: {systems}"
         search_text = search_text.strip()
         
+        # Limit to 8000 characters (token limit safety)
+        if len(search_text) > 8000:
+            search_text = search_text[:8000]
+        
         try:
+            import os
+            from dotenv import load_dotenv
+            load_dotenv()
             from openai import OpenAI
-            client = OpenAI(api_key=self.api_key)  # Using Emergent LLM key
+            
+            # Use OpenAI API key (not Emergent LLM key - embeddings not supported)
+            openai_key = os.getenv("OPENAI_API_KEY")
+            if not openai_key:
+                logger.error("OPENAI_API_KEY not found in environment")
+                return []
+            
+            client = OpenAI(api_key=openai_key)
             
             response = client.embeddings.create(
                 model="text-embedding-3-small",
@@ -2240,10 +2263,11 @@ Analyze now:"""
             )
             
             embedding = response.data[0].embedding
+            logger.info(f"✅ Generated embedding for node: {title[:50]}... (dimension: {len(embedding)})")
             return embedding
             
         except Exception as e:
-            logger.error(f"Failed to generate embedding: {e}")
+            logger.error(f"❌ Failed to generate embedding: {e}")
             return []
     
     def cosine_similarity(self, vec1: List[float], vec2: List[float]) -> float:
