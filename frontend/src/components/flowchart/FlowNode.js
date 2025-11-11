@@ -280,20 +280,49 @@ const FlowNode = ({ node, onClick, selectedNodeId, onUpdateNode }) => {
         </div>
       )}
       
-      {/* Priority badge - P0-P4 classification */}
+      {/* Priority badge - P0-P4 classification with edit */}
       {node.priority && (
-        <div 
-          className={`absolute -top-2 -right-2 text-xs font-bold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1 ${
-            node.priority.level === 'P0' ? 'bg-red-500 text-white' :
-            node.priority.level === 'P1' ? 'bg-orange-500 text-white' :
-            node.priority.level === 'P2' ? 'bg-yellow-500 text-white' :
-            node.priority.level === 'P3' ? 'bg-blue-500 text-white' :
-            'bg-gray-400 text-white'
-          }`}
-          title={`${node.priority.label} Priority (Score: ${node.priority.score})`}
-        >
-          <span>{node.priority.emoji}</span>
-          <span>{node.priority.level}</span>
+        <div className="absolute -top-2 -right-2">
+          <button
+            onClick={(e) => { e.stopPropagation(); setIsEditingPriority(!isEditingPriority); }}
+            className={`text-xs font-bold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1 hover:ring-2 hover:ring-white transition-all ${
+              node.priority.level === 'P0' ? 'bg-red-500 text-white' :
+              node.priority.level === 'P1' ? 'bg-orange-500 text-white' :
+              node.priority.level === 'P2' ? 'bg-yellow-500 text-white' :
+              node.priority.level === 'P3' ? 'bg-blue-500 text-white' :
+              'bg-gray-400 text-white'
+            }`}
+            title={`${node.priority.label} Priority - Click to change`}
+          >
+            <span>{node.priority.emoji}</span>
+            <span>{node.priority.level}</span>
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          
+          {/* Priority dropdown */}
+          {isEditingPriority && (
+            <div className="absolute top-full right-0 mt-1 bg-white rounded-lg shadow-2xl border-2 border-gray-200 z-50 min-w-[160px]" onClick={(e) => e.stopPropagation()}>
+              {['P0', 'P1', 'P2', 'P3', 'P4'].map((level) => (
+                <button
+                  key={level}
+                  onClick={(e) => handlePriorityChange(e, level)}
+                  className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 ${
+                    node.priority.level === level ? 'bg-blue-50 font-bold' : ''
+                  }`}
+                >
+                  <span className="text-lg">
+                    {level === 'P0' ? '🔴' : level === 'P1' ? '🟠' : level === 'P2' ? '🟡' : level === 'P3' ? '🔵' : '⚪'}
+                  </span>
+                  <span>{level}</span>
+                  <span className="text-xs text-gray-500 ml-auto">
+                    {level === 'P0' ? 'IMMEDIATE' : level === 'P1' ? 'URGENT' : level === 'P2' ? 'HIGH' : level === 'P3' ? 'MEDIUM' : 'LOW'}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
       
