@@ -27,20 +27,28 @@ def test_semantic_search():
     # Step 1: Create test processes first
     print("\n📝 Step 1: Creating test processes for semantic search...")
     
-    # Process 1 - Emergency Response
+    # Process 1 - Emergency Response (Extended)
     emergency_process_doc = """Emergency Response Procedure
-    1. Call 111 immediately if injury
-    2. Contact Wilson IT: 0061 8 9415 2888 ext 8088
-    3. Notify emergency services
-    4. Document incident
+    1. Call 111 immediately if life-threatening injury suspected
+    2. Contact Wilson IT support team: 0061 8 9415 2888 ext 8088
+    3. Notify emergency services and provide location details
+    4. Document incident details in system
+    5. Inform on-duty manager within 15 minutes
+    6. Coordinate with emergency responders
+    7. Update stakeholders on situation status
+    8. Complete incident report after resolution
     """
     
-    # Process 2 - System Monitoring  
-    monitoring_process_doc = """System Monitoring
-    1. Monitor system hourly
-    2. Contact support: 0800 123 456
-    3. Escalate critical issues to manager
-    4. Update stakeholders
+    # Process 2 - System Monitoring (Extended)
+    monitoring_process_doc = """System Monitoring Process
+    1. Monitor system performance hourly using dashboard
+    2. Contact technical support: 0800 123 456 for issues
+    3. Escalate critical system failures to manager immediately
+    4. Update stakeholders via email on system status
+    5. Check backup systems and failover procedures
+    6. Review system logs for anomalies
+    7. Perform routine maintenance checks
+    8. Generate daily system health reports
     """
     
     created_process_ids = []
