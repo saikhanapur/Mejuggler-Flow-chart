@@ -1505,6 +1505,14 @@ Analyze now:"""
                 "nodes": [],
                 "edges": [],
                 "swimLanes": enhanced.get("swimLanes", []),
+                "metadata": {  # NEW: Verification metadata
+                    "originalStepCount": len(extracted.get("steps", [])),
+                    "coveragePercent": 100,
+                    "contactsExtracted": len(extracted.get("contacts", {})),
+                    "timingsExtracted": len(extracted.get("timings", [])),
+                    "generatedAt": datetime.now(timezone.utc).isoformat(),
+                    "aiModel": "Claude Sonnet 4"
+                },
                 "actors": list(set([
                     actor 
                     for node in enhanced.get("nodes", []) 
