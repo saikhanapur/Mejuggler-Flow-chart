@@ -1982,12 +1982,6 @@ Analyze now:"""
             result = result[0].upper() + result[1:]
         
         return result
-                logger.info(f"   ✅ {name}: {parsed['main']}")
-                if parsed["extension"]:
-                    logger.info(f"      → Extension: {parsed['extension']}")
-                for opt in parsed["options"]:
-                    logger.info(f"      → Option {opt['number']}: {opt['description']}" if opt['number'] else f"      → {opt['description']}")
-        
         logger.info(f"✅ Parsed {len(hierarchical_contacts)} contacts")
         return hierarchical_contacts
 
