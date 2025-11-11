@@ -65,16 +65,20 @@ def test_semantic_search():
         
         if response.status_code == 200:
             result = response.json()
+            print(f"   Debug - Response keys: {list(result.keys())}")
             if 'processes' in result and result['processes']:
                 process = result['processes'][0]
+                print(f"   Debug - Process keys: {list(process.keys())}")
                 process_id = process.get('id')
                 if process_id:
                     created_process_ids.append(process_id)
                     print(f"✅ Created Emergency Response Process: {process_id}")
                 else:
                     print("❌ Emergency Response Process created but no ID returned")
+                    print(f"   Debug - Process data: {json.dumps(process, indent=2)[:500]}")
             else:
                 print("❌ Emergency Response Process creation failed - no processes in response")
+                print(f"   Debug - Full response: {json.dumps(result, indent=2)[:500]}")
         else:
             print(f"❌ Emergency Response Process creation failed: HTTP {response.status_code}")
             print(f"   Response: {response.text}")
