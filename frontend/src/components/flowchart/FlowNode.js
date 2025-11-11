@@ -159,15 +159,6 @@ const FlowNode = ({ node, onClick, selectedNodeId, onUpdateNode }) => {
       setIsEditingTitle(false);
     }
   };
-  
-  // Handle priority edit
-  const handlePriorityChange = async (e, newPriority) => {
-    e.stopPropagation();
-    if (onUpdateNode && newPriority !== node.priority?.level) {
-      await onUpdateNode(node.id, 'priority', newPriority);
-    }
-    setIsEditingPriority(false);
-  };
 
   // Decision nodes still render as diamonds
   if (isDecision) {
