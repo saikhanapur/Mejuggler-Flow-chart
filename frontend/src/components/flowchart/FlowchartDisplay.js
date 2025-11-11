@@ -288,21 +288,13 @@ const FlowchartDisplay = ({ process, onNodeClick, onUpdateNode, selectedNodeId }
         </div>
       </div>
 
-      {/* Conditional Quick Reference Panels - Only if AI determined it's needed */}
-      {shouldShowQuickReference && (
-        <>
-          <QuickReference
-            criticalActions={quickReference.criticalActions || []}
-            keyTimings={quickReference.keyTimings || []}
-            recoverySteps={nodes.filter(n => n.status === 'recovery' || n.status === 'verification')}
-            supportingReferences={quickReference.supportingReferences || []}
-          />
-
-          {quickReference.emergencyContacts && Object.keys(quickReference.emergencyContacts).length > 0 && (
-            <EmergencyContacts contacts={quickReference.emergencyContacts} />
-          )}
-        </>
-      )}
+      {/* References Modal */}
+      <ReferencesModal 
+        isOpen={showReferencesModal}
+        onClose={() => setShowReferencesModal(false)}
+        quickReference={quickReference}
+        gapAnalysis={process.gapAnalysis}
+      />
     </div>
   );
 };
