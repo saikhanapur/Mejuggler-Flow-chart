@@ -2698,6 +2698,13 @@ async def generate_html_flowchart(
         html = await generator.generate_html_flowchart(
             document_text=input_data.text,
             document_name=doc_name
+        )
+        
+        return {"html": html}
+    
+    except Exception as e:
+        logger.error(f"HTML generation failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to generate HTML: {str(e)}")
 
 # ==================== MANUAL EDITING ====================
 
