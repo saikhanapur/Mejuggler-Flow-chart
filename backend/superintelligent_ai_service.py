@@ -1179,9 +1179,15 @@ Analyze now:"""
                     extracted.get("contacts", {})
                 )
                 
+                # Extract key timings with enhanced context
+                enhanced_timings = self.extract_key_timings_enhanced(
+                    enhanced.get("nodes", []),
+                    extracted
+                )
+                
                 process["quickReference"] = {
                     "criticalActions": critical_actions_list,
-                    "keyTimings": extracted.get("timings", []),
+                    "keyTimings": enhanced_timings,
                     "emergencyContacts": hierarchical_contacts,
                     "recoverySteps": recovery_steps_list
                 }
@@ -1575,9 +1581,15 @@ Analyze now:"""
                     extracted.get("contacts", {})
                 )
                 
+                # Extract key timings with enhanced context
+                enhanced_timings = self.extract_key_timings_enhanced(
+                    enhanced.get("nodes", []),
+                    extracted
+                )
+                
                 process["quickReference"] = {
                     "criticalActions": critical_actions_list,
-                    "keyTimings": extracted.get("timings", []),
+                    "keyTimings": enhanced_timings,
                     "emergencyContacts": hierarchical_contacts,
                     "recoverySteps": recovery_steps_list
                 }
