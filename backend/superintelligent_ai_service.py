@@ -1028,11 +1028,8 @@ Analyze now:"""
                     for node in enhanced.get("nodes", []) 
                     for actor in node.get("contacts", [])
                 ])),
-                "quickReference": {
-                    "criticalActions": [n["title"] for n in enhanced["nodes"] if n.get("status") == "critical"],
-                    "keyTimings": extracted.get("timings", []),
-                    "emergencyContacts": extracted.get("contacts", {})
-                },
+                "quickReference": {},  # Will be populated after node processing
+                "_pendingQuickReference": True,  # Flag to populate later
                 "progressStages": []  # Will be populated based on node positions
             }
             
