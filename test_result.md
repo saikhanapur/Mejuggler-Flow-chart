@@ -787,6 +787,33 @@ agent_communication:
       Backend AI processing pipeline is robust and handling all test scenarios successfully.
   - agent: "testing"
     message: |
+      🎯 INTELLIGENT CRITICAL ACTIONS EXTRACTION (FEATURE 1 - OPTION B) - TESTING COMPLETE
+      
+      Comprehensive testing completed for the new intelligent critical actions extraction feature:
+      
+      ✅ FEATURE VERIFICATION:
+      - POST /api/process/eroad-style endpoint working correctly
+      - Intelligent urgency scoring algorithm operational (replaces simple status=="critical" filter)
+      - Top 5 most urgent actions extracted from ALL nodes (not just critical status nodes)
+      - Proper urgency ranking by composite score (emergency/injury actions first)
+      
+      ✅ SUCCESS CRITERIA MET:
+      1. Top 5 Actions: Exactly 5 actions extracted (not more, not less)
+      2. Urgency Ranking: Perfect ranking - "Emergency Response (immediately)" first, followed by "Assess Injury Risk", "P1 Ticket Creation (ASAP)", "Contact on-duty manager (5 min)", "Verify Resolution"
+      3. Time Windows Preserved: All time constraints preserved - "immediately", "ASAP", "5 min" correctly displayed
+      4. Intelligent Scoring: Backend logs show transparent urgency scoring (335, 335, 230, 125, 20)
+      5. Response Structure: All required quickReference fields present (criticalActions, keyTimings, emergencyContacts, recoverySteps)
+      6. Recovery Steps: 1 recovery step extracted correctly
+      7. Emergency Contacts: Properly extracted (Emergency: 111, On-duty manager)
+      
+      🔍 BACKEND LOGS VERIFICATION:
+      - "🎯 Extracting critical actions intelligently..." logged
+      - Scoring logs show top 5 with scores: "1. Emergency Response (score: 335, immediately)"
+      - "✅ Critical Actions: 5" count confirmed
+      
+      🎉 RESULT: Intelligent Critical Actions Extraction is FULLY FUNCTIONAL. The AI intelligently analyzes ALL nodes using urgency scoring algorithm and returns top 5 most urgent actions ranked by composite score. This is NOT simple status filtering - it's true intelligent extraction with proper time window preservation and urgency ranking.
+  - agent: "testing"
+    message: |
       ✅ BACKEND TESTING COMPLETE - ALL SYSTEMS OPERATIONAL
       
       Comprehensive backend API testing completed with 10/10 tests passing:
