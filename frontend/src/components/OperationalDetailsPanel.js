@@ -358,8 +358,89 @@ const OperationalDetailsPanel = ({ node, onClose }) => {
           </div>
         )}
 
+        {/* AI Recommendations - Innovation 1 */}
+        {node.aiRecommendations && (
+          <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-300 rounded-xl p-5 shadow-md">
+            <h3 className="text-base font-bold text-purple-900 mb-4 flex items-center gap-2">
+              <span className="text-lg">💡</span>
+              AI Process Recommendations
+            </h3>
+            
+            {/* Scores */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {/* Automation Score */}
+              <div className="bg-white/80 rounded-lg p-3 border border-purple-200">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-semibold text-purple-700 uppercase">Automation</span>
+                  <span className="text-2xl">🤖</span>
+                </div>
+                <div className="text-2xl font-bold text-purple-900">
+                  {node.aiRecommendations.automationScore}%
+                </div>
+                <div className="mt-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full ${
+                      node.aiRecommendations.automationScore >= 80 ? 'bg-green-500' :
+                      node.aiRecommendations.automationScore >= 50 ? 'bg-yellow-500' :
+                      'bg-gray-400'
+                    }`}
+                    style={{width: `${node.aiRecommendations.automationScore}%`}}
+                  ></div>
+                </div>
+              </div>
+              
+              {/* Bottleneck Risk */}
+              <div className="bg-white/80 rounded-lg p-3 border border-purple-200">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-semibold text-purple-700 uppercase">Bottleneck</span>
+                  <span className="text-2xl">⚠️</span>
+                </div>
+                <div className="text-2xl font-bold text-purple-900">
+                  {node.aiRecommendations.bottleneckRisk}%
+                </div>
+                <div className="mt-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full ${
+                      node.aiRecommendations.bottleneckRisk >= 80 ? 'bg-red-500' :
+                      node.aiRecommendations.bottleneckRisk >= 60 ? 'bg-orange-500' :
+                      'bg-yellow-500'
+                    }`}
+                    style={{width: `${node.aiRecommendations.bottleneckRisk}%`}}
+                  ></div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Suggestions */}
+            {node.aiRecommendations.suggestions && node.aiRecommendations.suggestions.length > 0 && (
+              <div>
+                <h4 className="text-sm font-bold text-purple-900 mb-2">
+                  💡 Improvement Suggestions
+                </h4>
+                <div className="space-y-2">
+                  {node.aiRecommendations.suggestions.map((suggestion, idx) => (
+                    <div key={idx} className="bg-white/80 rounded-lg p-3 border border-purple-200 flex items-start gap-2">
+                      <span className="flex-shrink-0 w-5 h-5 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                        {idx + 1}
+                      </span>
+                      <span className="text-sm text-purple-900 leading-relaxed">{suggestion}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Rationale */}
+            {node.aiRecommendations.rationale && (
+              <div className="mt-3 text-xs text-purple-700 italic bg-white/60 rounded-lg p-2 border border-purple-200">
+                <strong>AI Analysis:</strong> {node.aiRecommendations.rationale}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* No details message */}
-        {!hasAnyDetails && (
+        {!hasAnyDetails && !node.aiRecommendations && (
           <div className="text-center py-8">
             <div className="text-gray-400 text-sm">
               No operational details available for this step.
