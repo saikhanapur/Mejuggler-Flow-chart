@@ -55,12 +55,13 @@ def test_semantic_search():
     
     # Create Emergency Response Process
     try:
+        # First parse the process
         payload = {
             "text": emergency_process_doc,
             "inputType": "document"
         }
         
-        response = session.post(f"{BASE_URL}/process/eroad-style", 
+        response = session.post(f"{BASE_URL}/process/parse", 
                                json=payload, timeout=TIMEOUT)
         
         if response.status_code == 200:
