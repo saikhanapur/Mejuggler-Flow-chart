@@ -1225,11 +1225,15 @@ Analyze now:"""
                     extracted
                 )
                 
+                # Extract supporting references (ALL document sections)
+                supporting_refs = extracted.get("documentSections", [])
+                
                 process["quickReference"] = {
                     "criticalActions": critical_actions_list,
                     "keyTimings": enhanced_timings,
                     "emergencyContacts": hierarchical_contacts,
-                    "recoverySteps": recovery_steps_list
+                    "recoverySteps": recovery_steps_list,
+                    "supportingReferences": supporting_refs
                 }
                 
                 # Remove the flag
@@ -1661,11 +1665,15 @@ Analyze now:"""
                     extracted
                 )
                 
+                # Extract supporting references (ALL document sections)
+                supporting_refs = extracted.get("documentSections", [])
+                
                 process["quickReference"] = {
                     "criticalActions": critical_actions_list,
                     "keyTimings": enhanced_timings,
                     "emergencyContacts": hierarchical_contacts,
-                    "recoverySteps": recovery_steps_list
+                    "recoverySteps": recovery_steps_list,
+                    "supportingReferences": supporting_refs
                 }
                 
                 # Remove the flag
