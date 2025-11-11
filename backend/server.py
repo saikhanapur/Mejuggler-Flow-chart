@@ -221,7 +221,12 @@ class Process(BaseModel):
     criticalGaps: List[str] = []
     improvementOpportunities: List[Dict[str, Any]] = []
     theme: str = "minimalist"
-    healthScore: int = 0
+    healthScore: Optional[Dict[str, Any]] = None  # World-class intelligence: score, level, breakdown
+    complexityScore: Optional[Dict[str, Any]] = None  # Complexity analysis
+    executionTime: Optional[Dict[str, Any]] = None  # Time estimates
+    processMetrics: Optional[Dict[str, Any]] = None  # Structure metrics
+    gapAnalysis: Optional[Dict[str, Any]] = None  # Multi-lens gap analysis
+    criticalPath: Optional[List[str]] = []  # Critical path node IDs
     views: int = 0
     isGuest: bool = False  # Guest mode flag
     guestCreatedAt: Optional[str] = None  # When guest process was created
