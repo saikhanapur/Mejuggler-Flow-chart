@@ -112,6 +112,9 @@ const FlowchartDisplay = ({ process, onNodeClick, onUpdateNode, selectedNodeId }
 
   return (
     <div className="w-full">
+      {/* Process Metrics Dashboard */}
+      <ProcessMetricsDashboard process={process} />
+      
       {/* Coverage Badge */}
       <CoverageBadge 
         metadata={process?.metadata}
