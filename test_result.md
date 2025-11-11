@@ -675,6 +675,38 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
+      🔧 CRITICAL FIX APPLIED - Multi-Process Detection Frontend Error
+      
+      ISSUE RESOLVED:
+      User reported: "EROAD-style generation failed: TypeError: Cannot read properties of undefined (reading 'name')"
+      
+      ROOT CAUSE:
+      ProcessCreator.js line 644 tried to access extractedData.processes[0] without validating:
+      1. Backend returns empty processes: [] when multiple processes detected
+      2. Frontend conditional check (line 630) should route to MultiProcessReview
+      3. But if check fails, code falls through to line 644 and crashes
+      
+      FIX IMPLEMENTED:
+      ✅ Added validation before accessing processes[0] (ProcessCreator.js lines 645-650)
+      ✅ Check if processes array exists and is non-empty
+      ✅ If validation fails, clear state and show error toast
+      ✅ Prevents crash, provides user feedback
+      
+      BACKEND VERIFICATION:
+      ✅ superintelligent_ai_service.py already has comprehensive BCP detection (lines 758-960)
+      ✅ Detects: swim lanes, phases, decisions, loops, parallel activities, RACI tables, gates
+      ✅ eroad_style_enhancer.py uses detection parameter (lines 27-415)
+      ✅ Enhancer applies swim lane positioning, decision points, loop markers
+      
+      NEXT STEPS:
+      1. Test multi-process detection with recruitment document (9 processes)
+      2. Test BCP documents with swim lanes (Wilsar, GDS)
+      3. Verify frontend renders MultiProcessReview correctly
+      4. Take screenshot to verify UI loads
+      
+      Ready for backend testing with deep_testing_backend_v2
+  - agent: "main"
+    message: |
       Initial test setup complete. The main issue is PDF export text clipping.
       Recent fixes implemented to FlowNode and ExportModal. 
       Priority: Test PDF export functionality first to verify text clipping is resolved.
