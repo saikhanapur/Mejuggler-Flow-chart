@@ -106,8 +106,11 @@ const StatusIcon = ({ status }) => {
   }
 };
 
-const FlowNode = ({ node, onClick, isSelected }) => {
+const FlowNode = ({ node, onClick, selectedNodeId, onUpdateNode }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(node.title);
+  const [isEditingPriority, setIsEditingPriority] = useState(false);
   
   const config = STATUS_CONFIG[node.status] || STATUS_CONFIG.operational;
   
