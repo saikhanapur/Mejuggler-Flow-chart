@@ -176,6 +176,8 @@ class ProcessNode(BaseModel):
     timeEstimate: Optional[str] = None
     position: Dict[str, float] = {"x": 0, "y": 0}
     operationalDetails: Optional[OperationalDetails] = None  # NEW: Preserve operational details
+    priority: Optional[Dict[str, Any]] = None  # NEW: Manual priority override
+    editHistory: Optional[List[Dict[str, Any]]] = None  # NEW: Track manual edits
 
 class Workspace(BaseModel):
     model_config = ConfigDict(extra="ignore")
