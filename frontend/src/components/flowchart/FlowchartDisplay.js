@@ -6,6 +6,7 @@ import Legend from './Legend';
 import QuickReference from './QuickReference';
 import EmergencyContacts from './EmergencyContacts';
 import CoverageBadge from './CoverageBadge';
+import { api } from '../../utils/api';
 
 /**
  * FlowchartDisplay - Clean, professional flowchart rendering with zoom/pan
