@@ -2698,6 +2698,179 @@ async def generate_html_flowchart(
         html = await generator.generate_html_flowchart(
             document_text=input_data.text,
             document_name=doc_name
+
+# ==================== MANUAL EDITING ====================
+
+class NodeUpdateRequest(BaseModel):
+    nodeId: str
+    field: str  # "priority", "title", "description"
+    value: Any  # New value (string for title/description, priority level for priority)
+
+class NodeAddRequest(BaseModel):
+    title: str
+    description: str = ""
+    status: str = "operational"
+    position: Optional[Dict[str, int]] = None
+
+@api_router.patch("/process/{process_id}/node")
+async def update_process_node(
+    process_id: str,
+    update: NodeUpdateRequest,
+    request: Request
+):
+    """
+    Update a specific node field (priority, title, or description).
+    Enables manual editing of AI-generated flowcharts.
+    """
+    try:
+        from process_editor import ProcessEditor
+        
+        user = await get_current_user(request)
+        user_id = user.get("id") if user else None
+        
+        logger.info(f"✏️ Updating node {update.nodeId} field '{update.field}' in process {process_id}")
+        
+        # Get process from database
+        process = await db.processes.find_one({"id": process_id, "userId": user_id})
+        
+        if not process:
+            raise HTTPException(status_code=404, detail="Process not found")
+        
+        # Find and update the node
+        nodes = process.get("nodes", [])
+        node_updated = False
+        
+        for i, node in enumerate(nodes):
+            if node.get("id") == update.nodeId:
+                if update.field == "priority":
+                    nodes[i] = ProcessEditor.update_node_priority(node, update.value)
+                elif update.field == "title":
+                    nodes[i] = ProcessEditor.update_node_title(node, update.value)
+                elif update.field == "description":
+                    nodes[i] = ProcessEditor.update_node_description(node, update.value)
+                else:
+                    raise HTTPException(status_code=400, detail=f"Invalid field: {update.field}")
+                
+                node_updated = True
+                break
+        
+        if not node_updated:
+            raise HTTPException(status_code=404, detail=f"Node {update.nodeId} not found")
+        
+        # Update process in database
+        process["updatedAt"] = datetime.now(timezone.utc)
+        await db.processes.update_one(
+            {"id": process_id},
+            {"$set": {"nodes": nodes, "updatedAt": process["updatedAt"]}}
+        )
+        
+        logger.info(f"✅ Node updated successfully")
+        
+        return {"success": True, "message": "Node updated", "updatedNode": nodes[i]}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Failed to update node: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to update node: {str(e)}")
+
+@api_router.post("/process/{process_id}/node")
+async def add_process_node(
+    process_id: str,
+    node_data: NodeAddRequest,
+    request: Request
+):
+    """
+    Add a new node manually to the process.
+    """
+    try:
+        from process_editor import ProcessEditor
+        
+        user = await get_current_user(request)
+        user_id = user.get("id") if user else None
+        
+        logger.info(f"➕ Adding new node to process {process_id}")
+        
+        # Get process from database
+        process = await db.processes.find_one({"id": process_id, "userId": user_id})
+        
+        if not process:
+            raise HTTPException(status_code=404, detail="Process not found")
+        
+        # Add node
+        updated_process = ProcessEditor.add_node(
+            process,
+            node_data.dict(),
+            node_data.position
+        )
+        
+        # Update database
+        updated_process["updatedAt"] = datetime.now(timezone.utc)
+        await db.processes.update_one(
+            {"id": process_id},
+            {"$set": {"nodes": updated_process["nodes"], "updatedAt": updated_process["updatedAt"]}}
+        )
+        
+        logger.info(f"✅ Node added successfully")
+        
+        return {"success": True, "message": "Node added", "nodes": updated_process["nodes"]}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Failed to add node: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to add node: {str(e)}")
+
+@api_router.delete("/process/{process_id}/node/{node_id}")
+async def delete_process_node(
+    process_id: str,
+    node_id: str,
+    request: Request
+):
+    """
+    Delete a node from the process.
+    """
+    try:
+        from process_editor import ProcessEditor
+        
+        user = await get_current_user(request)
+        user_id = user.get("id") if user else None
+        
+        logger.info(f"🗑️ Deleting node {node_id} from process {process_id}")
+        
+        # Get process from database
+        process = await db.processes.find_one({"id": process_id, "userId": user_id})
+        
+        if not process:
+            raise HTTPException(status_code=404, detail="Process not found")
+        
+        # Delete node
+        updated_process = ProcessEditor.delete_node(process, node_id)
+        
+        # Update database
+        updated_process["updatedAt"] = datetime.now(timezone.utc)
+        await db.processes.update_one(
+            {"id": process_id},
+            {"$set": {
+                "nodes": updated_process["nodes"],
+                "edges": updated_process.get("edges", []),
+                "updatedAt": updated_process["updatedAt"]
+            }}
+        )
+        
+        logger.info(f"✅ Node deleted successfully")
+        
+        return {"success": True, "message": "Node deleted"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Failed to delete node: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to delete node: {str(e)}")
+
+# ==================== END MANUAL EDITING ====================
+
+
         )
         
         # Save to MongoDB for later retrieval
