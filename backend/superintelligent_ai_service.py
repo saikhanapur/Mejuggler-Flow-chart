@@ -2289,4 +2289,104 @@ Analyze now:"""
             return 0.0
         
         return dot_product / (magnitude1 * magnitude2)
+    
+    async def generate_contextual_recommendations(self, nodes: List[Dict]) -> List[Dict]:
+        """
+        INNOVATION 1: Contextual AI Recommendations
+        
+        Analyzes each node and provides:
+        1. Automation Opportunity Score (0-100)
+        2. Bottleneck Risk Score (0-100)
+        3. Improvement Suggestions (actionable tips)
+        
+        This turns flowcharts from descriptive to PRESCRIPTIVE.
+        Makes SuperHumanly the only tool that tells users HOW to improve.
+        """
+        logger.info("💡 Generating Contextual AI Recommendations for all nodes...")
+        
+        try:
+            # Analyze all nodes in batch for efficiency
+            nodes_summary = []
+            for i, node in enumerate(nodes, 1):
+                title = node.get("title", "")
+                description = node.get("description", node.get("details", ""))
+                op_details = node.get("operationalDetails", {})
+                actions = op_details.get("specificActions", [])
+                
+                nodes_summary.append(f"{i}. {title}: {description[:100]}")
+            
+            # Create AI prompt for recommendations
+            prompt = f"""You are an expert business process consultant analyzing a workflow.
+
+For each node below, provide:
+1. **automationScore** (0-100): How automatable is this step?
+   - High (80-100): Data entry, emails, status checks, reports, notifications
+   - Medium (40-79): Requires some judgment but can be semi-automated
+   - Low (0-39): Complex decisions, physical tasks, human judgment required
+
+2. **bottleneckRisk** (0-100): Likelihood this step slows down the process?
+   - High (80-100): Manual approvals, external dependencies, sequential blockers
+   - Medium (40-79): Some waiting but not critical path
+   - Low (0-39): Fast steps, parallel-capable
+
+3. **suggestions** (1-3 actionable improvements):
+   - Specific tools/automations (Zapier, APIs, scripts)
+   - Process redesign ideas (parallelize, eliminate, combine)
+   - Best practices from similar workflows
+
+NODES TO ANALYZE:
+{chr(10).join(nodes_summary[:20])}  
+
+Return JSON array with this structure:
+[
+  {{
+    "nodeIndex": 1,
+    "automationScore": 85,
+    "bottleneckRisk": 45,
+    "suggestions": [
+      "Automate email notifications using Zapier or Make.com",
+      "Consider using email templates to reduce composition time"
+    ],
+    "rationale": "Email sending is highly automatable"
+  }}
+]
+
+Analyze ONLY the nodes shown above. Return valid JSON array."""
+
+            chat = LlmChat(
+                api_key=self.api_key,
+                model="claude-sonnet-4-20250514"
+            )
+            chat.add_message(UserMessage(content=prompt))
+            
+            response = await chat.send_message_async()
+            result_text = response.content[0].text.strip()
+            
+            # Extract JSON from response
+            json_match = re.search(r'\[[\s\S]*\]', result_text)
+            if not json_match:
+                logger.warning("No JSON found in recommendations response")
+                return nodes
+            
+            recommendations = json.loads(json_match.group())
+            
+            # Apply recommendations to nodes
+            for rec in recommendations:
+                node_idx = rec.get("nodeIndex", 0) - 1  # Convert to 0-indexed
+                if 0 <= node_idx < len(nodes):
+                    nodes[node_idx]["aiRecommendations"] = {
+                        "automationScore": rec.get("automationScore", 0),
+                        "bottleneckRisk": rec.get("bottleneckRisk", 0),
+                        "suggestions": rec.get("suggestions", []),
+                        "rationale": rec.get("rationale", ""),
+                        "generatedAt": datetime.now(timezone.utc).isoformat()
+                    }
+            
+            logger.info(f"✅ Generated recommendations for {len(recommendations)} nodes")
+            return nodes
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to generate recommendations: {e}")
+            # Return nodes unchanged if recommendations fail
+            return nodes
 
