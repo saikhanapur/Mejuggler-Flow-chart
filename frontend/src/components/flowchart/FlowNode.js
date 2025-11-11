@@ -242,9 +242,28 @@ const FlowNode = ({ node, onClick, isSelected }) => {
         </div>
       )}
       
-      {/* Time estimate badge - if available */}
+      {/* Priority badge - P0-P4 classification */}
+      {node.priority && (
+        <div 
+          className={`absolute -top-2 -right-2 text-xs font-bold px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1 ${
+            node.priority.level === 'P0' ? 'bg-red-500 text-white' :
+            node.priority.level === 'P1' ? 'bg-orange-500 text-white' :
+            node.priority.level === 'P2' ? 'bg-yellow-500 text-white' :
+            node.priority.level === 'P3' ? 'bg-blue-500 text-white' :
+            'bg-gray-400 text-white'
+          }`}
+          title={`${node.priority.label} Priority (Score: ${node.priority.score})`}
+        >
+          <span>{node.priority.emoji}</span>
+          <span>{node.priority.level}</span>
+        </div>
+      )}
+      
+      {/* Time estimate badge - if available (positioned slightly lower if priority exists) */}
       {node.operationalDetails?.estimatedDuration && (
-        <div className="absolute -top-2 -right-2 bg-slate-100 text-slate-700 text-xs font-semibold px-2 py-1 rounded-full border border-slate-300 shadow-sm flex items-center gap-1">
+        <div 
+          className={`absolute ${node.priority ? 'top-6' : '-top-2'} -right-2 bg-slate-100 text-slate-700 text-xs font-semibold px-2 py-1 rounded-full border border-slate-300 shadow-sm flex items-center gap-1`}
+        >
           <span>⏱️</span>
           <span>{node.operationalDetails.estimatedDuration}</span>
         </div>
