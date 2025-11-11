@@ -123,16 +123,45 @@ CONTACT EXTRACTION RULES (CRITICAL):
 RETURN JSON (MUST BE VALID JSON):
 {{
   "documentSummary": "Brief overview",
+  "documentType": "BCP/SOP/Workflow/Policy",
   "steps": ["Step 1", "Step 2",...],
-  "decisions": [{{"condition": "...", "ifYes": "...", "ifNo": "..."}}],
+  "decisions": [
+    {{
+      "question": "What is being decided?",
+      "location": "After which step?",
+      "yesPath": "What happens if YES",
+      "noPath": "What happens if NO",
+      "defaultPath": "yes or no",
+      "trigger": "What triggers this decision"
+    }}
+  ],
+  "loops": [
+    {{
+      "type": "retry/monitoring/iterative",
+      "trigger": "What causes the loop",
+      "action": "What repeats",
+      "exitCondition": "How loop ends",
+      "loopBackTo": "Which step"
+    }}
+  ],
+  "swimLanes": [
+    {{
+      "name": "Lane name",
+      "steps": ["step indices in this lane"],
+      "purpose": "What this lane represents"
+    }}
+  ],
   "contacts": {{"ContactName1": "phone (Extension: X) | Option 1: Description", "ContactName2": "phone"}},
   "systems": ["System1", "System2"],
   "timings": ["Every 30 minutes", "Within 2 hours"],
   "parallelProcesses": [["Step A", "Step B"]],
   "documentSections": [
-    {{"title": "Offshore Escalation Contacts", "content": "Details here"}},
-    {{"title": "Lighthouse Timeline", "content": "Timeline info"}},
-    {{"title": "Reference Section Name", "content": "Content"}}
+    {{"title": "Emergency Contacts", "content": "..."}},
+    {{"title": "Templates & Scripts", "content": "..."}},
+    {{"title": "Forms & Credentials", "content": "..."}},
+    {{"title": "Monitoring Schedule", "content": "..."}},
+    {{"title": "Critical Procedures", "content": "..."}},
+    {{"title": "Checklists & Timelines", "content": "..."}}
   ]
 }}
 
