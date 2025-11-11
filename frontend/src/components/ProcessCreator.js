@@ -640,6 +640,14 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
       );
     }
 
+    // VALIDATION: Ensure we have processes array before accessing
+    if (!extractedData.processes || extractedData.processes.length === 0) {
+      console.error('❌ Invalid extractedData: processes array is missing or empty', extractedData);
+      setExtractedData(null);
+      toast.error('Invalid process data received. Please try again.');
+      return null;
+    }
+
     // Single process - show regular review
     const processData = extractedData.processes[0];
     
