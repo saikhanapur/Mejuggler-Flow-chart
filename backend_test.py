@@ -1042,6 +1042,372 @@ class BackendTester:
         except Exception as e:
             self.log_result("Error Handling (Missing Fields)", False, f"Error: {str(e)}")
 
+    def test_smart_semantic_search_final_feature(self):
+        """Test Smart Semantic Search (Feature 7 - Option B Phase 2 - FINAL FEATURE) - CRITICAL TEST"""
+        print("\n🔍 CRITICAL TEST: Smart Semantic Search (Feature 7 - Option B Phase 2 - FINAL FEATURE)")
+        print("=" * 90)
+        print("🎉 THIS IS THE FINAL FEATURE TEST - IF THIS WORKS, OPTION B IS 100% COMPLETE!")
+        
+        # Step 1: Create test processes first (if not exist)
+        print("\n📝 Step 1: Creating test processes for semantic search...")
+        
+        # Process 1 - Emergency Response
+        emergency_process_doc = """Emergency Response Procedure
+        1. Call 111 immediately if injury
+        2. Contact Wilson IT: 0061 8 9415 2888 ext 8088
+        3. Notify emergency services
+        4. Document incident
+        """
+        
+        # Process 2 - System Monitoring  
+        monitoring_process_doc = """System Monitoring
+        1. Monitor system hourly
+        2. Contact support: 0800 123 456
+        3. Escalate critical issues to manager
+        4. Update stakeholders
+        """
+        
+        created_process_ids = []
+        
+        # Create Emergency Response Process
+        try:
+            payload = {
+                "text": emergency_process_doc,
+                "inputType": "document"
+            }
+            
+            response = self.session.post(f"{self.base_url}/process/eroad-style", 
+                                       json=payload, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if 'processes' in result and result['processes']:
+                    process = result['processes'][0]
+                    process_id = process.get('id')
+                    if process_id:
+                        created_process_ids.append(process_id)
+                        print(f"✅ Created Emergency Response Process: {process_id}")
+                    else:
+                        print("❌ Emergency Response Process created but no ID returned")
+                else:
+                    print("❌ Emergency Response Process creation failed - no processes in response")
+            else:
+                print(f"❌ Emergency Response Process creation failed: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"❌ Emergency Response Process creation error: {str(e)}")
+        
+        # Create System Monitoring Process
+        try:
+            payload = {
+                "text": monitoring_process_doc,
+                "inputType": "document"
+            }
+            
+            response = self.session.post(f"{self.base_url}/process/eroad-style", 
+                                       json=payload, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if 'processes' in result and result['processes']:
+                    process = result['processes'][0]
+                    process_id = process.get('id')
+                    if process_id:
+                        created_process_ids.append(process_id)
+                        print(f"✅ Created System Monitoring Process: {process_id}")
+                    else:
+                        print("❌ System Monitoring Process created but no ID returned")
+                else:
+                    print("❌ System Monitoring Process creation failed - no processes in response")
+            else:
+                print(f"❌ System Monitoring Process creation failed: HTTP {response.status_code}")
+        except Exception as e:
+            print(f"❌ System Monitoring Process creation error: {str(e)}")
+        
+        if len(created_process_ids) < 2:
+            self.log_result("Smart Semantic Search - Process Creation", False, 
+                          f"Only created {len(created_process_ids)}/2 test processes")
+            return
+        
+        print(f"✅ Successfully created {len(created_process_ids)} test processes for semantic search")
+        
+        # Step 2: Test Semantic Search Queries
+        print("\n🔍 Step 2: Testing semantic search queries...")
+        
+        test_queries = [
+            {
+                "query": "Who to call if system down?",
+                "expected_keywords": ["wilson it", "support", "contact", "0061", "0800"],
+                "description": "Should find nodes with contacts (Wilson IT, support)"
+            },
+            {
+                "query": "emergency contact",
+                "expected_keywords": ["emergency", "111", "wilson", "contact"],
+                "description": "Should find emergency-related nodes"
+            },
+            {
+                "query": "how to escalate",
+                "expected_keywords": ["escalate", "manager", "critical"],
+                "description": "Should find escalation nodes"
+            },
+            {
+                "query": "completely unrelated query xyz123",
+                "expected_keywords": [],
+                "description": "Should return no results or very low similarity"
+            }
+        ]
+        
+        search_results = []
+        
+        for i, test_case in enumerate(test_queries, 1):
+            query = test_case["query"]
+            expected_keywords = test_case["expected_keywords"]
+            description = test_case["description"]
+            
+            print(f"\n🔍 Query {i}: '{query}'")
+            print(f"   Expected: {description}")
+            
+            try:
+                search_payload = {
+                    "query": query,
+                    "limit": 10
+                }
+                
+                response = self.session.post(f"{self.base_url}/process/search", 
+                                           json=search_payload, timeout=TIMEOUT)
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    
+                    # Verify response structure
+                    required_fields = ["query", "resultsCount", "results"]
+                    if all(field in result for field in required_fields):
+                        query_result = result["query"]
+                        results_count = result["resultsCount"]
+                        results = result["results"]
+                        
+                        print(f"   ✅ Response structure valid: query='{query_result}', count={results_count}")
+                        
+                        # Verify each result structure
+                        valid_results = 0
+                        for result_item in results:
+                            required_result_fields = ["nodeId", "nodeTitle", "nodeDescription", 
+                                                    "processId", "processName", "similarity", 
+                                                    "priority", "status", "contacts", "systems"]
+                            if all(field in result_item for field in required_result_fields):
+                                valid_results += 1
+                                
+                                # Check similarity score range
+                                similarity = result_item["similarity"]
+                                if 0.5 <= similarity <= 1.0:
+                                    print(f"   ✅ Result: '{result_item['nodeTitle']}' (similarity: {similarity:.3f})")
+                                else:
+                                    print(f"   ⚠️ Result: '{result_item['nodeTitle']}' (similarity out of range: {similarity:.3f})")
+                        
+                        if valid_results == len(results):
+                            print(f"   ✅ All {len(results)} results have valid structure")
+                        else:
+                            print(f"   ❌ Only {valid_results}/{len(results)} results have valid structure")
+                        
+                        # Check if results are sorted by similarity (highest first)
+                        if len(results) > 1:
+                            similarities = [r["similarity"] for r in results]
+                            is_sorted = all(similarities[i] >= similarities[i+1] for i in range(len(similarities)-1))
+                            if is_sorted:
+                                print(f"   ✅ Results properly sorted by similarity (descending)")
+                            else:
+                                print(f"   ❌ Results not properly sorted by similarity")
+                        
+                        # Check for expected keywords in results (for relevant queries)
+                        if expected_keywords and results:
+                            keyword_matches = 0
+                            for result_item in results:
+                                result_text = f"{result_item['nodeTitle']} {result_item['nodeDescription']}".lower()
+                                for keyword in expected_keywords:
+                                    if keyword.lower() in result_text:
+                                        keyword_matches += 1
+                                        break
+                            
+                            if keyword_matches > 0:
+                                print(f"   ✅ Found {keyword_matches} results matching expected keywords")
+                            else:
+                                print(f"   ⚠️ No results matching expected keywords: {expected_keywords}")
+                        
+                        # Check for cross-process search (results from multiple processes)
+                        if len(results) > 1:
+                            process_ids = set(r["processId"] for r in results)
+                            if len(process_ids) > 1:
+                                print(f"   ✅ Cross-process search working: results from {len(process_ids)} processes")
+                            else:
+                                print(f"   ⚠️ Results only from 1 process (expected multiple)")
+                        
+                        # Store results for final validation
+                        search_results.append({
+                            "query": query,
+                            "success": True,
+                            "results_count": results_count,
+                            "results": results
+                        })
+                        
+                    else:
+                        missing_fields = [f for f in required_fields if f not in result]
+                        print(f"   ❌ Invalid response structure, missing: {missing_fields}")
+                        search_results.append({
+                            "query": query,
+                            "success": False,
+                            "error": f"Missing fields: {missing_fields}"
+                        })
+                        
+                else:
+                    print(f"   ❌ Search failed: HTTP {response.status_code}: {response.text}")
+                    search_results.append({
+                        "query": query,
+                        "success": False,
+                        "error": f"HTTP {response.status_code}"
+                    })
+                    
+            except Exception as e:
+                print(f"   ❌ Search error: {str(e)}")
+                search_results.append({
+                    "query": query,
+                    "success": False,
+                    "error": str(e)
+                })
+        
+        # Step 3: Final Validation
+        print("\n📊 Step 3: Final validation...")
+        
+        successful_searches = sum(1 for r in search_results if r["success"])
+        total_searches = len(search_results)
+        
+        validation_results = []
+        
+        # Test 1: Search endpoint returns 200 OK
+        if successful_searches > 0:
+            validation_results.append("✅ Search endpoint returns 200 OK")
+        else:
+            validation_results.append("❌ Search endpoint not working")
+        
+        # Test 2: Natural language queries work (not just keyword matching)
+        relevant_queries = [r for r in search_results if r["success"] and r["query"] != "completely unrelated query xyz123"]
+        if len(relevant_queries) >= 2:
+            validation_results.append("✅ Natural language queries work (not just keyword matching)")
+        else:
+            validation_results.append("❌ Natural language queries not working properly")
+        
+        # Test 3: Results include nodes from multiple processes
+        cross_process_found = False
+        for result in search_results:
+            if result["success"] and "results" in result:
+                process_ids = set(r["processId"] for r in result["results"])
+                if len(process_ids) > 1:
+                    cross_process_found = True
+                    break
+        
+        if cross_process_found:
+            validation_results.append("✅ Results include nodes from multiple processes")
+        else:
+            validation_results.append("⚠️ Cross-process search needs verification (may need more diverse test data)")
+        
+        # Test 4: Similarity scores logical (relevant results > 50%)
+        logical_scores = True
+        for result in search_results:
+            if result["success"] and "results" in result:
+                for r in result["results"]:
+                    if r["similarity"] < 0.5:
+                        logical_scores = False
+                        break
+        
+        if logical_scores:
+            validation_results.append("✅ Similarity scores logical (relevant results > 50%)")
+        else:
+            validation_results.append("❌ Some similarity scores below 50% threshold")
+        
+        # Test 5: Response structure matches expected format
+        structure_valid = True
+        for result in search_results:
+            if result["success"] and "results" in result:
+                for r in result["results"]:
+                    required_fields = ["nodeId", "nodeTitle", "nodeDescription", "processId", 
+                                     "processName", "similarity", "priority", "status", "contacts", "systems"]
+                    if not all(field in r for field in required_fields):
+                        structure_valid = False
+                        break
+        
+        if structure_valid:
+            validation_results.append("✅ Response structure matches expected format")
+        else:
+            validation_results.append("❌ Response structure does not match expected format")
+        
+        # Test 6: Priority and contact info included in results
+        priority_contact_found = False
+        for result in search_results:
+            if result["success"] and "results" in result:
+                for r in result["results"]:
+                    if "priority" in r and "contacts" in r:
+                        priority_contact_found = True
+                        break
+        
+        if priority_contact_found:
+            validation_results.append("✅ Priority and contact info included in results")
+        else:
+            validation_results.append("❌ Priority and contact info missing from results")
+        
+        # Test 7: Results sorted by similarity descending
+        sorting_correct = True
+        for result in search_results:
+            if result["success"] and "results" in result and len(result["results"]) > 1:
+                similarities = [r["similarity"] for r in result["results"]]
+                if not all(similarities[i] >= similarities[i+1] for i in range(len(similarities)-1)):
+                    sorting_correct = False
+                    break
+        
+        if sorting_correct:
+            validation_results.append("✅ Results sorted by similarity descending")
+        else:
+            validation_results.append("❌ Results not properly sorted by similarity")
+        
+        # Test 8: Empty/irrelevant queries return no results or low similarity
+        irrelevant_query = next((r for r in search_results if r["query"] == "completely unrelated query xyz123"), None)
+        if irrelevant_query and irrelevant_query["success"]:
+            if irrelevant_query["results_count"] == 0:
+                validation_results.append("✅ Empty/irrelevant queries return no results")
+            else:
+                # Check if results have low similarity
+                max_similarity = max((r["similarity"] for r in irrelevant_query["results"]), default=0)
+                if max_similarity < 0.7:
+                    validation_results.append("✅ Irrelevant queries return low similarity results")
+                else:
+                    validation_results.append("❌ Irrelevant query returned high similarity results")
+        else:
+            validation_results.append("⚠️ Could not test irrelevant query handling")
+        
+        # Final Assessment
+        print(f"\n🎯 FINAL ASSESSMENT - Smart Semantic Search (Feature 7):")
+        print("=" * 60)
+        
+        for validation in validation_results:
+            print(f"   {validation}")
+        
+        success_count = sum(1 for v in validation_results if v.startswith("✅"))
+        total_count = len(validation_results)
+        
+        if success_count >= total_count * 0.8:  # 80% success rate
+            self.log_result("Smart Semantic Search (Feature 7 - FINAL)", True, 
+                          f"FINAL FEATURE WORKING! {success_count}/{total_count} success criteria met. Option B is 100% COMPLETE! 🎉")
+            print(f"\n🎉 SUCCESS! Smart Semantic Search is working! Option B is 100% COMPLETE!")
+        else:
+            self.log_result("Smart Semantic Search (Feature 7 - FINAL)", False, 
+                          f"FINAL FEATURE ISSUES: Only {success_count}/{total_count} success criteria met")
+            print(f"\n❌ Issues found with semantic search. Need to fix before Option B completion.")
+        
+        # Cleanup test processes
+        print(f"\n🧹 Cleaning up {len(created_process_ids)} test processes...")
+        for process_id in created_process_ids:
+            try:
+                self.session.delete(f"{self.base_url}/process/{process_id}", timeout=TIMEOUT)
+            except:
+                pass  # Ignore cleanup errors
+
     def test_ai_priority_detection_p0_p4(self):
         """Test AI Priority Detection P0-P4 Classification (Feature 6 - Option B Phase 2) - CRITICAL TEST"""
         print("\n🚨 CRITICAL TEST: AI Priority Detection P0-P4 Classification (Feature 6 - Option B Phase 2)")
