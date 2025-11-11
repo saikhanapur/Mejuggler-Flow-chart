@@ -1,6 +1,7 @@
 # EROAD-Style Enhancement Layer
 # Phase 2: Transform extracted data into 10-15 intelligent nodes with rich details
 
+import asyncio
 import json
 import logging
 from typing import Dict, List, Any
