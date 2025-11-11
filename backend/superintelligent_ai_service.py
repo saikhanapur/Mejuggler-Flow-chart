@@ -1793,11 +1793,11 @@ Analyze now:"""
                     "extension": None,
                     "options": []
                 }
-            
-            # Split by pipe to separate main number from options
-            parts = contact_info.split(" | ")
-            main_part = parts[0].strip()
-            option_parts = parts[1:] if len(parts) > 1 else []
+                
+                # Split by pipe to separate main number from options
+                parts = contact_info.split(" | ")
+                main_part = parts[0].strip()
+                option_parts = parts[1:] if len(parts) > 1 else []
             
             # Parse extension from main part
             extension_patterns = [
