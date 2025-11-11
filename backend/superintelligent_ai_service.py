@@ -1496,12 +1496,16 @@ Analyze now:"""
             
             # Process nodes (same logic as before)
             for node in enhanced.get("nodes", []):
+                # Calculate priority for this node
+                priority_info = self.calculate_node_priority(node)
+                
                 processed_node = {
                     "id": node["id"],
                     "title": node["title"],
                     "description": node.get("details", ""),
                     "type": self._map_status_to_type(node.get("status")),
                     "status": node.get("status", "operational"),
+                    "priority": priority_info,  # NEW: Priority classification
                     "x": node.get("x", 330),
                     "y": node.get("y", 0),
                     "position": {"x": node.get("x", 0), "y": node.get("y", 0)},
