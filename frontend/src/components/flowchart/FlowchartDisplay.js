@@ -5,6 +5,7 @@ import ProgressBadge from './ProgressBadge';
 import Legend from './Legend';
 import QuickReference from './QuickReference';
 import EmergencyContacts from './EmergencyContacts';
+import CoverageBadge from './CoverageBadge';
 
 /**
  * FlowchartDisplay - Clean, professional flowchart rendering with zoom/pan
