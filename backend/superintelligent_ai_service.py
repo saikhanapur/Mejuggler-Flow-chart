@@ -94,7 +94,12 @@ RETURN JSON (MUST BE VALID JSON):
   "contacts": {{"ContactName1": "phone (Extension: X) | Option 1: Description", "ContactName2": "phone"}},
   "systems": ["System1", "System2"],
   "timings": ["Every 30 minutes", "Within 2 hours"],
-  "parallelProcesses": [["Step A", "Step B"]]
+  "parallelProcesses": [["Step A", "Step B"]],
+  "documentSections": [
+    {{"title": "Offshore Escalation Contacts", "content": "Details here"}},
+    {{"title": "Lighthouse Timeline", "content": "Timeline info"}},
+    {{"title": "Reference Section Name", "content": "Content"}}
+  ]
 }}
 
 CRITICAL: 
