@@ -1260,7 +1260,7 @@ RECOVERY:
 5. Document and close"""
             
             payload = {
-                "documentText": incident_response_doc,
+                "text": incident_response_doc,
                 "inputType": "document"
             }
             
