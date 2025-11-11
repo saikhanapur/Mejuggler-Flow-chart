@@ -232,6 +232,9 @@ const MultiProcessReview = ({ processesData, onBack, currentWorkspace, selectedW
                           <p className="text-sm text-slate-600">
                             This process will be generated with full details (steps, actors, gaps) when you create it.
                           </p>
+                        </div>
+                      </div>
+                    )}
                                 </li>
                               ))}
                               {proc.nodes.length > 5 && (
