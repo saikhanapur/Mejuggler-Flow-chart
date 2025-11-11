@@ -1089,6 +1089,11 @@ class BackendTester:
                     nodes = result.get('nodes', [])
                     critical_actions = result.get('quickReference', {}).get('criticalActions', [])
                 
+                # Debug: Print response structure
+                print(f"🔍 Response structure: processes={len(result.get('processes', []))}, direct_nodes={len(result.get('nodes', []))}")
+                if 'processes' in result and result['processes']:
+                    print(f"🔍 Process nodes: {len(result['processes'][0].get('nodes', []))}")
+                
                 if not nodes:
                     self.log_result("AI Priority Detection P0-P4", False, 
                                   "No nodes found in response")
