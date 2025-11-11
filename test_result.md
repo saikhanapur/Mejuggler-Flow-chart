@@ -768,7 +768,8 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Manual Node Editing - Priority Override & Title Edit (Action Item #2)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
