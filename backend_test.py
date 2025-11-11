@@ -1092,7 +1092,12 @@ class BackendTester:
                 # Debug: Print response structure
                 print(f"🔍 Response structure: processes={len(result.get('processes', []))}, direct_nodes={len(result.get('nodes', []))}")
                 if 'processes' in result and result['processes']:
-                    print(f"🔍 Process nodes: {len(result['processes'][0].get('nodes', []))}")
+                    process = result['processes'][0]
+                    nodes = process.get('nodes', [])
+                    print(f"🔍 Process nodes: {len(nodes)}")
+                    if nodes:
+                        print(f"🔍 First node keys: {list(nodes[0].keys())}")
+                        print(f"🔍 First node priority: {nodes[0].get('priority', 'MISSING')}")
                 
                 if not nodes:
                     self.log_result("AI Priority Detection P0-P4", False, 
