@@ -1378,7 +1378,7 @@ Phase 3: Recovery
 - Return to normal operations"""
             
             payload = {
-                "documentText": dr_sop_doc,
+                "text": dr_sop_doc,
                 "inputType": "document"
             }
             
