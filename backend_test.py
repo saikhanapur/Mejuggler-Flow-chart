@@ -3173,6 +3173,9 @@ Contacts:
         print("\n🎨 NEW FEATURES - EROAD-Style Flowchart Generation...")
         self.test_eroad_style_flowchart_generation()
         
+        print("\n🎯 NEW FEATURES - Intelligent Critical Actions Extraction...")
+        self.test_intelligent_critical_actions_extraction()
+        
         print("\n📢 NEW FEATURES - Publish/Unpublish Workflow...")
         self.test_publish_unpublish_workflow()
         
