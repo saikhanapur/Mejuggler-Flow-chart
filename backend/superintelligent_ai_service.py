@@ -2710,7 +2710,8 @@ Analyze ONLY the nodes shown above. Return valid JSON array."""
         if not any("document" in n.get("title", "").lower() for n in nodes):
             gaps["compliance"].append("No documentation step found")
         
-        if not any("sla" in str(extracted_data).lower() or "service level" in str(extracted_data).lower()):
+        extracted_str = str(extracted_data).lower()
+        if "sla" not in extracted_str and "service level" not in extracted_str:
             gaps["compliance"].append("No SLA commitments mentioned")
         
         # Stakeholder lens
