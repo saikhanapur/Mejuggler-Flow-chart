@@ -135,6 +135,40 @@ const FlowNode = ({ node, onClick, selectedNodeId, onUpdateNode }) => {
     e.stopPropagation();
     setIsExpanded(!isExpanded);
   };
+  
+  // Handle title edit
+  const handleTitleEdit = (e) => {
+    e.stopPropagation();
+    setIsEditingTitle(true);
+  };
+  
+  const handleTitleSave = async (e) => {
+    e.stopPropagation();
+    if (editedTitle.trim() && editedTitle !== node.title) {
+      if (onUpdateNode) {
+        await onUpdateNode(node.id, 'title', editedTitle.trim());
+      }
+    }
+    setIsEditingTitle(false);
+  };
+  
+  const handleTitleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleTitleSave(e);
+    } else if (e.key === 'Escape') {
+      setEditedTitle(node.title);
+      setIsEditingTitle(false);
+    }
+  };
+  
+  // Handle priority edit
+  const handlePriorityChange = async (e, newPriority) => {
+    e.stopPropagation();
+    if (onUpdateNode && newPriority !== node.priority?.level) {
+      await onUpdateNode(node.id, 'priority', newPriority);
+    }
+    setIsEditingPriority(false);
+  };
 
   // Decision nodes still render as diamonds
   if (isDecision) {
