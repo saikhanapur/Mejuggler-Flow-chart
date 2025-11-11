@@ -1983,11 +1983,28 @@ Analyze now:"""
                 enhanced_timings.append(basic_timing)
                 seen_timings.add(normalized)
         
-        logger.info(f"✅ Extracted {len(enhanced_timings)} timing requirements with context")
-        for i, timing in enumerate(enhanced_timings[:5], 1):  # Log top 5
+        # Limit to most important timings (avoid overwhelming users)
+        # Prioritize: immediate > within X min > hourly/daily > other
+        priority_keywords = ['immediately', 'urgent', 'asap', 'within', 'first', 'before']
+        
+        priority_timings = []
+        regular_timings = []
+        
+        for timing in enhanced_timings:
+            timing_lower = timing.lower()
+            if any(keyword in timing_lower for keyword in priority_keywords):
+                priority_timings.append(timing)
+            else:
+                regular_timings.append(timing)
+        
+        # Combine: all priority + limited regular (max 8 total)
+        final_timings = priority_timings + regular_timings[:max(0, 8 - len(priority_timings))]
+        
+        logger.info(f"✅ Extracted {len(final_timings)} key timing requirements (from {len(enhanced_timings)} total)")
+        for i, timing in enumerate(final_timings[:5], 1):  # Log top 5
             logger.info(f"   {i}. {timing}")
         
-        return enhanced_timings
+        return final_timings
     
     def _format_timing_context(self, before: str, timing: str, after: str) -> str:
         """
