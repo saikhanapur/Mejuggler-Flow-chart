@@ -484,6 +484,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ MULTI-PROCESS DETECTION BACKEND FULLY FUNCTIONAL. Comprehensive testing completed with recruitment document containing 5 processes: 1) Multi-Process Detection: POST /api/process/eroad-style correctly returns multipleProcesses=true, processCount=5, processTitles array with 5 process names, empty processes array, and autoDecision='Create each process as a separate flowchart'. 2) Response Structure: All expected fields present and correctly formatted. 3) API Performance: Endpoint responds within acceptable timeframes. Backend multi-process detection working perfectly - frontend fix resolved the TypeError issue."
+      - working: "NA"
+        agent: "main"
+        comment: "CRITICAL FRONTEND FIX: User reported 'ReferenceError: proc is not defined' at line 225 in MultiProcessReview.js. Root cause: Component was trying to access processesData.processes[idx] (old format with full process objects) but new format only has processTitles array. FIXES APPLIED: 1) Removed Quick Stats badges that accessed proc.nodes, proc.actors, proc.criticalGaps (lines 223-236) 2) Removed Expanded Details that displayed proc.nodes (lines 238-249) 3) Added 'Process Preview' message explaining details will be generated when process is created 4) Disabled 'Merge into Single Process' button (requires backend support) 5) Updated handleMergeIntoOne to use new format (but disabled for now). Build successful, app loads without errors. Ready for E2E testing."
 
   - task: "Authentication Flow (Email/Password)"
     implemented: true
