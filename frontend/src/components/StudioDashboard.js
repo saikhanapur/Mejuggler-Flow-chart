@@ -214,7 +214,7 @@ const StudioDashboard = () => {
                 className="pl-10 h-12 rounded-full border-2 border-slate-200 focus:border-purple-400 transition-all"
               />
             </div>
-          <div className="flex gap-2">
+            <div className="flex gap-2">
             <Button
               variant={filterStatus === 'all' ? 'default' : 'outline'}
               onClick={() => setFilterStatus('all')}
