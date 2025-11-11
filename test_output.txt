@@ -1,0 +1,6 @@
+⏰ Testing Enhanced Key Timings Extraction (Feature 3 - Option B)
+================================================================================
+📄 Test Document: System Monitoring Procedure
+🎯 Expected Patterns: every 30 minutes, hourly, within 5 minutes, twice per day, daily, by 2:00 PM
+
+🔍 Sending POST /api/process/eroad-style...
