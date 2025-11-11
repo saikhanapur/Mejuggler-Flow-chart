@@ -222,10 +222,11 @@ const FlowNode = ({ node, onClick, onUpdateNode, isSelected, selectedNodeId, isO
   }
 
   // ALL other nodes use consistent rounded rectangle shape
-  // Differentiate by: border thickness, shadow size, colors, gap indicator
+  // Differentiate by: border thickness, shadow size, colors, gap indicator, critical path
   const borderStyle = isCritical ? 'border-4' : 'border-2';
   const shadowStyle = isCritical ? 'shadow-2xl' : 'shadow-lg';
   const gapBorderStyle = hasGap ? 'border-l-4 border-l-amber-500' : '';
+  const criticalPathStyle = isOnCriticalPath ? 'ring-4 ring-red-500 ring-offset-2' : '';
   
   return (
     <div
@@ -234,7 +235,7 @@ const FlowNode = ({ node, onClick, onUpdateNode, isSelected, selectedNodeId, isO
         config.container
       } ${borderStyle} ${shadowStyle} ${gapBorderStyle} ${config.pulse ? 'animate-pulse-glow' : ''} ${
         isSelected ? 'ring-4 ring-blue-400 ring-offset-2' : ''
-      } ${isMerge ? 'ring-2 ring-purple-400 ring-offset-2' : ''}`}
+      } ${isMerge ? 'ring-2 ring-purple-400 ring-offset-2' : ''} ${criticalPathStyle}`}
       style={{
         left: `${x}px`,
         top: `${y}px`,
