@@ -74,6 +74,7 @@ EXTRACT:
 4. **Systems**: Software, tools, platforms mentioned
 5. **Timings**: Time constraints, frequencies
 6. **Parallel Processes**: Steps that happen simultaneously
+7. **Document Sections**: ALL section headers, references, escalation hierarchies, timelines (extract EVERYTHING, don't filter)
 
 CONTACT EXTRACTION RULES (CRITICAL):
 - Preserve ALL context: extensions, options, instructions
