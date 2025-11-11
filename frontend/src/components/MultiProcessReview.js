@@ -219,35 +219,19 @@ const MultiProcessReview = ({ processesData, onBack, currentWorkspace, selectedW
                       </Button>
                     </div>
 
-                    {/* Quick Stats */}
-                    <div className="flex flex-wrap gap-3 mb-3">
-                      <Badge variant="secondary" className="text-xs">
-                        <FileText className="w-3 h-3 mr-1" />
-                        {proc.nodes?.length || 0} steps
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        <Users className="w-3 h-3 mr-1" />
-                        {proc.actors?.length || 0} people/systems
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        <AlertTriangle className="w-3 h-3 mr-1" />
-                        {proc.criticalGaps?.length || 0} gaps
-                      </Badge>
-                    </div>
+                    {/* Quick Stats - REMOVED: We don't have process details yet, only titles */}
+                    {/* Stats will be shown after individual processes are created */}
 
-                    {/* Expanded Details */}
+                    {/* Expanded Details - REMOVED: No details available until process is created */}
                     {isExpanded && (
                       <div className="mt-4 pt-4 border-t border-slate-200 space-y-3">
-                        {proc.nodes?.length > 0 && (
-                          <div>
-                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                              Process Steps
-                            </label>
-                            <ul className="space-y-1.5">
-                              {proc.nodes.slice(0, 5).map((node, idx) => (
-                                <li key={idx} className="text-sm text-slate-700 flex items-start gap-2">
-                                  <span className="text-blue-600 font-bold flex-shrink-0">{idx + 1}.</span>
-                                  <span>{node.title}</span>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                            Process Preview
+                          </label>
+                          <p className="text-sm text-slate-600">
+                            This process will be generated with full details (steps, actors, gaps) when you create it.
+                          </p>
                                 </li>
                               ))}
                               {proc.nodes.length > 5 && (
