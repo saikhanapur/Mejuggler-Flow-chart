@@ -238,6 +238,7 @@ const FlowchartDisplay = ({ process, onNodeClick, onUpdateNode, selectedNodeId }
               key={node.id}
               node={node}
               onClick={() => onNodeClick && onNodeClick(node)}
+              onUpdateNode={onUpdateNode}
               isSelected={selectedNodeId === node.id}
             />
           ))}
