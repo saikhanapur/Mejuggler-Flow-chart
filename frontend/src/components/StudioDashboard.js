@@ -17,6 +17,7 @@ import { api } from '@/utils/api';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import StudioHeader from './StudioHeader';
+import SemanticSearch from './SemanticSearch';
 
 const StudioDashboard = () => {
   const navigate = useNavigate();
