@@ -117,6 +117,8 @@ const FlowNode = ({ node, onClick, isSelected }) => {
   const isDecision = node.isDecisionPoint || false;
   const isMerge = node.isMergePoint || false;
   const isCritical = node.status === 'critical' || node.status === 'trigger';
+  const isLoop = node.isLoop || false;
+  const hasGap = node.operationalDetails?.gap || false;
 
   // Decision nodes still render as diamonds
   if (isDecision) {
