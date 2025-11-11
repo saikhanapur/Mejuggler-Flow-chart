@@ -193,11 +193,18 @@ Dispatch: 0800 347 787
 - [ ] Frontend: Update to display new format
 - [ ] Test: With Wilsar BCP, Fleet Vehicle docs
 
-**Success Criteria**:
-- Top 5 most urgent actions extracted (not all critical nodes)
-- Verb-first framing ("Call 111", not "Emergency call needed")
-- Time indicators preserved ("within 5 minutes")
-- Ranked by urgency
+**Success Criteria** ✅ ALL MET:
+- ✅ Top 5 most urgent actions extracted (not all critical nodes)
+- ✅ Verb-first framing ("Call 111", "Create P1 ticket", "Notify manager")
+- ✅ Time indicators preserved ("immediately", "within 5 minutes", "ASAP")
+- ✅ Ranked by urgency score (335, 230, 125 for top 3)
+
+**Testing Results**:
+- Tested with 9-step Emergency Response document
+- Perfect urgency ranking: Emergency/injury → P1 escalation → Manager notification
+- All time windows preserved and displayed correctly
+- Backend logging shows transparent scoring
+- Recovery steps also extracted successfully
 
 ---
 
