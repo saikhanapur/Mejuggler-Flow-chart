@@ -2699,6 +2699,134 @@ async def get_html_flowchart(process_id: str, request: Request):
 
 # ==================== END HTML FLOWCHART GENERATOR ====================
 
+# ==================== SEMANTIC SEARCH ====================
+
+class SemanticSearchRequest(BaseModel):
+    query: str
+    workspace_id: Optional[str] = None
+    limit: int = 10
+
+@api_router.post("/process/search")
+async def semantic_search(
+    search_request: SemanticSearchRequest,
+    request: Request
+):
+    """
+    Smart Semantic Search - Find nodes across ALL processes using natural language.
+    
+    Example queries:
+    - "Who to call if system down?"
+    - "Emergency contact for injuries"
+    - "How to escalate critical issues"
+    
+    Returns ranked results with similarity scores.
+    """
+    try:
+        from superintelligent_ai_service import SuperintelligentAIService
+        import openai
+        
+        user = await get_current_user(request)
+        user_id = user.get("id") if user else None
+        
+        query = search_request.query
+        workspace_id = search_request.workspace_id
+        limit = search_request.limit
+        
+        logger.info(f"🔍 Semantic search: '{query}' (workspace: {workspace_id})")
+        
+        # Generate embedding for query
+        openai.api_key = os.environ.get("EMERGENT_LLM_KEY")
+        
+        query_response = openai.embeddings.create(
+            model="text-embedding-3-small",
+            input=query
+        )
+        query_embedding = query_response.data[0].embedding
+        
+        # Find all processes for user (optionally filter by workspace)
+        query_filter = {"userId": user_id} if user_id else {}
+        if workspace_id:
+            query_filter["workspaceId"] = workspace_id
+        
+        processes = await db.processes.find(query_filter).to_list(length=1000)
+        
+        logger.info(f"Searching across {len(processes)} processes")
+        
+        # Search through all nodes
+        service = SuperintelligentAIService(
+            api_key=os.environ.get("EMERGENT_LLM_KEY"),
+            db_client=client
+        )
+        
+        results = []
+        
+        for process in processes:
+            process_name = process.get("name", "Untitled Process")
+            process_id = str(process.get("_id", process.get("id")))
+            nodes = process.get("nodes", [])
+            
+            for node in nodes:
+                # Generate embedding for node if not exists
+                if "embedding" not in node:
+                    # Create searchable text
+                    title = node.get("title", "")
+                    description = node.get("description", "")
+                    sub_steps = " ".join(node.get("subSteps", []))
+                    actors = " ".join(str(a) for a in node.get("actors", []))
+                    
+                    search_text = f"{title}. {description}. {sub_steps}. {actors}"
+                    
+                    try:
+                        node_response = openai.embeddings.create(
+                            model="text-embedding-3-small",
+                            input=search_text
+                        )
+                        node_embedding = node_response.data[0].embedding
+                    except:
+                        continue
+                else:
+                    node_embedding = node["embedding"]
+                
+                # Calculate similarity
+                similarity = service.cosine_similarity(query_embedding, node_embedding)
+                
+                # Only include if similarity > threshold
+                if similarity > 0.5:  # 50% similarity threshold
+                    results.append({
+                        "nodeId": node.get("id"),
+                        "nodeTitle": node.get("title"),
+                        "nodeDescription": node.get("description", ""),
+                        "processId": process_id,
+                        "processName": process_name,
+                        "similarity": round(similarity, 3),
+                        "priority": node.get("priority", {}),
+                        "status": node.get("status"),
+                        "contacts": node.get("actors", []),
+                        "systems": node.get("operationalDetails", {}).get("systems", [])
+                    })
+        
+        # Sort by similarity (highest first)
+        results.sort(key=lambda x: x["similarity"], reverse=True)
+        
+        # Limit results
+        results = results[:limit]
+        
+        logger.info(f"✅ Found {len(results)} relevant results")
+        
+        return {
+            "query": query,
+            "resultsCount": len(results),
+            "results": results
+        }
+        
+    except Exception as e:
+        logger.error(f"Search failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+
+# ==================== END SEMANTIC SEARCH ====================
+
+
+
 # ==================== EROAD-STYLE HYBRID APPROACH ====================
 
 @api_router.post("/process/eroad-style")
