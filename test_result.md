@@ -683,6 +683,19 @@ frontend:
         agent: "main"
         comment: "NEW FEATURE: Enhanced key timings extraction with full context. Added extract_key_timings_enhanced() method that analyzes ALL nodes for timing patterns and captures surrounding context (action + timing + method). Timing patterns detected: 'every X min/hours', 'within X min/hours', 'at/by X am/pm', 'hourly/daily/weekly', 'X times per day'. Context extraction: captures action verb (check, update, monitor), timing constraint, and method/tool (via email, in system). Example output: 'Check MyIT ticket status every 30 minutes via portal' instead of just 'every 30 minutes'. Helper method _format_timing_context() cleans and formats extracted text. Integrated into both quickReference generation locations. Includes fallback to basic timings from extracted_data. TESTING NEEDED: 1) Create process with document containing various timing patterns 2) Verify backend logs show '⏰ Extracting key timings with context...' 3) Check timing extraction includes action + timing + method 4) Verify patterns detected: every, within, hourly, at/by 5) Confirm no duplicates (uses seen_timings set) 6) Verify fallback to basic timings if no patterns found"
       - working: true
+
+  - task: "Progressive Disclosure - Expandable Nodes (Feature 4 - Option B)"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/flowchart/FlowNode.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "NEW FEATURE: Progressive disclosure with expandable nodes. Frontend changes only in FlowNode.js component: 1) Added useState for isExpanded state 2) Added detection for sub-steps from operationalDetails.specificActions or node.subSteps 3) Added handleExpandToggle() with event.stopPropagation() to prevent triggering onClick when expanding 4) Added expand/collapse button (▼/▲ arrow icon) in node header - only shown if hasSubSteps 5) When expanded, shows 'Detailed Steps' section with numbered sub-steps list 6) Smooth CSS animation (slideDown) for expand/collapse 7) Dynamic node height: minHeight auto when expanded, zIndex 20 to bring to front 8) Button hover effect with semi-transparent background. TESTING NEEDED: 1) Load process with nodes that have operationalDetails.specificActions 2) Verify expand button (▼) appears only on nodes with sub-steps 3) Click expand button - verify node expands inline showing numbered steps 4) Verify arrow rotates 180deg when expanded (▲) 5) Verify smooth animation 6) Click again to collapse - verify smooth collapse 7) Verify clicking node body still triggers onClick (side panel) 8) Verify expanded nodes appear above others (zIndex 20)"
+
         agent: "testing"
         comment: "✅ ENHANCED KEY TIMINGS EXTRACTION FULLY FUNCTIONAL. Comprehensive testing with System Monitoring Procedure (8 steps with various timing patterns): 1) Enhanced Context Extraction: Produces context-rich timing strings like 'Check MyIT ticket status every 30 min via IT portal' instead of basic 'every 30 minutes' ✅ 2) Pattern Detection: Successfully detects multiple timing patterns (every X minutes, hourly, daily, within X minutes, by X PM) ✅ 3) Action Verbs Preserved: Check, Update, Monitor, Review, Escalate captured in output ✅ 4) Methods/Tools Captured: 'via portal', 'through email', 'in Lighthouse system' included in context ✅ 5) Generated 17-18 timing entries with enhanced context from 8-step document ✅ 6) All major timing patterns detected and formatted correctly ✅ 7) Backend Integration: extract_key_timings_enhanced() method properly integrated ✅ 8) Response Structure: quickReference.keyTimings contains enhanced context as designed ✅ Feature meets all success criteria and ready for production use!"
 
