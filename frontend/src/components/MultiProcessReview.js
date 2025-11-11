@@ -86,45 +86,6 @@ const MultiProcessReview = ({ processesData, onBack, currentWorkspace, selectedW
       setProgress(0);
     }
   };
-        
-        const process = {
-          id: `process-${Date.now()}-${index}`,
-          name: processData.processName,
-          description: processData.description || '',
-          workspaceId: selectedWorkspace || currentWorkspace?.id, // Use selected workspace first
-          nodes: processData.nodes.map((node, idx) => ({
-            ...node,
-            position: { x: 100, y: 100 + (idx * 150) }
-          })),
-          actors: processData.actors || [],
-          criticalGaps: processData.criticalGaps || [],
-          improvementOpportunities: processData.improvementOpportunities || [],
-          status: 'draft',
-          theme: 'minimalist',
-          healthScore: 85,
-          views: 0,
-          version: 1
-        };
-
-        const created = await api.createProcess(process);
-        createdProcesses.push(created);
-      }
-
-      toast.dismiss(loadingToast);
-      toast.success(`Successfully created ${createdProcesses.length} process(es)! Redirecting to dashboard...`);
-      
-      // Navigate to dashboard to show all created processes
-      setTimeout(() => {
-        navigate('/');
-      }, 1500);
-    } catch (error) {
-      toast.dismiss(loadingToast);
-      toast.error('Failed to create processes');
-      console.error(error);
-    } finally {
-      setCreating(false);
-    }
-  };
 
   const handleMergeIntoOne = async () => {
     setCreating(true);
