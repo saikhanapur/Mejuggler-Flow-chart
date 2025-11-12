@@ -79,12 +79,28 @@ EXTRACT WITH PRECISION:
 1. **All Steps**: Every procedural step (maintain exact order)
 
 2. **Decision Points** (DIAMONDS - Critical!):
-   For each decision, capture:
-   - Question being asked
+   LOOK FOR these patterns in text:
+   - "If X, then Y, otherwise Z"
+   - "Check if/whether/verify"
+   - "Determine if/assess whether"
+   - "Is X? Yes/No"
+   - Questions followed by conditional actions
+   - Steps that branch into multiple paths
+   
+   For EACH decision found, capture:
+   - Question being asked (exact wording)
    - YES branch: what happens + which step it leads to
    - NO branch: what happens + which step it leads to  
    - Default/preferred path
    - What triggers this decision
+   
+   EXAMPLE: "Check if all connectivity is lost" → 
+   {
+     "question": "Is all connectivity lost?",
+     "yesPath": "Activate full BCP response",
+     "noPath": "Implement partial workaround",
+     "location": "After initial alert verification"
+   }
 
 3. **Loops** (DASHED LINES - Important!):
    For each loop, capture:
