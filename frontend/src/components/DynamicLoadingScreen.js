@@ -2,44 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Check, Loader } from 'lucide-react';
 
 const DynamicLoadingScreen = ({ processingStep, analyzing }) => {
-  const [activeSteps, setActiveSteps] = useState([]);
-  const [completedSteps, setCompletedSteps] = useState([]);
+  const [currentStatus, setCurrentStatus] = useState(0);
 
-  // Define all possible AI processing steps
-  const allSteps = [
-    { id: 'extract', label: 'Extracting document content', icon: '📄' },
-    { id: 'analyze', label: 'Analyzing process structure', icon: '🔍' },
-    { id: 'decisions', label: 'Identifying decision points', icon: '◆' },
-    { id: 'loops', label: 'Detecting monitoring loops', icon: '🔄' },
-    { id: 'swimlanes', label: 'Mapping swim lanes & teams', icon: '🏊' },
-    { id: 'contacts', label: 'Extracting emergency contacts', icon: '📞' },
-    { id: 'timings', label: 'Parsing key timings & schedules', icon: '⏰' },
-    { id: 'complexity', label: 'Calculating complexity score', icon: '📊' },
-    { id: 'health', label: 'Assessing process health', icon: '💚' },
-    { id: 'recommendations', label: 'Generating AI recommendations', icon: '💡' },
-    { id: 'gaps', label: 'Performing gap analysis', icon: '⚠️' },
-    { id: 'critical', label: 'Identifying critical path', icon: '⚡' },
-    { id: 'finalize', label: 'Finalizing flowchart', icon: '✨' }
+  // Simple, fast-changing statuses (no detailed steps - protect IP)
+  const statuses = [
+    { icon: '📄', text: 'Reading document...', color: 'indigo' },
+    { icon: '🔍', text: 'Analyzing structure...', color: 'purple' },
+    { icon: '🧠', text: 'Understanding context...', color: 'blue' },
+    { icon: '⚡', text: 'Building flowchart...', color: 'cyan' },
+    { icon: '✨', text: 'Finalizing...', color: 'green' }
   ];
 
   useEffect(() => {
-    // Simulate progressive steps based on time
-    const startTime = Date.now();
-    const totalDuration = 60000; // 60 seconds estimated
-    
+    // Quick status rotation (every 10 seconds)
     const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / totalDuration, 0.95); // Cap at 95% until real completion
-      
-      // Calculate how many steps should be complete
-      const stepsToShow = Math.floor(progress * allSteps.length);
-      
-      const newCompleted = allSteps.slice(0, Math.max(0, stepsToShow - 1)).map(s => s.id);
-      const newActive = stepsToShow > 0 ? [allSteps[stepsToShow - 1].id] : [];
-      
-      setCompletedSteps(newCompleted);
-      setActiveSteps(newActive);
-    }, 500);
+      setCurrentStatus(prev => (prev + 1) % statuses.length);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, []);
