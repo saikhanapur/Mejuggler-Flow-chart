@@ -319,6 +319,76 @@ Return ONLY valid JSON."""
         except Exception as e:
             logger.warning(f"⚠️ Post-processing failed: {e}")
         
+        # ============ NEW: USE EXTRACTED DECISIONS/LOOPS/PARALLEL DATA ============
+        # Map extracted decisions, loops, and parallel processes to specific nodes
+        try:
+            extracted_decisions = extracted_data.get('decisions', [])
+            extracted_loops = extracted_data.get('loops', [])
+            extracted_parallel = extracted_data.get('parallelProcesses', [])
+            
+            logger.info(f"📍 Mapping extracted structure: {len(extracted_decisions)} decisions, {len(extracted_loops)} loops, {len(extracted_parallel)} parallel groups")
+            
+            # Map decisions to nodes
+            for decision in extracted_decisions:
+                decision_question = decision.get('question', '').lower()
+                decision_location = decision.get('location', '').lower()
+                
+                # Find matching node
+                for node in nodes:
+                    title_lower = node.get('title', '').lower()
+                    details_lower = node.get('details', '').lower()
+                    
+                    # Check if this node matches the decision
+                    if decision_question and (decision_question in title_lower or decision_question in details_lower):
+                        node['isDecisionPoint'] = True
+                        node['decisionCriteria'] = decision.get('question', '')
+                        node['decisionOptions'] = {
+                            'yes': decision.get('yesPath', 'Continue'),
+                            'no': decision.get('noPath', 'Alternative')
+                        }
+                        logger.info(f"✅ Mapped decision: {node.get('title')} → YES: {decision.get('yesPath')}, NO: {decision.get('noPath')}")
+                        break
+            
+            # Map loops to nodes
+            for loop in extracted_loops:
+                loop_action = loop.get('action', '').lower()
+                loop_trigger = loop.get('trigger', '').lower()
+                
+                for node in nodes:
+                    title_lower = node.get('title', '').lower()
+                    details_lower = node.get('details', '').lower()
+                    
+                    if (loop_action and loop_action in title_lower) or (loop_trigger and loop_trigger in details_lower):
+                        node['isLoop'] = True
+                        node['loopType'] = loop.get('type', 'monitoring')
+                        node['loopTrigger'] = loop.get('trigger', '')
+                        node['loopExitCondition'] = loop.get('exitCondition', '')
+                        logger.info(f"✅ Mapped loop: {node.get('title')} → Type: {loop.get('type')}, Exit: {loop.get('exitCondition')}")
+                        break
+            
+            # Map parallel processes
+            for parallel_group in extracted_parallel:
+                if isinstance(parallel_group, list) and len(parallel_group) >= 2:
+                    # Find nodes matching parallel group steps
+                    matched_nodes = []
+                    for step in parallel_group:
+                        step_lower = step.lower() if isinstance(step, str) else ''
+                        for node in nodes:
+                            title_lower = node.get('title', '').lower()
+                            if step_lower and step_lower in title_lower and node['id'] not in [n['id'] for n in matched_nodes]:
+                                matched_nodes.append(node)
+                                break
+                    
+                    # Mark them as parallel
+                    if len(matched_nodes) >= 2:
+                        for node in matched_nodes:
+                            other_ids = [n['id'] for n in matched_nodes if n['id'] != node['id']]
+                            node['parallelWith'] = other_ids
+                        logger.info(f"✅ Mapped parallel group: {[n.get('title') for n in matched_nodes]}")
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Extracted structure mapping failed: {e}")
+        
         # ============ FIX #1: SMART POSITIONING WITH MERGE POINT DETECTION ============
         # Enhanced positioning with:
         # - Sequential: X=330, Y increments by 150
