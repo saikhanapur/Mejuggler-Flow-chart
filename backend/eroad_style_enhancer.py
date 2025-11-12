@@ -679,6 +679,35 @@ Return ONLY valid JSON."""
         
         logger.info(f"✅ Enhanced {input_step_count} steps to {node_count} nodes with rich details")
         
+        # ============ CRITICAL: CONVERT CONNECTIONS TO EDGES ============
+        # The AI returns nodes with 'connections' array, but frontend needs 'edges' array
+        if 'edges' not in enhanced:
+            enhanced['edges'] = []
+        
+        for node in enhanced.get('nodes', []):
+            connections = node.get('connections', [])
+            for target_id in connections:
+                # Create edge
+                edge = {
+                    'id': f"{node['id']}_{target_id}",
+                    'source': node['id'],
+                    'target': target_id,
+                    'type': 'solid'
+                }
+                
+                # Check if this edge already exists (avoid duplicates)
+                edge_exists = any(
+                    e.get('source') == edge['source'] and e.get('target') == edge['target']
+                    for e in enhanced['edges']
+                )
+                
+                if not edge_exists:
+                    enhanced['edges'].append(edge)
+                    logger.info(f"  Created edge: {node.get('title')} → {target_id}")
+        
+        logger.info(f"✅ Created {len(enhanced.get('edges', []))} edges from connections")
+        # ============ END EDGE CONVERSION ============
+        
         return enhanced
     
     def _build_structure_context(self, detection: Dict[str, Any]) -> str:
