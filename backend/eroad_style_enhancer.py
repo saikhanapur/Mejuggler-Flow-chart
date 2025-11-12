@@ -604,6 +604,27 @@ Return ONLY valid JSON."""
                 # Position badges on the right side at specified Y
                 stage['x'] = 630  # Right side of main flow
         
+        # ============ NEW: CREATE LOOP EDGES ============
+        # For nodes marked as loops, create explicit loop edges
+        for node in nodes:
+            if node.get('isLoop') and node.get('loopBackTo'):
+                loop_target = node.get('loopBackTo')
+                
+                # Create a loop edge in enhanced edges array
+                if 'edges' not in enhanced:
+                    enhanced['edges'] = []
+                
+                loop_edge = {
+                    'id': f"{node['id']}_loop",
+                    'source': node['id'],
+                    'target': loop_target,
+                    'type': 'loop',  # Special type for loop edges
+                    'label': 'Loop'
+                }
+                enhanced['edges'].append(loop_edge)
+                logger.info(f"✅ Created loop edge: {node.get('title')} → {loop_target}")
+        # ============ END LOOP EDGES ============
+        
         # ============ FIX #2: CONNECTION VALIDATION ============
         # Ensure all non-terminal nodes have outgoing connections
         # Terminal nodes: recovery, complete, final, end
