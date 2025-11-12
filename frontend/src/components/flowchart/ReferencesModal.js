@@ -80,14 +80,24 @@ const ReferencesModal = ({ isOpen, onClose, quickReference, gapAnalysis }) => {
                 <div className="grid grid-cols-2 gap-3">
                   {Object.entries(emergencyContacts).map(([name, details], idx) => {
                     // Parse hierarchical contact structure
-                    let phoneNumber = details;
+                    let phoneNumber = '';
                     let extension = null;
                     let options = [];
                     
-                    if (typeof details === 'object' && details.primary) {
-                      phoneNumber = details.primary;
-                      extension = details.extension;
-                      options = details.options || [];
+                    if (typeof details === 'object' && details !== null) {
+                      // Handle object format
+                      if (details.primary) {
+                        phoneNumber = String(details.primary);
+                        extension = details.extension;
+                        options = details.options || [];
+                      } else if (details.main) {
+                        phoneNumber = String(details.main);
+                        extension = details.extension;
+                        options = details.options || [];
+                      } else {
+                        // Fallback: stringify the object
+                        phoneNumber = JSON.stringify(details);
+                      }
                     } else if (typeof details === 'string') {
                       // Parse string format: "phone (Extension: X) | Option 1: Y"
                       const parts = details.split('|');
@@ -102,7 +112,13 @@ const ReferencesModal = ({ isOpen, onClose, quickReference, gapAnalysis }) => {
                       
                       // Extract options
                       options = parts.slice(1).map(opt => opt.trim());
+                    } else {
+                      // Fallback for any other type
+                      phoneNumber = String(details || 'No contact info');
                     }
+                    
+                    // Ensure phoneNumber is always a string
+                    phoneNumber = String(phoneNumber);
                     
                     return (
                       <div key={idx} className="bg-white/70 rounded-lg p-4 border border-pink-200">
