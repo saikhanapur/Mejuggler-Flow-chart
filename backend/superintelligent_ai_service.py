@@ -78,28 +78,38 @@ VISUAL PATTERN RECOGNITION (if flowchart present):
 EXTRACT WITH PRECISION:
 1. **All Steps**: Every procedural step (maintain exact order)
 
-2. **Decision Points** (DIAMONDS - Critical!):
-   LOOK FOR these patterns in text:
-   - "If X, then Y, otherwise Z"
-   - "Check if/whether/verify"
-   - "Determine if/assess whether"
-   - "Is X? Yes/No"
-   - Questions followed by conditional actions
-   - Steps that branch into multiple paths
+2. **Decision Points** (DIAMONDS - BE HIGHLY SELECTIVE!):
+   A decision point is ONLY where the process BRANCHES into different paths based on a condition.
    
-   For EACH decision found, capture:
+   ✓ IS A DECISION POINT:
+   - "If X, then do Y, otherwise do Z" (explicit branching)
+   - "Is condition met? YES → path A, NO → path B"
+   - Process explicitly splits into multiple paths based on outcome
+   
+   ✗ NOT A DECISION POINT:
+   - "Check if X" (verification step, no branching)
+   - "Confirm Y" (validation step, linear flow)
+   - "Verify Z" (checking step, continues to next step regardless)
+   - "Determine status" (assessment, but doesn't branch)
+   
+   For EACH REAL decision found, capture:
    - Question being asked (exact wording)
    - YES branch: what happens + which step it leads to
    - NO branch: what happens + which step it leads to  
    - Default/preferred path
    - What triggers this decision
    
-   EXAMPLE: "Check if all connectivity is lost" → 
+   EXAMPLE OF REAL DECISION: "Is connectivity restored?"
+   - If YES → "Resume normal operations" (step 8)
+   - If NO → "Continue monitoring loop" (return to step 5)
+   → This creates a BRANCH, so it's a decision point
+   
    {
-     "question": "Is all connectivity lost?",
-     "yesPath": "Activate full BCP response",
-     "noPath": "Implement partial workaround",
-     "location": "After initial alert verification"
+     "question": "Is connectivity restored?",
+     "yesPath": "Resume normal operations (step 8)",
+     "noPath": "Continue monitoring (return to step 5)",
+     "location": "After monitoring cycle",
+     "trigger": "30-minute status check"
    }
 
 3. **Loops** (DASHED LINES - Important!):
