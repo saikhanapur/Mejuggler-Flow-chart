@@ -22,6 +22,9 @@ const ConnectionLine = ({ from, to, type = 'solid', label = null }) => {
 
   // Check if from node is a decision
   const isFromDecision = from.isDecisionPoint || false;
+  
+  // Check if this is a loop edge (going backwards)
+  const isLoop = type === 'loop' || type === 'dashed';
 
   // Center of 240px wide node (or 200px for diamond)
   const fromX = isFromDecision ? x1 + 100 : x1 + 120;
@@ -29,12 +32,12 @@ const ConnectionLine = ({ from, to, type = 'solid', label = null }) => {
   const toX = x2 + 120;
   const toY = y2; // Top of to node
 
-  // Use target node's status for color (standardized - always solid lines)
-  const color = STATUS_COLORS[to.status] || STATUS_COLORS.operational;
+  // Use target node's status for color, or special color for loops
+  const color = isLoop ? 'rgb(168, 85, 247)' : (STATUS_COLORS[to.status] || STATUS_COLORS.operational);
   
-  // Only use dashed for loops (explicit type='dashed')
-  const isDashed = type === 'dashed';
-  const lineWidth = 2; // Standard width for all lines
+  // Use dashed for loops
+  const isDashed = isLoop;
+  const lineWidth = isLoop ? 3 : 2; // Thicker for loops
 
   const deltaX = Math.abs(toX - fromX);
   const isVertical = deltaX < 50;
