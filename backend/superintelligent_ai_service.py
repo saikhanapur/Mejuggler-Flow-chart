@@ -104,13 +104,13 @@ EXTRACT WITH PRECISION:
    - If NO → "Continue monitoring loop" (return to step 5)
    → This creates a BRANCH, so it's a decision point
    
-   {
+   {{
      "question": "Is connectivity restored?",
      "yesPath": "Resume normal operations (step 8)",
      "noPath": "Continue monitoring (return to step 5)",
      "location": "After monitoring cycle",
      "trigger": "30-minute status check"
-   }
+   }}
 
 3. **Loops** (DASHED LINES - Important!):
    For each loop, capture:
