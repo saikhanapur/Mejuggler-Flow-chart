@@ -398,11 +398,80 @@ Return ONLY valid JSON."""
         except Exception as e:
             logger.warning(f"⚠️ Extracted structure mapping failed: {e}")
         
+        # ============ NEW: SWIM LANE CREATION FROM EXTRACTED DATA ============
+        try:
+            extracted_swim_lanes = extracted_data.get('swimLanes', [])
+            if extracted_swim_lanes:
+                logger.info(f"🏊 Creating {len(extracted_swim_lanes)} swim lanes from extracted data")
+                
+                # Create swim lane objects for frontend
+                swim_lane_objects = []
+                lane_colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444']
+                
+                for idx, lane_data in enumerate(extracted_swim_lanes):
+                    lane_id = f"lane_{idx + 1}"
+                    lane_obj = {
+                        'id': lane_id,
+                        'name': lane_data.get('name', f'Lane {idx + 1}'),
+                        'role': lane_data.get('purpose', ''),
+                        'color': lane_colors[idx % len(lane_colors)]
+                    }
+                    swim_lane_objects.append(lane_obj)
+                    logger.info(f"  Created swim lane: {lane_obj['name']}")
+                
+                # Add swim lanes to enhanced output
+                enhanced['swimLanes'] = swim_lane_objects
+                
+                # Now assign nodes to swim lanes based on content matching
+                nodes = enhanced.get('nodes', [])
+                for node in nodes:
+                    node_title = node.get('title', '').lower()
+                    node_details = node.get('details', '').lower()
+                    
+                    # Try to match node to a swim lane
+                    best_match_lane = None
+                    best_match_score = 0
+                    
+                    for idx, lane_data in enumerate(extracted_swim_lanes):
+                        lane_name = lane_data.get('name', '').lower()
+                        lane_purpose = lane_data.get('purpose', '').lower()
+                        
+                        # Check if lane name appears in node content
+                        score = 0
+                        if 'onshore' in lane_name and 'onshore' in (node_title + node_details):
+                            score += 10
+                        if 'offshore' in lane_name and 'offshore' in (node_title + node_details):
+                            score += 10
+                        if 'supervisor' in lane_name and 'supervisor' in (node_title + node_details):
+                            score += 5
+                        if 'manager' in lane_name and 'manager' in (node_title + node_details):
+                            score += 5
+                        
+                        # Check purpose keywords
+                        purpose_keywords = lane_purpose.split()
+                        for keyword in purpose_keywords:
+                            if len(keyword) > 3 and keyword in (node_title + node_details):
+                                score += 1
+                        
+                        if score > best_match_score:
+                            best_match_score = score
+                            best_match_lane = f"lane_{idx + 1}"
+                    
+                    # Assign lane if good match found
+                    if best_match_lane and best_match_score >= 3:
+                        node['swimLane'] = best_match_lane
+                        logger.info(f"  Assigned '{node.get('title')}' to swim lane {best_match_lane}")
+            else:
+                logger.info("ℹ️ No swim lanes detected in extracted data")
+        except Exception as e:
+            logger.warning(f"⚠️ Swim lane creation failed: {e}")
+        
         # ============ FIX #1: SMART POSITIONING WITH MERGE POINT DETECTION ============
         # Enhanced positioning with:
         # - Sequential: X=330, Y increments by 150
         # - Parallel: X=200/460 (2 nodes) or X=150/330/510 (3 nodes), same Y
         # - Merge points: Detected when multiple nodes connect to same target
+        # - Swim lanes: X position based on lane assignment
         
         nodes = enhanced.get('nodes', [])
         y_position = 40  # Start with top padding so first node isn't at edge
