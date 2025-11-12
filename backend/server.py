@@ -178,6 +178,14 @@ class ProcessNode(BaseModel):
     operationalDetails: Optional[OperationalDetails] = None  # NEW: Preserve operational details
     priority: Optional[Dict[str, Any]] = None  # NEW: Manual priority override
     editHistory: Optional[List[Dict[str, Any]]] = None  # NEW: Track manual edits
+    isDecisionPoint: bool = False  # CRITICAL: Mark decision nodes (render as diamonds)
+    isLoop: bool = False  # CRITICAL: Mark loop nodes (render with dashed line back)
+    loopType: Optional[str] = None  # monitoring, retry, iterative
+    loopTrigger: Optional[str] = None  # What causes the loop
+    loopExitCondition: Optional[str] = None  # How to exit the loop
+    decisionCriteria: Optional[str] = None  # The question being decided
+    decisionOptions: Optional[Dict[str, str]] = None  # {yes: "path", no: "path"}
+    aiRecommendations: Optional[Dict[str, Any]] = None  # AI recommendations for this node
 
 class Workspace(BaseModel):
     model_config = ConfigDict(extra="ignore")
