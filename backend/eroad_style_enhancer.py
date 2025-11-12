@@ -487,13 +487,23 @@ Return ONLY valid JSON."""
         
         merge_points = {node_id: sources for node_id, sources in incoming_connections.items() if len(sources) > 1}
         
-        # Step 2: Position nodes with awareness of structure
+        # Step 2: Position nodes with awareness of structure AND swim lanes
+        swim_lane_positions = {
+            'lane_1': 200,
+            'lane_2': 450,
+            'lane_3': 700,
+            'lane_4': 950
+        }
+        
         for i, node in enumerate(nodes):
             if node['id'] in processed_ids:
                 continue
             
             # Check if this node is a merge point
             is_merge = node['id'] in merge_points
+            
+            # Check if node has swim lane assignment
+            swim_lane = node.get('swimLane')
             
             # Check if this node has parallel companions
             parallel_with = node.get('parallelWith', [])
@@ -502,45 +512,56 @@ Return ONLY valid JSON."""
                 # This is part of a parallel group
                 parallel_nodes = [node] + [n for n in nodes if n['id'] in parallel_with]
                 
-                # FIX #1: INCREASE PARALLEL NODE SPACING - Move MUCH further from center
-                # Center line is at X=330, nodes are 240px wide
-                # Previous: X=80 (extends to 320) and X=580 (extends to 820) - TOO CLOSE!
-                # New: X=40 (extends to 280) and X=620 (extends to 860) - BETTER CLEARANCE
-                if len(parallel_nodes) == 2:
-                    parallel_nodes[0]['x'] = 40   # Far left (node extends 40-280, good clearance from center 330)
-                    parallel_nodes[0]['y'] = y_position
-                    parallel_nodes[1]['x'] = 620  # Far right (node extends 620-860, good clearance from center 330)
-                    parallel_nodes[1]['y'] = y_position
-                elif len(parallel_nodes) == 3:
-                    parallel_nodes[0]['x'] = 30   # Far left
-                    parallel_nodes[0]['y'] = y_position
-                    parallel_nodes[1]['x'] = 330  # Center (acceptable for 3 nodes)
-                    parallel_nodes[1]['y'] = y_position
-                    parallel_nodes[2]['x'] = 630  # Far right
-                    parallel_nodes[2]['y'] = y_position
-                else:
-                    # More than 3 parallel - use far spacing
+                # If nodes have swim lanes, position them in their lanes
+                if swim_lane:
                     for j, pnode in enumerate(parallel_nodes):
-                        pnode['x'] = 40 if j % 2 == 0 else 620
+                        pnode_lane = pnode.get('swimLane')
+                        if pnode_lane and pnode_lane in swim_lane_positions:
+                            pnode['x'] = swim_lane_positions[pnode_lane]
+                        else:
+                            # Fallback: spread across default positions
+                            pnode['x'] = 40 if j % 2 == 0 else 620
                         pnode['y'] = y_position
+                else:
+                    # No swim lanes: use standard parallel positioning
+                    if len(parallel_nodes) == 2:
+                        parallel_nodes[0]['x'] = 40
+                        parallel_nodes[0]['y'] = y_position
+                        parallel_nodes[1]['x'] = 620
+                        parallel_nodes[1]['y'] = y_position
+                    elif len(parallel_nodes) == 3:
+                        parallel_nodes[0]['x'] = 30
+                        parallel_nodes[0]['y'] = y_position
+                        parallel_nodes[1]['x'] = 330
+                        parallel_nodes[1]['y'] = y_position
+                        parallel_nodes[2]['x'] = 630
+                        parallel_nodes[2]['y'] = y_position
+                    else:
+                        for j, pnode in enumerate(parallel_nodes):
+                            pnode['x'] = 40 if j % 2 == 0 else 620
+                            pnode['y'] = y_position
                 
                 # Mark as processed
                 for pnode in parallel_nodes:
                     processed_ids.add(pnode['id'])
                 
-                # FIX #2: UNIFORM SPACING - Always use 150px (was 160px)
                 y_position += 150
             elif is_merge:
-                # FIX #2: UNIFORM SPACING - Remove extra spacing before merge for consistency
-                # (Previous: y_position += 30 - caused non-uniform distances)
-                node['x'] = 330  # Center merge points
+                # Merge points: use swim lane if assigned, otherwise center
+                if swim_lane and swim_lane in swim_lane_positions:
+                    node['x'] = swim_lane_positions[swim_lane]
+                else:
+                    node['x'] = 330  # Center merge points
                 node['y'] = y_position
-                node['isMergePoint'] = True  # Mark for frontend
+                node['isMergePoint'] = True
                 processed_ids.add(node['id'])
                 y_position += 150
             else:
-                # Sequential node - center it
-                node['x'] = 330
+                # Sequential node: position based on swim lane or center
+                if swim_lane and swim_lane in swim_lane_positions:
+                    node['x'] = swim_lane_positions[swim_lane]
+                else:
+                    node['x'] = 330  # Default center position
                 node['y'] = y_position
                 processed_ids.add(node['id'])
                 y_position += 150
