@@ -319,10 +319,14 @@ Return ONLY valid JSON."""
                     # Ensure it's explicitly False if no decision metadata
                     node['isDecisionPoint'] = False
                 
-                # CONSERVATIVE LOOP DETECTION: Only if AI provided loopBackTo
+                # LOOP DETECTION WITH AUTO-FIX: Ensure loopBackTo is set if isLoop is true
                 if node.get('loopBackTo'):
                     node['isLoop'] = True
                     logger.info(f"✅ Confirmed loop: {node.get('title')} → loops back to {node.get('loopBackTo')}")
+                elif node.get('isLoop') == True:
+                    # Loop flag set but no target - auto-fix by making it loop to itself
+                    node['loopBackTo'] = node.get('id')
+                    logger.info(f"⚠️ Auto-fixed loop: {node.get('title')} → loopBackTo set to self")
                 else:
                     node['isLoop'] = False
         except Exception as e:
