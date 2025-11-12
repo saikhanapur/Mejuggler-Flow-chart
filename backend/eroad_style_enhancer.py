@@ -402,9 +402,14 @@ Return ONLY valid JSON."""
         except Exception as e:
             logger.warning(f"⚠️ Extracted structure mapping failed: {e}")
         
-        # ============ NEW: SWIM LANE CREATION FROM EXTRACTED DATA ============
+        # ============ NEW: SWIM LANE CREATION FROM EXTRACTED DATA OR DETECTION ============
         try:
-            extracted_swim_lanes = extracted_data.get('swimLanes', [])
+            # Try multiple sources for swim lanes
+            extracted_swim_lanes = (
+                extracted_data.get('swimLanes', []) or 
+                (detection.get('swimLanes', []) if detection else [])
+            )
+            
             if extracted_swim_lanes:
                 logger.info(f"🏊 Creating {len(extracted_swim_lanes)} swim lanes from extracted data")
                 
