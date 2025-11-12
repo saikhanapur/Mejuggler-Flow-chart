@@ -175,10 +175,15 @@ PARALLEL PROCESS DETECTION:
 - Example: "Onshore team sets up tracking" + "Offshore team sets up tracking" = PARALLEL
 - Mark both nodes with: "parallelWith": ["other_node_id"]
 
-DECISION POINT DETECTION:
-- Look for: "if", "check if", "verify whether", "has X happened?", "is Y true?"
-- Example: "Check if Wilsar restored" → YES path / NO path
-- Mark as: "isDecisionPoint": true, "decisionOptions": {{"yes": "node_restored", "no": "node_keep_monitoring"}}
+DECISION POINT DETECTION (BE VERY SELECTIVE):
+- ONLY mark as decision point if the process BRANCHES into TWO OR MORE different paths based on a condition
+- Look for: "IF condition THEN path A ELSE path B", branching logic, conditional routing
+- NOT decision points: "Confirm X", "Verify Y", "Check status" (these are just verification steps, not branches)
+- Real examples:
+  * "Is connectivity lost? YES → Full BCP activation, NO → Partial workaround" ✓ DECISION
+  * "Confirm outage occurred" ✗ NOT A DECISION (just verification)
+  * "Check if resolved. If YES → Close incident, If NO → Continue monitoring" ✓ DECISION
+- Mark ONLY real decisions as: "isDecisionPoint": true, "decisionCriteria": "Clear question?", "decisionOptions": {{"yes": "node_id_yes_path", "no": "node_id_no_path"}}
 
 LOOP DETECTION:
 - Look for: "repeat until", "check every X minutes", "continue monitoring", "loop back"
