@@ -290,32 +290,30 @@ Return ONLY valid JSON."""
         # Parse response
         enhanced = self._parse_json_response(response)
         
-        # ============ POST-PROCESSING: FORCE DECISION & LOOP DETECTION ============
-        # AI sometimes misses isDecisionPoint even when decisionCriteria exists
-        # This ensures visual intelligence is always applied
+        # ============ POST-PROCESSING: CONSERVATIVE DECISION & LOOP DETECTION ============
+        # Only mark as decision point if the AI explicitly set decisionCriteria OR decisionOptions
+        # DO NOT use keyword matching - it causes false positives (e.g., "Confirm" is not a decision point)
         try:
             nodes = enhanced.get('nodes', [])
             for node in nodes:
-                # FORCE isDecisionPoint if any decision indicators present
-                decision_keywords = ['if', 'check if', 'verify', 'has ', ' or ', '?', 'yes/no', 'true/false', 'depends on']
-                title_lower = node.get('title', '').lower()
-                details_lower = node.get('details', '').lower()
+                # Only mark as decision if the AI explicitly provided decision metadata
                 criteria = node.get('decisionCriteria', '')
+                options = node.get('decisionOptions', {})
                 
-                # If ANY decision indicator, force it to true
-                if criteria or any(kw in title_lower for kw in decision_keywords) or any(kw in details_lower for kw in ['if ', 'check if', 'verify whether']):
+                # STRICT: Only set isDecisionPoint if AI provided explicit decision metadata
+                if criteria and options and len(options) >= 2:
                     node['isDecisionPoint'] = True
-                    if not criteria:
-                        # Generate basic criteria if missing
-                        node['decisionCriteria'] = f"Based on {node.get('title', 'condition')}"
-                    logger.info(f"✅ FORCED decision point: {node.get('title')}")
+                    logger.info(f"✅ Confirmed decision point: {node.get('title')} → {options}")
+                else:
+                    # Ensure it's explicitly False if no decision metadata
+                    node['isDecisionPoint'] = False
                 
-                # FORCE isLoop if loop indicators present
-                loop_keywords = ['loop', 'repeat', 'until', 'every', 'check again', 'monitor', 'continue', 'recurring']
-                if any(kw in title_lower for kw in loop_keywords) or any(kw in details_lower for kw in ['repeat', 'until', 'every ', 'loop back']):
-                    if not node.get('isLoop'):
-                        node['isLoop'] = True
-                        logger.info(f"✅ FORCED loop detection: {node.get('title')}")
+                # CONSERVATIVE LOOP DETECTION: Only if AI provided loopBackTo
+                if node.get('loopBackTo'):
+                    node['isLoop'] = True
+                    logger.info(f"✅ Confirmed loop: {node.get('title')} → loops back to {node.get('loopBackTo')}")
+                else:
+                    node['isLoop'] = False
         except Exception as e:
             logger.warning(f"⚠️ Post-processing failed: {e}")
         
