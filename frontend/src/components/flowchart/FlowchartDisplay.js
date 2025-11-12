@@ -102,26 +102,6 @@ const FlowchartDisplay = ({ process, onNodeClick, onUpdateNode, selectedNodeId }
 
   return (
     <div className="w-full">
-      {/* Process Metrics Dashboard */}
-      <ProcessMetricsDashboard process={process} />
-      
-      {/* Critical Path Info Badge */}
-      {process.criticalPath && process.criticalPath.length > 0 && (
-        <div className="mb-4 bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-300 rounded-lg p-3 flex items-center gap-3">
-          <div className="flex-shrink-0 w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          </div>
-          <div className="flex-1">
-            <h4 className="font-bold text-red-900 text-sm mb-0.5">Critical Path Identified</h4>
-            <p className="text-xs text-red-700">
-              {process.criticalPath.length} blocking steps marked with red ring - delays here cascade to entire process
-            </p>
-          </div>
-        </div>
-      )}
-      
       {/* Show References Button */}
       <div className="mb-4 flex items-center justify-between">
         <CoverageBadge 
