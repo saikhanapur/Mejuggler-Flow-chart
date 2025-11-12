@@ -3031,7 +3031,7 @@ const layoutParallelNodes = (nodes, swimLanes) => {
 I can't provide screenshots directly, but I can tell you:
 
 **How to Test:**
-1. Go to https://sop-wizard-1.preview.emergentagent.com
+1. Go to https://sopviz.preview.emergentagent.com
 2. Click "Try it now"
 3. Upload one of your BCP PDFs
 4. Watch AI process it
@@ -3349,7 +3349,7 @@ See Section 17.2 for example flowchart JSON
 ```
 
 ### 5. API Documentation
-Available at: https://sop-wizard-1.preview.emergentagent.com/docs
+Available at: https://sopviz.preview.emergentagent.com/docs
 (FastAPI auto-generated Swagger UI)
 
 ### 6. Design System Documentation

@@ -234,7 +234,7 @@ In the flowchart's Quick Reference panel:
 
 ### Option 1: Via API (curl)
 ```bash
-curl -X POST https://sop-wizard-1.preview.emergentagent.com/api/process/eroad-style \
+curl -X POST https://sopviz.preview.emergentagent.com/api/process/eroad-style \
   -H "Content-Type: application/json" \
   -d '{
     "text": "Emergency Response: 1. Call 111 immediately if injury. 2. Create P1 ticket urgently. 3. Notify manager within 5 min.",

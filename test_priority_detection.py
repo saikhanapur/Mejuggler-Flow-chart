@@ -29,7 +29,7 @@ def test_priority_detection():
     9. Complete monthly reports
     """
     
-    url = 'https://sop-wizard-1.preview.emergentagent.com/api/process/eroad-style'
+    url = 'https://sopviz.preview.emergentagent.com/api/process/eroad-style'
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
     payload = {
         'text': emergency_response_doc,

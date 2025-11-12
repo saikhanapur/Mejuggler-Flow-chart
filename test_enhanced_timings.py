@@ -7,7 +7,7 @@ import requests
 import json
 
 # Configuration
-BASE_URL = "https://sop-wizard-1.preview.emergentagent.com/api"
+BASE_URL = "https://sopviz.preview.emergentagent.com/api"
 TIMEOUT = 120
 
 def test_enhanced_key_timings():

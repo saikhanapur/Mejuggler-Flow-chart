@@ -1,75 +1,156 @@
-<analysis>
-The previous AI engineer's work on SuperHumanly involved several critical phases. Initially, it focused on resolving LLM JSON parsing errors and design fidelity issues, leading to a significant architectural shift from Reactflow to custom React components for pixel-perfect flowchart rendering. This involved numerous frontend fixes in  and  to correctly handle backend multi-process detection results and resolve a Failed to create processes error due to a missing backend import. Subsequently, the focus shifted to enhancing AI's visual intelligence, specifically enforcing decision diamond detection and addressing JSON truncation issues caused by LLM length limits. The most recent task involves a deep analysis of a Claude Super Prompt provided by the user to understand Claude's superior AI logic for context awareness and information organization, with the goal of integrating these insights to build an enterprise-grade, Tesla-level product. The process has been highly iterative, responding directly to user feedback and debugging critical errors as they arose.
-</analysis>
+<analysis>**original_problem_statement:**
+The user wants to build a world-class application that transforms complex Standard Operating Procedure (SOP) documents into accurate, interactive, AI-generated flowcharts. The primary goal is to simplify processes for end-users, not overwhelm them with data.
 
-<product_requirements>
-SuperHumanly aims to transform complex Standard Operating Procedures (SOPs) into interactive, AI-generated flowcharts for enterprise and SME clients. The core problem is to provide an intelligent tool that can identify and rectify broken business processes. Key requirements include:
-1.  **Intelligent Grouping & Structure**: Generating flowcharts with 8-13 nodes per view, capable of intelligent grouping, accurate decision logic visualization, detection of parallel processes, monitoring loops, and handling multi-branch decision trees.
-2.  **Detailed Operational Context**: Displaying operational details like contacts, systems, and timelines in interactive side panels.
-3.  **AI Transparency**: Ensuring transparency in AI processing and decision-making.
-4.  **Scalability**: Handling documents with 20+ steps and up to 50 pages without truncation.
-5.  **Simplification for Quick Views**: Offering simplified views for quick comprehension.
-6.  **EROAD-style Side Panel**: Providing a valuable, structured EROAD-style side panel.
-7.  **Pixel-Perfect Design & Interactivity**: A consistently emphasized goal is to achieve pixel-perfect design and interactivity, precisely matching a user-provided HTML reference. This includes a clean canvas, compact nodes, specific vertical/L-shaped connection lines, prominent progress badges, and structured quick reference panels.
-8.  **Multi-Process Document Handling**: The system must be able to detect and offer users options for handling documents containing multiple distinct processes.
-9.  **Advanced AI Intelligence**: Enhancing AI to understand BCP-specific patterns, such as swim lane structures, BCP-specific decision points, time-based monitoring loops, and parallel activities by team.
-10. **Version Control**: A basic versioning system is required, including creating snapshots upon process publishing and a simple version history UI.
-</product_requirements>
+A significant amount of user feedback has been provided throughout the session, highlighting a disconnect between the features being built and the core value proposition.
 
-<key_technical_concepts>
--   **Frontend**: React (Hooks), TailwindCSS, custom absolute positioning (replacing Reactflow), Custom SVG icons, CSS animations (), Zoom & Pan controls.
--   **Backend/AI**: FastAPI, MongoDB (UUIDs), Claude API (Sonnet 4), Pydantic, JWT, Multi-Stage AI Processing Pipeline, Two-Pass Architecture, Hybrid AI-Human Approach (EROAD-style enhancement).
--   **Architecture**: Component-based (React), RESTful APIs (FastAPI).
-</key_technical_concepts>
+**PRODUCT REQUIREMENTS:**
+1.  **Core Flowchart Accuracy:** The AI must deeply analyze documents to correctly identify and visualize decision points (as diamonds), loops, parallel processes, and swim lanes. Generating a simple linear flowchart from a complex document is a critical failure.
+2.  **Contextual AI:** The application must allow for a deeper understanding of the process. This involves the AI asking clarifying questions after an initial analysis and providing the user with tools (chat, voice, document upload) to add more context. The user believes this is a key differentiator.
+3.  **Simplified UI/UX:**
+    *   The user-facing UI should be simple and intuitive. Features like the Process Intelligence dashboard and Critical Path highlighting were explicitly rejected as confusing and valueless.
+    *   Information should be organized efficiently. The initial multi-panel reference layout was replaced by a single Show References modal, but even this needs to be refined to show valuable, well-organized information extracted from the document.
+4.  **Functional UI Elements:** All buttons and features, including Share, PDF Export, and HTML Export, must be fully functional.
+5.  **Hidden AI IP:** The loading screen that shows the AI's internal processing steps must be replaced with a simpler, high-level status indicator to protect the AI IP from competitors.
 
-<code_architecture>
-The application utilizes a React frontend, a FastAPI backend, and MongoDB for data persistence.
+**what currently exists?**
+The application consists of a React frontend and a FastAPI backend with a MongoDB database. The backend has a sophisticated AI pipeline () that analyzes documents, extracts process steps, and is supposed to identify decisions, loops, and parallel paths. The frontend is designed to render these processes as interactive flowcharts.
+
+Recent development focused on a world-class intelligence suite, which included a process health score, complexity metrics, and a critical path identifier. This was poorly received by the user and has since been mostly removed from the UI. The core issue remains: the intelligence extracted by the backend is not being correctly rendered on the frontend, resulting in inaccurate, linear flowcharts.
+
+**Last working item**:
+- **Last item agent was working:** The agent was beginning to execute a multi-phase plan based on direct user feedback to get the project back on track. The first step was to simplify the loading screen to hide the detailed AI processing steps.
+- **Status:** IN PROGRESS
+- **Agent Testing Done:** N
+- **Which testing method agent to use?** Frontend testing agent
+- **User Testing Done:** N
+
+**All Pending/In progress Issue list**:
+- **Issue 1: Core Flowchart Logic is Broken (P0)**
+- **Issue 2: Context Gathering Feature is Not Implemented (P0)**
+- **Issue 3: Broken UI Features (Share/Export) (P1)**
+- **Issue 4: Unclear User Value in UI (P2)**
+
+**Issues Detail:**
+- **Issue 1: Core Flowchart Logic is Broken**
+    - **Description:** The application consistently fails to render complex flowcharts, instead producing a simple linear path. It does not correctly display decision points as diamonds, loops, or parallel processes, despite the backend AI allegedly extracting this information. This is the highest priority issue and a recurring failure.
+    - **Attempted fixes:**
+        1.  The Pydantic  model in  was updated to include , , and  fields, as they were previously being stripped before saving to the database.
+        2.  The  was updated to use the AI's structured extraction data (, ) to mark nodes, rather than relying on simple keyword matching.
+        3.  The AI prompt in  was enhanced to be more explicit about extracting these structural elements.
+    - **Next debug checklist:** The failure persists after the attempted fixes, indicating a breakdown elsewhere.
+        1.  **Verify DB Data:** After a fresh document upload, manually inspect the MongoDB entry for the process. Confirm that the  array contains objects with  where expected.
+        2.  **Verify API Response:** Manually call the  endpoint and inspect the JSON response. Ensure the  field is present in the node objects being sent to the frontend.
+        3.  **Inspect Frontend State:** Use browser dev tools to check the props being passed to the  component. Confirm the  prop contains .
+    - **Why fix this issue and what will be achieved with the fix?** This is the fundamental purpose of the application. Fixing it will make the product viable and deliver the core value promised to the user.
+    - **Status:** IN PROGRESS
+    - **Is recurring issue?** Y
+    - **Should Test frontend/backend/both after fix?** Both.
+
+- **Issue 2: Context Gathering Feature is Not Implemented**
+    - **Description:** A critical, differentiating feature where the AI asks clarifying questions post-upload and the user can add more context (via voice, chat, or docs) is not working. The frontend components (, ) exist but are never triggered.
+    - **Attempted fixes:** None. The agent only recently re-discovered this requirement.
+    - **Next debug checklist:**
+        1.  Modify the backend's initial analysis endpoint () to generate and return .
+        2.  Ensure  on the frontend correctly receives these questions and displays the .
+        3.  Implement the logic for the  to send the additional user context to the main flowchart generation endpoint.
+    - **Why fix this issue and what will be achieved with this?** The user believes this is the key to creating superior, context-aware flowcharts and a major competitive advantage.
+    - **Status:** NOT STARTED
+    - **Is recurring issue?** Y (Mentioned previously but not implemented)
+    - **Should Test frontend/backend/both after fix?** Both.
+
+- **Issue 3: Broken UI Features (Share/Export)**
+    - **Description:** The Share, PDF Export, and HTML Export buttons are not functional.
+    - **Status:** NOT STARTED
+    - **Should Test frontend/backend/both after fix?** Both.
+
+- **Issue 4: Unclear User Value in UI**
+    - **Description:** The user has strongly rejected features like the Process Intelligence dashboard and Critical Path highlighting as complex and valueless. The Show References modal has also been reported as buggy.
+    - **Next debug checklist:**
+        1.  Verify the Process Intelligence dashboard has been fully removed from the UI.
+        2.  Debug the Show References modal to fix any errors and ensure the information presented is valuable and well-organized, as per the user's feedback.
+    - **Status:** IN PROGRESS
+    - **Should Test frontend/backend/both after fix?** Frontend.
+
+**In progress Task List**:
+- **Task 1: Overhaul Application based on User Feedback (P0)**
+    - **Description:** A large-scale task to realign the product with the user's vision.
+    - **Where to resume:** The agent has just started implementing a multi-phase plan. The immediate next step is to implement Phase 2: Enabling the Context Gathering feature.
+    - **What will be achieved with this?** This will address the user's core complaints and steer the project back toward its primary goals of accuracy and usability.
+    - **Status:** IN PROGRESS
+    - **Should Test frontend/backend/both after fix?** Both.
+
+**Upcoming and Future Tasks**
+- **Upcoming Tasks:**
+    - **P0:** Implement functionality for the Share, PDF Export, and HTML Export buttons.
+    - **P1:** Thoroughly test the entire flowchart generation pipeline with a complex document to finally confirm that decision points, loops, and parallel paths are rendered correctly.
+- **Future Tasks:**
+    - Revisit the idea of an embeddable widget or Chrome Extension, but only after the core product is stable and proven valuable.
+
+**Completed work in this session**
+- **Feature Removal:** The Process Intelligence dashboard and Critical Path highlighting features, which were negatively received, have been removed from the frontend UI ().
+- **UI/UX Refinements:**
+    - The confusing priority badges (P0, P1) were removed from flowchart nodes ().
+    - The Quick Reference and Emergency Contacts side panels were removed and replaced with a consolidated Show References modal ().
+    - Fixed a text visibility bug where input text was unreadable on dark-colored nodes during editing.
+- **Backend Bug Fixes:**
+    - Addressed multiple 500/422 errors by correcting Pydantic models in  to handle different data shapes for  and to include , , and  in the  model.
+- **Frontend Bug Fixes:**
+    - Fixed a React rendering error in  caused by attempting to render a phone number object as a React child.
+
+**Earlier issues found/mentioned but not fixed**
+- **Issue 1: Core Flowchart Logic is still not working as expected.** Despite multiple fixes, the user's primary complaint that complex documents result in linear flowcharts has not been resolved. This is the most critical unresolved issue.
+- **Issue 2: Context Gathering feature.** This was discussed early on, but the implementation was forgotten and never completed. It has just been re-prioritized.
+
+**Code Architecture**
 
 
--   ****: Main FastAPI application.
-    -   **Changes**: Modified to correctly handle multi-process detection results, avoiding  when  array is empty. Added API endpoints for sharing. Critically, the  import was moved to a global scope to prevent  in the  endpoint.
--   ****: Central AI pipeline.
-    -   **Changes**: Includes an  method for multi-process and BCP-specific pattern detection.  now utilizes this comprehensive detection. New helper methods (, ) were added for multi-process handling.
--   ****: Refines AI output.
-    -   **Changes**: Modified to accept and utilize detection parameters from  for enhanced flowchart generation. Includes new JSON repair logic for robustness and updated prompts to incorporate structural context (swim lanes, decisions). Post-processing logic was added to *force* decision point detection. Logic was also added to handle incomplete JSON due to LLM truncation by attempting to complete it.
--   ** (NEW directory)**: Contains the custom React components for flowchart rendering (e.g., , , , ). These replaced  for pixel-perfect control.
-    -   ****:
-        -   **Summary**: Important for rendering individual nodes, including logic for decision diamonds (though backend wasn't setting them).
-        -   **Changes**: Visual enhancements for gaps and loops were added.
--   ****: Main component for initiating process creation.
-    -   **Changes**: Modified to display the  component when multiple processes are detected, and updated error handling for multi-process responses. Was previously attempting to access  when it could be empty, causing .
--   ****: Component for user review and selection of detected multiple processes.
-    -   **Changes**: Heavily modified to adapt to the new multi-process detection format from the backend, including  instead of a full  array. Fixed  by updating rendering logic to use . Removed duplicate/old code. Updated display logic for X of Y processes selected. The Merge Into One feature was temporarily disabled due to lack of backend support and complexity.
--   ****: Central API client.
-    -   **Changes**: A new API method, , was added to support the creation of individual processes from the  component.
--   ****: UI for sharing documents with different access levels and expiration options.
--   ** files**: Newly created documentation for analysis and plans.
-    -    (NEW): Documented the plan for visual intelligence enhancements.
-    -    (NEW): Document for comparing AI logic and identifying gaps.
-</code_architecture>
+**Key Technical Concepts**
+- **Frontend:** React, TailwindCSS
+- **Backend:** FastAPI, Pydantic
+- **Database:** MongoDB
+- **AI:** Claude API via  library.
+- **Core Challenge:** Data integrity pipeline. Ensuring that the structured data (decisions, loops) extracted by the AI in the backend is correctly persisted through the Pydantic models, stored in MongoDB, retrieved via the API, and then correctly interpreted by the React components to render the proper visuals.
 
-<pending_tasks>
--   Resolve persistent LLM budget issues.
--   Implement remaining Coming Soon features (collaboration, GitHub auto-deploy, analytics, Themes, Templates, Voice UI refinement, Version history, sharing access controls - beyond basic snapshots).
--   Further polish Workspaces/Projects.
--   Enhance AI intelligence for chat (RAG and Fine-Tuning).
--   Re-evaluate and potentially re-implement SSE streaming.
--   Build out the User-Driven Cost Calculator and Pattern-Based Insights.
--   A/B test different Process Intelligence summary approaches.
--   Implement Customize Estimate feature for intelligence costs.
--   Refine landing page content and layout.
--   Implement Smart Extraction Preview and AI Coverage Report.
--   Continue working on the frontend UI for displaying  within the flowchart nodes.
--   Improve AI learning from new design examples.
--   Implement version comparison, version revert, and version branching for the version control system.
--   Implement table parsing (RACI matrices) and OCR for scanned PDFs.
--   Implement handling of nested sub-processes and industry context fields.
-</pending_tasks>
+**All files**
+- **Created in this session:**
+    -  (Removed from view)
+    - 
+    -  (Being replaced)
+- **Significantly updated in this session:**
+    - : Major Pydantic model changes to fix data stripping bugs.
+    - : Added complex analysis, then enhanced prompts for better structure detection.
+    - : Updated to use AI-extracted data.
+    - : Added and removed intelligence dashboard, added references modal.
+    - : UI cleanup and styling fixes.
+    - : Logic for loading screen.
 
-<current_work>
-Immediately before this summary request, the AI engineer received a Claude Super Prompt For Interactive Flowchart.docx from the user. This prompt was designed by Claude to consistently replicate a specific output (a static HTML interactive flowchart that the user provided as a reference). The user's explicit request is for a deep analysis of this prompt, without missing a single word, to understand Claude's AI logic, identify differences from the current implementation, and pinpoint areas not yet implemented but deemed valuable for Superhuman Deep. The goal is to leverage Claude's superpower of AI for superior contextual understanding, information organization (e.g., contact information grouping), and to avoid oversimplification of complex documents. The AI engineer has successfully extracted the content of this super prompt (which is over 20,000 tokens) and is in the initial phase of its deep analysis, with the next step being to create a comprehensive analysis document. This directly follows user feedback that the current AI output, while visually appealing, might be oversimplified for complex BCP documents and lacks the advanced contextual intelligence observed in Claude's output.
-</current_work>
+**Critical Info for New Agent**
+- **The user has lost patience.** They feel their money and time have been wasted on features they didn't want (the metrics dashboard) while the core functionality remains broken.
+- **DO NOT build new intelligent features.** Focus exclusively on the user's explicit list of fixes: core flowchart accuracy, context gathering, and broken buttons.
+- **The root of the flowchart problem has been a moving target.** It was thought to be the enhancer, then the Pydantic model. After the last fix, it *should* work. You must verify the entire data pipeline, from AI extraction to frontend props, to find the final point of failure. A fresh document upload is required to test the latest fixes.
+- **The user's vision is clear:** The intelligence should be reflected in an accurate and interactive flowchart, not a dashboard of metrics. Simplicity and value for the end-user are paramount.
 
-<optional_next_step>
-Complete the deep analysis of Claude's super prompt and create a comprehensive analysis document comparing its logic with the current implementation.
-</optional_next_step>
+**Last 5 User Messages and any pending user messages**
+1.  **User is extremely disappointed:** The world-class intelligence features are useless because the flowchart is still linear and inaccurate. The UI is confusing, and a key button (Show References) is broken. User wants to revert to the original, simpler plan.
+2.  **User confirms Option B:** The user agrees to fix the current implementation rather than reverting to a previous state.
+3.  **User is still disappointed:** Reports that after another upload, the flowchart is *still* linear. Hates the Process Intelligence part and says the project has gone off track. The only positive feedback is for the collapsible node UI.
+4.  **User shares a long-term vision:** Proposes an idea for an embeddable widget for third-party platforms but agrees to put it on hold.
+5.  **User provides a clear action plan:** Focus on the core product. Fix the flowchart logic. Implement the Context Gathering feature. Fix the broken Share and Export buttons. Simplify the loading screen. Emphasizes that better context leads to a better flowchart.
+
+**Project Health Check:**
+- **Broken:**
+    - Core flowchart rendering (decision points, loops, etc.).
+    - Share, PDF Export, HTML Export features.
+    - Context gathering flow.
+- **Mocked:** N/A.
+
+**Testing status**
+- **Testing agent used after significant changes:** YES (backend testing was used).
+- **Troubleshoot agent used after agent stuck in loop:** NO.
+- **Test files created:** None.
+- **Known regressions:** Core flowchart rendering seems to have regressed or never worked correctly, despite multiple attempts to fix it. The Share/Export functions were likely broken by recent refactoring.
+
+**What agent forgot to execute**
+- The agent failed to implement the Context Gathering feature that was discussed previously.
+- The agent failed to ensure basic UI functionality (Share/Export buttons) remained intact during development.
+- Most importantly, the agent repeatedly failed to deliver a working implementation of the core feature (non-linear flowchart rendering) and got distracted by building secondary features the user ultimately rejected.</analysis>
