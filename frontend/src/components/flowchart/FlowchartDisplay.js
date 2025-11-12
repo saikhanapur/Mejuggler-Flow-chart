@@ -206,6 +206,49 @@ const FlowchartDisplay = ({ process, onNodeClick, onUpdateNode, selectedNodeId }
             transition: isDragging ? 'none' : 'transform 0.2s ease-out',
           }}
         >
+          {/* Swim Lanes Background (z-index: 0) */}
+          {process.swimLanes && process.swimLanes.length > 0 && (
+            <div className="absolute top-0 left-0" style={{ zIndex: 0 }}>
+              {process.swimLanes.map((lane, index) => {
+                // Calculate X position based on lane index
+                const laneX = index === 0 ? 50 : index === 1 ? 300 : 550 + (index - 2) * 250;
+                const laneWidth = 240;
+                
+                return (
+                  <div
+                    key={lane.id}
+                    className="absolute"
+                    style={{
+                      left: `${laneX}px`,
+                      top: '0px',
+                      width: `${laneWidth}px`,
+                      height: `${canvasHeight - 100}px`,
+                      backgroundColor: `${lane.color}10`, // 10% opacity of lane color
+                      borderLeft: `3px solid ${lane.color}`,
+                      borderRight: `3px solid ${lane.color}`,
+                    }}
+                  >
+                    {/* Lane Header */}
+                    <div
+                      className="sticky top-0 py-3 px-4 font-bold text-sm text-center"
+                      style={{
+                        backgroundColor: lane.color,
+                        color: 'white',
+                      }}
+                    >
+                      <div>{lane.name}</div>
+                      {lane.role && (
+                        <div className="text-xs font-normal mt-1 opacity-90">
+                          {lane.role}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           {/* Connection Lines (z-index: 1) */}
           {edges.map((edge) => {
             const fromNode = nodeMap[edge.source];
