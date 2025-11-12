@@ -221,7 +221,7 @@ class Process(BaseModel):
     criticalGaps: List[str] = []
     improvementOpportunities: List[Dict[str, Any]] = []
     theme: str = "minimalist"
-    healthScore: Optional[Dict[str, Any]] = None  # World-class intelligence: score, level, breakdown
+    healthScore: Union[int, Dict[str, Any], None] = None  # Backward compatible: int (old) or dict (new)
     complexityScore: Optional[Dict[str, Any]] = None  # Complexity analysis
     executionTime: Optional[Dict[str, Any]] = None  # Time estimates
     processMetrics: Optional[Dict[str, Any]] = None  # Structure metrics
