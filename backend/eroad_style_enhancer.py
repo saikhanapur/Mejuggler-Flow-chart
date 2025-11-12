@@ -426,11 +426,17 @@ Return ONLY valid JSON."""
                 # Add swim lanes to enhanced output
                 enhanced['swimLanes'] = swim_lane_objects
                 
-                # Now assign nodes to swim lanes based on content matching
+                # Now assign nodes to swim lanes based on content matching and sequence
                 nodes = enhanced.get('nodes', [])
+                
+                # Strategy: Try content matching first, then fall back to sequential assignment
+                unassigned_nodes = []
+                
                 for node in nodes:
                     node_title = node.get('title', '').lower()
                     node_details = node.get('details', '').lower()
+                    node_actions = ' '.join(node.get('actions', [])).lower()
+                    node_content = node_title + ' ' + node_details + ' ' + node_actions
                     
                     # Try to match node to a swim lane
                     best_match_lane = None
@@ -440,31 +446,51 @@ Return ONLY valid JSON."""
                         lane_name = lane_data.get('name', '').lower()
                         lane_purpose = lane_data.get('purpose', '').lower()
                         
-                        # Check if lane name appears in node content
+                        # Strong keyword matches (worth 10 points each)
                         score = 0
-                        if 'onshore' in lane_name and 'onshore' in (node_title + node_details):
+                        if 'onshore' in lane_name and 'onshore' in node_content:
                             score += 10
-                        if 'offshore' in lane_name and 'offshore' in (node_title + node_details):
+                        if 'offshore' in lane_name and 'offshore' in node_content:
                             score += 10
-                        if 'supervisor' in lane_name and 'supervisor' in (node_title + node_details):
+                        if 'restoration' in lane_name and any(kw in node_content for kw in ['restore', 'recovery', 'resume', 'relaunch']):
+                            score += 10
+                        if 'supervisor' in lane_name and 'supervisor' in node_content:
                             score += 5
-                        if 'manager' in lane_name and 'manager' in (node_title + node_details):
+                        if 'manager' in lane_name and 'manager' in node_content:
                             score += 5
                         
-                        # Check purpose keywords
-                        purpose_keywords = lane_purpose.split()
+                        # Medium matches (actions/responsibilities)
+                        if 'communication' in lane_purpose and any(kw in node_content for kw in ['email', 'message', 'notify', 'alert']):
+                            score += 3
+                        if 'escalate' in lane_purpose and 'escalate' in node_content:
+                            score += 3
+                        if 'monitor' in lane_purpose and 'monitor' in node_content:
+                            score += 3
+                        
+                        # Check purpose keywords (1 point each for 4+ char words)
+                        purpose_keywords = [w for w in lane_purpose.split() if len(w) > 3]
                         for keyword in purpose_keywords:
-                            if len(keyword) > 3 and keyword in (node_title + node_details):
+                            if keyword in node_content:
                                 score += 1
                         
                         if score > best_match_score:
                             best_match_score = score
                             best_match_lane = f"lane_{idx + 1}"
                     
-                    # Assign lane if good match found
-                    if best_match_lane and best_match_score >= 3:
+                    # Assign lane if good match found (lowered threshold to 1)
+                    if best_match_lane and best_match_score >= 1:
                         node['swimLane'] = best_match_lane
-                        logger.info(f"  Assigned '{node.get('title')}' to swim lane {best_match_lane}")
+                        logger.info(f"  ✓ Assigned '{node.get('title')}' to {best_match_lane} (score: {best_match_score})")
+                    else:
+                        unassigned_nodes.append(node)
+                
+                # For unassigned nodes, distribute across lanes sequentially
+                if unassigned_nodes:
+                    logger.info(f"  ⚠️ {len(unassigned_nodes)} nodes unassigned, distributing sequentially")
+                    for i, node in enumerate(unassigned_nodes):
+                        lane_idx = i % len(swim_lane_objects)
+                        node['swimLane'] = f"lane_{lane_idx + 1}"
+                        logger.info(f"  → Assigned '{node.get('title')}' to lane_{lane_idx + 1} (sequential)")
             else:
                 logger.info("ℹ️ No swim lanes detected in extracted data")
         except Exception as e:
