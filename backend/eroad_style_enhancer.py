@@ -185,19 +185,25 @@ DECISION POINT DETECTION (BE VERY SELECTIVE):
   * "Check if resolved. If YES → Close incident, If NO → Continue monitoring" ✓ DECISION
 - Mark ONLY real decisions as: "isDecisionPoint": true, "decisionCriteria": "Clear question?", "decisionOptions": {{"yes": "node_id_yes_path", "no": "node_id_no_path"}}
 
-LOOP DETECTION:
+LOOP DETECTION (MANDATORY fields):
 - Look for: "repeat until", "check every X minutes", "continue monitoring", "loop back"
 - Example: "Check every 30 minutes" loops back to "Monitor Status"
-- Mark as: "isLoop": true, "loopBackTo": "monitor_node_id"
+- Mark as: "isLoop": true, "loopBackTo": "node_id_or_self"
+- **CRITICAL**: If isLoop=true, you MUST provide loopBackTo field (can be same node ID for self-loop)
 
-SWIM LANE POSITIONING (if swim lanes detected):
-- If swim lanes detected in structure, position nodes by their role/team
-- Lane 1 (Left): X=150
-- Lane 2 (Center): X=380  
-- Lane 3 (Right): X=610
-- Example: "Onshore Actions" nodes at X=150, "Offshore Actions" nodes at X=610
-- Parallel nodes in different lanes should have same Y position
-- Add "swimLane": "lane_id" field to each node
+SWIM LANE ASSIGNMENT (MANDATORY if swim lanes detected):
+- If extracted data contains swimLanes array, YOU MUST assign nodes to lanes
+- Match node content to lane steps/purpose from extracted data
+- Add "swimLane": "lane_name" field to EVERY node
+- Example: If node is about "Raise ticket", assign to "Onshore Tasks" lane
+
+SWIM LANE POSITIONING:
+- Lane 1: X=200 (leftmost)
+- Lane 2: X=450 (center)
+- Lane 3: X=700 (rightmost)
+- Lane 4+: X=200 + (lane_number * 250)
+- Nodes in same lane at same stage should have same Y coordinate
+- Y spacing: 200px between sequential nodes in same lane
 
 PHASE GROUPING (if phases detected):
 - If phases detected, include "phase": number field
