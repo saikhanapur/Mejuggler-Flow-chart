@@ -120,11 +120,31 @@ EXTRACT WITH PRECISION:
    - Exit condition: How loop ends
    - Loop-back target: Which step it returns to
 
-4. **Swim Lanes** (HORIZONTAL BANDS):
-   Identify separate process tracks:
-   - Lane name/label (e.g., "Onshore Team", "Offshore Team", "Manager", "Field Officer")
-   - Steps in each lane
-   - Purpose of lane
+4. **Swim Lanes** (HORIZONTAL BANDS - Critical for BCPs!):
+   Look for role-based or team-based sections that indicate parallel workflows:
+   
+   WHAT TO LOOK FOR:
+   - Section headers: "Onshore Tasks", "Offshore Tasks", "Onshore Actions", "Offshore Actions"
+   - Role labels: "Manager", "Supervisor", "Operator", "Field Officer"
+   - Department labels: "FSC Actions", "DSC Actions", "NBC Actions"
+   - Flowchart visual separations (horizontal bands or columns in original doc)
+   
+   For EACH swim lane found, capture:
+   - Lane name/label (exact text from document)
+   - Which step numbers belong to this lane
+   - Role/responsibility description
+   
+   EXAMPLE from BCP document:
+   {{
+     "name": "Onshore Tasks",
+     "steps": ["1", "2", "4", "5", "6", "9"],
+     "purpose": "Actions performed by onshore supervisor and team"
+   }},
+   {{
+     "name": "Offshore Tasks", 
+     "steps": ["14", "15", "17"],
+     "purpose": "Actions performed by offshore operators"
+   }}
 
 5. **Contacts**: Names, phone numbers, emails WITH context (extensions, options)
 
