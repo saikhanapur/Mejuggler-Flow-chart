@@ -26,11 +26,15 @@ const ConnectionLine = ({ from, to, type = 'solid', label = null }) => {
   // Check if this is a loop edge (going backwards)
   const isLoop = type === 'loop' || type === 'dashed';
 
-  // Center of 240px wide node (or 200px for diamond)
+  // Calculate connection points with proper padding
+  // For decision diamonds: exit from bottom point (center-bottom)
+  // For regular nodes: exit from bottom center
   const fromX = isFromDecision ? x1 + 100 : x1 + 120;
-  const fromY = isFromDecision ? y1 + 190 : y1 + 80; // Bottom of from node
+  const fromY = isFromDecision ? y1 + 195 : y1 + 85; // Add 5px padding from node edge
+  
+  // Target: top center of receiving node
   const toX = x2 + 120;
-  const toY = y2; // Top of to node
+  const toY = y2 - 5; // Add 5px padding before entering node
 
   // Use target node's status for color, or special color for loops
   const color = isLoop ? 'rgb(168, 85, 247)' : (STATUS_COLORS[to.status] || STATUS_COLORS.operational);
