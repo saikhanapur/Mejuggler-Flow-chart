@@ -1337,13 +1337,26 @@ Analyze now:"""
                 # Extract supporting references (ALL document sections)
                 supporting_refs = extracted.get("documentSections", [])
                 
-                process["quickReference"] = {
-                    "criticalActions": critical_actions_list,
-                    "keyTimings": enhanced_timings,
-                    "emergencyContacts": hierarchical_contacts,
-                    "recoverySteps": recovery_steps_list,
-                    "supportingReferences": supporting_refs
-                }
+                # Only populate quickReference if there's meaningful data
+                has_critical_actions = len(critical_actions_list) > 0
+                has_timings = len(enhanced_timings) > 0
+                has_contacts = len(hierarchical_contacts) > 0
+                has_recovery = len(recovery_steps_list) > 0
+                has_refs = len(supporting_refs) > 0
+                
+                if has_critical_actions or has_timings or has_contacts or has_recovery or has_refs:
+                    process["quickReference"] = {
+                        "criticalActions": critical_actions_list if has_critical_actions else [],
+                        "keyTimings": enhanced_timings if has_timings else [],
+                        "emergencyContacts": hierarchical_contacts if has_contacts else {},
+                        "recoverySteps": recovery_steps_list if has_recovery else [],
+                        "supportingReferences": supporting_refs if has_refs else []
+                    }
+                    logger.info(f"✅ QuickReference populated: {len(critical_actions_list)} actions, {len(hierarchical_contacts)} contacts, {len(supporting_refs)} refs")
+                else:
+                    # No meaningful reference data - don't create quickReference at all
+                    process["quickReference"] = None
+                    logger.info("ℹ️ No meaningful reference data found - quickReference not populated")
                 
                 # Remove the flag
                 del process["_pendingQuickReference"]
@@ -1810,13 +1823,26 @@ Analyze now:"""
                 # Extract supporting references (ALL document sections)
                 supporting_refs = extracted.get("documentSections", [])
                 
-                process["quickReference"] = {
-                    "criticalActions": critical_actions_list,
-                    "keyTimings": enhanced_timings,
-                    "emergencyContacts": hierarchical_contacts,
-                    "recoverySteps": recovery_steps_list,
-                    "supportingReferences": supporting_refs
-                }
+                # Only populate quickReference if there's meaningful data
+                has_critical_actions = len(critical_actions_list) > 0
+                has_timings = len(enhanced_timings) > 0
+                has_contacts = len(hierarchical_contacts) > 0
+                has_recovery = len(recovery_steps_list) > 0
+                has_refs = len(supporting_refs) > 0
+                
+                if has_critical_actions or has_timings or has_contacts or has_recovery or has_refs:
+                    process["quickReference"] = {
+                        "criticalActions": critical_actions_list if has_critical_actions else [],
+                        "keyTimings": enhanced_timings if has_timings else [],
+                        "emergencyContacts": hierarchical_contacts if has_contacts else {},
+                        "recoverySteps": recovery_steps_list if has_recovery else [],
+                        "supportingReferences": supporting_refs if has_refs else []
+                    }
+                    logger.info(f"✅ QuickReference populated: {len(critical_actions_list)} actions, {len(hierarchical_contacts)} contacts, {len(supporting_refs)} refs")
+                else:
+                    # No meaningful reference data - don't create quickReference at all
+                    process["quickReference"] = None
+                    logger.info("ℹ️ No meaningful reference data found - quickReference not populated")
                 
                 # Remove the flag
                 del process["_pendingQuickReference"]
