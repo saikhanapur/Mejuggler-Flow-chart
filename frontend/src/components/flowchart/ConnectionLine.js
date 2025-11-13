@@ -92,60 +92,92 @@ const ConnectionLine = ({ from, to, type = 'solid', label = null }) => {
     );
   }
 
-  // L-shaped line (parallel/decision branches)
-  const midY = (fromY + toY) / 2;
-  const verticalHeight1 = midY - fromY;
-  const horizontalWidth = toX - fromX;
-  const verticalHeight2 = toY - midY;
-
-  if (verticalHeight1 < 0 || verticalHeight2 < 0) return null;
-
+  // Smart orthogonal routing with better decision branch handling
+  const goingLeft = toX < fromX;
+  const goingUp = toY < fromY;
+  
+  // IMPROVED ROUTING: Add more space from source node before horizontal turn
+  const verticalGap = 30; // Add 30px vertical space before turning
+  const horizontalGap = 20; // Add 20px horizontal padding
+  
+  // Calculate route points
+  let segments = [];
+  
+  if (goingLeft && !goingUp) {
+    // LEFT & DOWN: Exit down, turn left, go down to target
+    const turn1Y = fromY + verticalGap;
+    const turn2X = toX;
+    
+    segments = [
+      { type: 'vertical', x: fromX, y: fromY, height: verticalGap },
+      { type: 'horizontal', x: turn2X, y: turn1Y, width: fromX - turn2X },
+      { type: 'vertical', x: turn2X, y: turn1Y, height: toY - turn1Y }
+    ];
+  } else if (goingUp) {
+    // GOING UP (loops): Exit down, go around
+    const turn1Y = fromY + 40;
+    const sideX = Math.min(fromX, toX) - 60;
+    const turn2Y = toY - 40;
+    
+    segments = [
+      { type: 'vertical', x: fromX, y: fromY, height: 40 },
+      { type: 'horizontal', x: sideX, y: turn1Y, width: fromX - sideX },
+      { type: 'vertical', x: sideX, y: turn1Y, height: turn2Y - turn1Y },
+      { type: 'horizontal', x: sideX, y: turn2Y, width: toX - sideX },
+      { type: 'vertical', x: toX, y: turn2Y, height: toY - turn2Y }
+    ];
+  } else {
+    // RIGHT & DOWN or STRAIGHT DOWN: Standard L-routing
+    const midY = (fromY + toY) / 2;
+    
+    segments = [
+      { type: 'vertical', x: fromX, y: fromY, height: midY - fromY },
+      { type: 'horizontal', x: fromX, y: midY, width: toX - fromX },
+      { type: 'vertical', x: toX, y: midY, height: toY - midY }
+    ];
+  }
+  
+  // Render all segments
   return (
     <>
-      {/* Vertical segment 1 - ALWAYS SOLID */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          left: `${fromX - 1}px`,
-          top: `${fromY}px`,
-          width: `${lineWidth}px`,
-          height: `${verticalHeight1}px`,
-          backgroundColor: isDashed ? 'transparent' : color,
-          backgroundImage: isDashed
-            ? `repeating-linear-gradient(${color} 0, ${color} 4px, transparent 4px, transparent 8px)`
-            : 'none',
-        }}
-      />
-
-      {/* Horizontal segment - ALWAYS SOLID */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          left: horizontalWidth > 0 ? `${fromX}px` : `${toX}px`,
-          top: `${midY - 1}px`,
-          width: `${Math.abs(horizontalWidth)}px`,
-          height: `${lineWidth}px`,
-          backgroundColor: isDashed ? 'transparent' : color,
-          backgroundImage: isDashed
-            ? `repeating-linear-gradient(to right, ${color} 0, ${color} 4px, transparent 4px, transparent 8px)`
-            : 'none',
-        }}
-      />
-
-      {/* Vertical segment 2 - ALWAYS SOLID */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          left: `${toX - 1}px`,
-          top: `${midY}px`,
-          width: `${lineWidth}px`,
-          height: `${verticalHeight2}px`,
-          backgroundColor: isDashed ? 'transparent' : color,
-          backgroundImage: isDashed
-            ? `repeating-linear-gradient(${color} 0, ${color} 4px, transparent 4px, transparent 8px)`
-            : 'none',
-        }}
-      />
+      {segments.map((segment, idx) => {
+        if (segment.type === 'vertical' && segment.height > 0) {
+          return (
+            <div
+              key={`v-${idx}`}
+              className="absolute pointer-events-none"
+              style={{
+                left: `${segment.x - 1}px`,
+                top: `${segment.y}px`,
+                width: `${lineWidth}px`,
+                height: `${segment.height}px`,
+                backgroundColor: isDashed ? 'transparent' : color,
+                backgroundImage: isDashed
+                  ? `repeating-linear-gradient(${color} 0, ${color} 4px, transparent 4px, transparent 8px)`
+                  : 'none',
+              }}
+            />
+          );
+        } else if (segment.type === 'horizontal' && segment.width !== 0) {
+          return (
+            <div
+              key={`h-${idx}`}
+              className="absolute pointer-events-none"
+              style={{
+                left: segment.width > 0 ? `${segment.x}px` : `${segment.x + segment.width}px`,
+                top: `${segment.y - 1}px`,
+                width: `${Math.abs(segment.width)}px`,
+                height: `${lineWidth}px`,
+                backgroundColor: isDashed ? 'transparent' : color,
+                backgroundImage: isDashed
+                  ? `repeating-linear-gradient(to right, ${color} 0, ${color} 4px, transparent 4px, transparent 8px)`
+                  : 'none',
+              }}
+            />
+          );
+        }
+        return null;
+      })}
 
       {/* Arrow */}
       <div
@@ -159,20 +191,30 @@ const ConnectionLine = ({ from, to, type = 'solid', label = null }) => {
         }}
       />
 
-      {/* Label for decision branches */}
-      {label && (
-        <div
-          className="absolute bg-white px-2 py-1 rounded text-xs font-bold shadow-sm border"
-          style={{
-            left: horizontalWidth > 0 ? `${fromX + Math.abs(horizontalWidth) / 2 - 15}px` : `${toX + Math.abs(horizontalWidth) / 2 - 15}px`,
-            top: `${midY - 20}px`,
-            color: color,
-            borderColor: color,
-          }}
-        >
-          {label}
-        </div>
-      )}
+      {/* Label for decision branches - Position on first horizontal segment */}
+      {label && (() => {
+        const horizontalSegment = segments.find(s => s.type === 'horizontal' && s.width !== 0);
+        if (horizontalSegment) {
+          const labelX = horizontalSegment.width > 0 
+            ? horizontalSegment.x + Math.abs(horizontalSegment.width) / 2 - 15
+            : horizontalSegment.x + horizontalSegment.width / 2 - 15;
+          
+          return (
+            <div
+              className="absolute bg-white px-2 py-1 rounded text-xs font-bold shadow-sm border"
+              style={{
+                left: `${labelX}px`,
+                top: `${horizontalSegment.y - 20}px`,
+                color: color,
+                borderColor: color,
+              }}
+            >
+              {label}
+            </div>
+          );
+        }
+        return null;
+      })()}
     </>
   );
 };
