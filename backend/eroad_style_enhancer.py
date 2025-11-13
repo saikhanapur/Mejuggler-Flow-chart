@@ -458,6 +458,9 @@ Return ONLY valid JSON."""
                 
                 # Strategy: Try content matching first, then fall back to sequential assignment
                 unassigned_nodes = []
+                lane_assignment_counts = {f"lane_{i+1}": 0 for i in range(len(normalized_swim_lanes))}
+                
+                logger.info(f"📍 Assigning {len(nodes)} nodes to {len(normalized_swim_lanes)} swim lanes...")
                 
                 for node in nodes:
                     node_title = node.get('title', '').lower()
@@ -469,7 +472,7 @@ Return ONLY valid JSON."""
                     best_match_lane = None
                     best_match_score = 0
                     
-                    for idx, lane_data in enumerate(extracted_swim_lanes):
+                    for idx, lane_data in enumerate(normalized_swim_lanes):
                         lane_name = lane_data.get('name', '').lower()
                         lane_purpose = lane_data.get('purpose', '').lower()
                         
