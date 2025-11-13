@@ -622,7 +622,14 @@ Return ONLY valid JSON."""
                 for pnode in parallel_nodes:
                     processed_ids.add(pnode['id'])
                 
-                y_position += 150
+                # Variable spacing: Check if any parallel node is a decision (needs more space)
+                max_node_height = 150  # Default for regular nodes
+                for pnode in parallel_nodes:
+                    if pnode.get('isDecisionPoint'):
+                        max_node_height = 250  # Extra space for diamond (200px height + 50px gap)
+                        break
+                y_position += max_node_height
+                
             elif is_merge:
                 # Merge points: use swim lane if assigned, otherwise center
                 if swim_lane and swim_lane in swim_lane_positions:
@@ -632,7 +639,13 @@ Return ONLY valid JSON."""
                 node['y'] = y_position
                 node['isMergePoint'] = True
                 processed_ids.add(node['id'])
-                y_position += 150
+                
+                # Variable spacing for merge points
+                if node.get('isDecisionPoint'):
+                    y_position += 250  # Decision diamond needs more space
+                else:
+                    y_position += 170  # Merge points slightly more space (complex visually)
+                    
             else:
                 # Sequential node: position based on swim lane or center
                 if swim_lane and swim_lane in swim_lane_positions:
@@ -641,7 +654,14 @@ Return ONLY valid JSON."""
                     node['x'] = 330  # Default center position
                 node['y'] = y_position
                 processed_ids.add(node['id'])
-                y_position += 150
+                
+                # Variable spacing based on node type
+                if node.get('isDecisionPoint'):
+                    y_position += 250  # Decision diamond: 200px height + 50px gap
+                elif node.get('isLoop'):
+                    y_position += 160  # Loop nodes slightly more space (has badge)
+                else:
+                    y_position += 150  # Regular nodes: 80px height + 70px gap
         # ============ END FIX #1 ============
         
         # Position progress badges relative to nodes
