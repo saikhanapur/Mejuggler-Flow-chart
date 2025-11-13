@@ -526,8 +526,18 @@ Return ONLY valid JSON."""
                     logger.info(f"  ⚠️ {len(unassigned_nodes)} nodes unassigned, distributing sequentially")
                     for i, node in enumerate(unassigned_nodes):
                         lane_idx = i % len(swim_lane_objects)
-                        node['swimLane'] = f"lane_{lane_idx + 1}"
-                        logger.info(f"  → Assigned '{node.get('title')}' to lane_{lane_idx + 1} (sequential)")
+                        lane_id = f"lane_{lane_idx + 1}"
+                        node['swimLane'] = lane_id
+                        lane_assignment_counts[lane_id] += 1
+                        logger.info(f"  → Assigned '{node.get('title')}' to {lane_id} (sequential)")
+                
+                # Verification report
+                total_assigned = sum(lane_assignment_counts.values())
+                logger.info(f"📊 Swim lane assignment summary:")
+                for lane_id, count in lane_assignment_counts.items():
+                    lane_name = next((l['name'] for l in swim_lane_objects if l['id'] == lane_id), lane_id)
+                    logger.info(f"  {lane_name}: {count} nodes")
+                logger.info(f"✅ {total_assigned}/{len(nodes)} nodes assigned to swim lanes")
             else:
                 logger.info("ℹ️ No swim lanes detected in extracted data")
         except Exception as e:
