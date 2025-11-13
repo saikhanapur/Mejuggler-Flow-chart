@@ -161,6 +161,30 @@ const FlowNode = ({ node, onClick, onUpdateNode, isSelected, selectedNodeId, isO
 
   // Decision nodes still render as diamonds
   if (isDecision) {
+    // Split title into multiple lines for better readability
+    const wrapText = (text, maxLength = 18) => {
+      const words = text.split(' ');
+      const lines = [];
+      let currentLine = '';
+      
+      words.forEach(word => {
+        if ((currentLine + word).length <= maxLength) {
+          currentLine += (currentLine ? ' ' : '') + word;
+        } else {
+          if (currentLine) lines.push(currentLine);
+          currentLine = word;
+        }
+      });
+      if (currentLine) lines.push(currentLine);
+      
+      // Limit to 3 lines
+      return lines.slice(0, 3).map((line, i) => 
+        i === 2 && lines.length > 3 ? line.substring(0, 15) + '...' : line
+      );
+    };
+    
+    const textLines = wrapText(node.title);
+    
     return (
       <div
         data-testid={`flow-node-${node.id}`}
@@ -197,25 +221,28 @@ const FlowNode = ({ node, onClick, onUpdateNode, isSelected, selectedNodeId, isO
           </defs>
           
           {/* Icon */}
-          <g transform="translate(80, 80)">
+          <g transform="translate(80, 55)">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
               <path d="M9 18l6-6-6-6" />
               <path d="M15 18l6-6-6-6" />
             </svg>
           </g>
           
-          {/* Text */}
-          <text
-            x="100"
-            y="120"
-            textAnchor="middle"
-            fill="white"
-            fontSize="13"
-            fontWeight="600"
-            fontFamily="Inter, sans-serif"
-          >
-            {node.title.length > 25 ? node.title.substring(0, 25) + '...' : node.title}
-          </text>
+          {/* Multi-line Text */}
+          {textLines.map((line, index) => (
+            <text
+              key={index}
+              x="100"
+              y={105 + (index * 16)}
+              textAnchor="middle"
+              fill="white"
+              fontSize="12"
+              fontWeight="600"
+              fontFamily="Inter, sans-serif"
+            >
+              {line}
+            </text>
+          ))}
         </svg>
       </div>
     );
