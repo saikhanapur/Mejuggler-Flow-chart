@@ -507,11 +507,18 @@ Return ONLY valid JSON."""
                             best_match_score = score
                             best_match_lane = f"lane_{idx + 1}"
                     
-                    # Assign lane if good match found (lowered threshold to 1)
-                    if best_match_lane and best_match_score >= 1:
+                    # Assign lane if good match found (threshold raised from 1 to 2)
+                    if best_match_lane and best_match_score >= 2:
                         node['swimLane'] = best_match_lane
+                        lane_assignment_counts[best_match_lane] += 1
                         logger.info(f"  ✓ Assigned '{node.get('title')}' to {best_match_lane} (score: {best_match_score})")
+                    elif best_match_lane and best_match_score == 1:
+                        # Weak match - still assign but log warning
+                        node['swimLane'] = best_match_lane
+                        lane_assignment_counts[best_match_lane] += 1
+                        logger.warning(f"  ⚠️ Weak assignment: '{node.get('title')}' to {best_match_lane} (score: {best_match_score})")
                     else:
+                        logger.warning(f"  ❌ No match for '{node.get('title')}' (best score: {best_match_score})")
                         unassigned_nodes.append(node)
                 
                 # For unassigned nodes, distribute across lanes sequentially
