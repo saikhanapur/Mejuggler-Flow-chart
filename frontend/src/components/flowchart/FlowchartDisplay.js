@@ -226,13 +226,13 @@ const FlowchartDisplay = ({ process, onNodeClick, onUpdateNode, selectedNodeId }
             transition: isDragging ? 'none' : 'transform 0.2s ease-out',
           }}
         >
-          {/* Swim Lanes Background (z-index: 0) */}
+          {/* Swim Lanes Background - Apple Style (z-index: 0) */}
           {process.swimLanes && process.swimLanes.length > 0 && (
             <div className="absolute top-0 left-0" style={{ zIndex: 0 }}>
               {process.swimLanes.map((lane, index) => {
-                // Calculate X position based on lane index
-                const laneX = index === 0 ? 50 : index === 1 ? 300 : 550 + (index - 2) * 250;
-                const laneWidth = 240;
+                // Apple-style grid: 50, 500, 950, 1400 (450px spacing)
+                const laneX = 50 + (index * 450);
+                const laneWidth = 400;  // Apple generous width
                 
                 return (
                   <div
@@ -242,23 +242,39 @@ const FlowchartDisplay = ({ process, onNodeClick, onUpdateNode, selectedNodeId }
                       left: `${laneX}px`,
                       top: '0px',
                       width: `${laneWidth}px`,
-                      height: `${canvasHeight - 100}px`,
-                      backgroundColor: `${lane.color}10`, // 10% opacity of lane color
-                      borderLeft: `3px solid ${lane.color}`,
-                      borderRight: `3px solid ${lane.color}`,
+                      height: `${canvasHeight}px`,
+                      backgroundColor: `${lane.color}30`, // 30% opacity - Apple visible standard
+                      borderLeft: `4px solid ${lane.color}`,
+                      borderRight: `4px solid ${lane.color}`,
+                      boxShadow: `inset 0 4px 12px ${lane.color}15`,
                     }}
                   >
-                    {/* Lane Header */}
+                    {/* Apple-Style Bold Header */}
                     <div
-                      className="sticky top-0 py-3 px-4 font-bold text-sm text-center"
+                      className="sticky top-0 font-bold text-center shadow-md"
                       style={{
                         backgroundColor: lane.color,
                         color: 'white',
+                        fontSize: '24px',
+                        padding: '20px 16px',
+                        minHeight: '80px',
+                        letterSpacing: '-0.5px',  // Apple tight tracking
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
                       }}
                     >
-                      <div>{lane.name}</div>
+                      <div style={{ marginBottom: '4px' }}>{lane.name}</div>
                       {lane.role && (
-                        <div className="text-xs font-normal mt-1 opacity-90">
+                        <div style={{ 
+                          fontSize: '14px', 
+                          fontWeight: '500',
+                          opacity: 0.9,
+                          letterSpacing: '0px',
+                          maxWidth: '90%',
+                        }}>
                           {lane.role}
                         </div>
                       )}
