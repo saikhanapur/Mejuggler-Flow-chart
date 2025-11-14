@@ -625,10 +625,10 @@ Return ONLY valid JSON."""
                     processed_ids.add(pnode['id'])
                 
                 # Variable spacing: Check if any parallel node is a decision (needs more space)
-                max_node_height = 150  # Default for regular nodes
+                max_node_height = 300  # Apple generous spacing (was 150)
                 for pnode in parallel_nodes:
                     if pnode.get('isDecisionPoint'):
-                        max_node_height = 250  # Extra space for diamond (200px height + 50px gap)
+                        max_node_height = 350  # Extra space for diamond
                         break
                 y_position += max_node_height
                 
@@ -642,11 +642,11 @@ Return ONLY valid JSON."""
                 node['isMergePoint'] = True
                 processed_ids.add(node['id'])
                 
-                # Variable spacing for merge points
+                # Apple generous spacing for merge points
                 if node.get('isDecisionPoint'):
-                    y_position += 250  # Decision diamond needs more space
+                    y_position += 350  # Decision diamond needs more space
                 else:
-                    y_position += 170  # Merge points slightly more space (complex visually)
+                    y_position += 320  # Merge points more space
                     
             else:
                 # Sequential node: position based on swim lane or center
@@ -657,13 +657,13 @@ Return ONLY valid JSON."""
                 node['y'] = y_position
                 processed_ids.add(node['id'])
                 
-                # Variable spacing based on node type
+                # Apple-standard 300px vertical rhythm (breathing room)
                 if node.get('isDecisionPoint'):
-                    y_position += 250  # Decision diamond: 200px height + 50px gap
+                    y_position += 350  # Decision diamond: 200px height + 150px gap
                 elif node.get('isLoop'):
-                    y_position += 160  # Loop nodes slightly more space (has badge)
+                    y_position += 320  # Loop nodes slightly more space
                 else:
-                    y_position += 150  # Regular nodes: 80px height + 70px gap
+                    y_position += 300  # Apple standard: generous spacing
         # ============ END FIX #1 ============
         
         # Position progress badges relative to nodes
