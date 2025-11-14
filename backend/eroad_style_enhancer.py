@@ -565,11 +565,13 @@ Return ONLY valid JSON."""
         merge_points = {node_id: sources for node_id, sources in incoming_connections.items() if len(sources) > 1}
         
         # Step 2: Position nodes with awareness of structure AND swim lanes
+        # Apple-style grid system: Perfect mathematical spacing
+        # Each lane: 400px wide + 50px margin = 450px spacing
         swim_lane_positions = {
-            'lane_1': 200,
-            'lane_2': 450,
-            'lane_3': 700,
-            'lane_4': 950
+            'lane_1': 100,   # Left edge of first lane
+            'lane_2': 550,   # 100 + 450 (lane + margin)
+            'lane_3': 1000,  # 550 + 450
+            'lane_4': 1450   # 1000 + 450
         }
         
         for i, node in enumerate(nodes):
