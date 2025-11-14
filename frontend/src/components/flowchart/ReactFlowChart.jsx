@@ -289,6 +289,31 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
             <span>•</span>
             <span>{swimLanes.length} phases</span>
           </div>
+          <div className="mt-3 pt-3 border-t border-gray-200">
+            <div className="text-xs text-gray-600 mb-2">Layout:</div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setLayoutDirection('DOWN')}
+                className={`px-3 py-1.5 text-xs rounded transition-colors ${
+                  layoutDirection === 'DOWN'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                📱 Vertical
+              </button>
+              <button
+                onClick={() => setLayoutDirection('RIGHT')}
+                className={`px-3 py-1.5 text-xs rounded transition-colors ${
+                  layoutDirection === 'RIGHT'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                🖥️ Horizontal
+              </button>
+            </div>
+          </div>
         </Panel>
       </ReactFlow>
     </div>
