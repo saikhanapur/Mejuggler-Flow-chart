@@ -254,7 +254,7 @@ const FlowNode = ({ node, onClick, onUpdateNode, isSelected, selectedNodeId, isO
   return (
     <div
       data-testid={`flow-node-${node.id}`}
-      className={`absolute transition-all duration-300 cursor-pointer ${
+      className={`group absolute transition-all duration-300 cursor-pointer ${
         isSelected ? 'ring-4 ring-blue-400 ring-offset-2' : ''
       } ${criticalPathStyle}`}
       style={{
