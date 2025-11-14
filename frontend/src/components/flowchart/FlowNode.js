@@ -248,29 +248,44 @@ const FlowNode = ({ node, onClick, onUpdateNode, isSelected, selectedNodeId, isO
     );
   }
 
-  // ALL other nodes use consistent rounded rectangle shape
-  // Differentiate by: border thickness, shadow size, colors, gap indicator, critical path
-  const borderStyle = isCritical ? 'border-4' : 'border-2';
-  const shadowStyle = isCritical ? 'shadow-2xl' : 'shadow-lg';
-  const gapBorderStyle = hasGap ? 'border-l-4 border-l-amber-500' : '';
+  // Apple-style node design: Clean, consistent, generous
   const criticalPathStyle = isOnCriticalPath ? 'ring-4 ring-red-500 ring-offset-2' : '';
   
   return (
     <div
       data-testid={`flow-node-${node.id}`}
-      className={`absolute transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer rounded-xl p-4 ${
-        config.container
-      } ${borderStyle} ${shadowStyle} ${gapBorderStyle} ${config.pulse ? 'animate-pulse-glow' : ''} ${
+      className={`absolute transition-all duration-300 cursor-pointer ${
         isSelected ? 'ring-4 ring-blue-400 ring-offset-2' : ''
-      } ${isMerge ? 'ring-2 ring-purple-400 ring-offset-2' : ''} ${criticalPathStyle}`}
+      } ${criticalPathStyle}`}
       style={{
         left: `${x}px`,
         top: `${y}px`,
-        width: '240px',
-        minHeight: isExpanded ? 'auto' : '80px',
-        maxHeight: isExpanded ? '400px' : '120px',
+        width: '360px',  // Apple generous width (was 240px)
+        minHeight: isExpanded ? 'auto' : '100px',
+        maxHeight: isExpanded ? '500px' : '140px',
         overflow: isExpanded ? 'visible' : 'hidden',
-        zIndex: isExpanded ? 20 : 10, // Bring expanded nodes to front
+        zIndex: isExpanded ? 50 : 10,
+        backgroundColor: 'white',
+        borderRadius: '16px',  // Apple standard
+        padding: '24px',       // Apple generous padding
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',  // Apple subtle shadow
+        border: `2px solid ${config.color}`,
+        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif',
+      }}
+      onMouseEnter={() => {
+        // Apple micro-interaction: subtle lift on hover
+        const el = document.querySelector(`[data-testid="flow-node-${node.id}"]`);
+        if (el) {
+          el.style.transform = 'translateY(-4px)';
+          el.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.15)';
+        }
+      }}
+      onMouseLeave={() => {
+        const el = document.querySelector(`[data-testid="flow-node-${node.id}"]`);
+        if (el) {
+          el.style.transform = 'translateY(0)';
+          el.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1)';
+        }
       }}
       onClick={onClick}
     >
