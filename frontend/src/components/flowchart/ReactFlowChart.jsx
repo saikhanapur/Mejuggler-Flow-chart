@@ -147,6 +147,7 @@ const nodeTypes = {
 
 export const ReactFlowChart = ({ processData, onNodeClick }) => {
   const [isLayouting, setIsLayouting] = useState(true);
+  const [layoutDirection, setLayoutDirection] = useState('DOWN');
 
   // Convert backend data structure to ReactFlow format
   const initialNodes = useMemo(() => {
