@@ -518,23 +518,23 @@ Return ONLY valid JSON."""
                 
                 # For unassigned nodes, distribute across lanes sequentially
                 if unassigned_nodes:
-                    logger.info(f"  ⚠️ {len(unassigned_nodes)} nodes unassigned, distributing sequentially")
+                    logger.info(f"  ⚠️ {len(unassigned_nodes)} nodes unassigned by matching, distributing sequentially across {len(swim_lane_objects)} lanes")
                     for i, node in enumerate(unassigned_nodes):
                         lane_idx = i % len(swim_lane_objects)
-                        lane_id = f"lane_{lane_idx + 1}"
-                        node['swimLane'] = lane_id
-                        lane_assignment_counts[lane_id] += 1
-                        logger.info(f"  → Assigned '{node.get('title')}' to {lane_id} (sequential)")
+                        node['swimLane'] = f"lane_{lane_idx + 1}"
+                        logger.info(f"  → Sequential assignment: '{node.get('title')}' to lane_{lane_idx + 1}")
                 
-                # Verification report
-                total_assigned = sum(lane_assignment_counts.values())
-                logger.info(f"📊 Swim lane assignment summary:")
-                for lane_id, count in lane_assignment_counts.items():
-                    lane_name = next((l['name'] for l in swim_lane_objects if l['id'] == lane_id), lane_id)
-                    logger.info(f"  {lane_name}: {count} nodes")
+                # VERIFICATION: Count how many nodes assigned to each lane
+                lane_assignments = {}
+                for node in nodes:
+                    lane = node.get('swimLane', 'unassigned')
+                    lane_assignments[lane] = lane_assignments.get(lane, 0) + 1
+                
+                logger.info(f"📊 Final swim lane assignments: {lane_assignments}")
+                total_assigned = sum(count for lane, count in lane_assignments.items() if lane != 'unassigned')
                 logger.info(f"✅ {total_assigned}/{len(nodes)} nodes assigned to swim lanes")
             else:
-                logger.info("ℹ️ No swim lanes detected in extracted data")
+                logger.info("ℹ️ No swim lanes detected in extracted data or detection object")
         except Exception as e:
             logger.warning(f"⚠️ Swim lane creation failed: {e}")
         
