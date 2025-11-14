@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import {
   ReactFlow,
   Background,
@@ -8,75 +8,133 @@ import {
   useNodesState,
   useEdgesState,
   MarkerType,
+  Handle,
+  Position,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import ELK from 'elkjs/lib/elk.bundled.js';
+
+const elk = new ELK();
+
+// Automatic layout with ELK
+const getLayoutedElements = async (nodes, edges, direction = 'RIGHT') => {
+  const graph = {
+    id: 'root',
+    layoutOptions: {
+      'elk.algorithm': 'layered',
+      'elk.direction': direction,
+      'elk.spacing.nodeNode': '80',
+      'elk.layered.spacing.nodeNodeBetweenLayers': '80',
+    },
+    children: nodes.map((node) => ({
+      id: node.id,
+      width: 250,
+      height: 100,
+    })),
+    edges: edges.map((edge) => ({
+      id: edge.id,
+      sources: [edge.source],
+      targets: [edge.target],
+    })),
+  };
+
+  const layoutedGraph = await elk.layout(graph);
+
+  const layoutedNodes = nodes.map((node) => {
+    const layoutedNode = layoutedGraph.children?.find((n) => n.id === node.id);
+    return {
+      ...node,
+      position: {
+        x: layoutedNode?.x || 0,
+        y: layoutedNode?.y || 0,
+      },
+    };
+  });
+
+  return { nodes: layoutedNodes, edges };
+};
 
 // Custom node component for process steps
-const ProcessNode = ({ data }) => {
+const ProcessNode = ({ data, selected }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const statusColors = {
-    critical: 'bg-red-50 border-red-400',
-    trigger: 'bg-blue-50 border-blue-400',
-    action: 'bg-green-50 border-green-400',
-    communication: 'bg-purple-50 border-purple-400',
-    operational: 'bg-emerald-50 border-emerald-400',
-    monitoring: 'bg-amber-50 border-amber-400',
-    verification: 'bg-teal-50 border-teal-400',
-    recovery: 'bg-green-50 border-green-400',
-    warning: 'bg-amber-50 border-amber-400',
-    decision: 'bg-yellow-50 border-yellow-400',
+    critical: 'bg-red-50 border-red-500',
+    trigger: 'bg-blue-50 border-blue-500',
+    action: 'bg-green-50 border-green-500',
+    communication: 'bg-purple-50 border-purple-500',
+    operational: 'bg-emerald-50 border-emerald-500',
+    monitoring: 'bg-amber-50 border-amber-500',
+    verification: 'bg-teal-50 border-teal-500',
+    recovery: 'bg-green-50 border-green-500',
+    warning: 'bg-amber-50 border-amber-500',
+    decision: 'bg-yellow-50 border-yellow-500',
   };
 
   const colorClass = statusColors[data.type] || statusColors.operational;
   const hasDetails = data.details?.specificActions && data.details.specificActions.length > 0;
 
   return (
-    <div
-      className={`px-4 py-3 shadow-md rounded-lg border-2 ${colorClass} min-w-[250px] transition-all duration-200 hover:shadow-lg`}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1">
-          <div className="font-semibold text-sm text-gray-900">{data.title}</div>
-          {data.category && (
-            <div className="text-xs text-gray-600 mt-1">{data.category}</div>
+    <>
+      <Handle type="target" position={Position.Left} style={{ background: '#555' }} />
+      <div
+        className={`px-4 py-3 shadow-lg rounded-lg border-2 ${colorClass} min-w-[250px] transition-all duration-200 hover:shadow-xl cursor-pointer ${
+          selected ? 'ring-4 ring-blue-400' : ''
+        }`}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1">
+            <div className="font-semibold text-sm text-gray-900">{data.title}</div>
+            {data.category && (
+              <div className="text-xs text-gray-600 mt-1">{data.category}</div>
+            )}
+          </div>
+          {hasDetails && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsExpanded(!isExpanded);
+              }}
+              className="text-gray-500 hover:text-gray-700 p-1 text-xs"
+            >
+              {isExpanded ? '▲' : '▼'}
+            </button>
           )}
         </div>
-        {hasDetails && (
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="text-gray-500 hover:text-gray-700 p-1"
-          >
-            {isExpanded ? '▲' : '▼'}
-          </button>
+
+        {isExpanded && hasDetails && (
+          <div className="mt-3 pt-3 border-t border-gray-200">
+            <div className="text-xs text-gray-700 space-y-1">
+              {data.details.specificActions.slice(0, 3).map((action, idx) => (
+                <div key={idx} className="flex items-start gap-1">
+                  <span className="text-gray-400">•</span>
+                  <span>{action}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
-
-      {isExpanded && hasDetails && (
-        <div className="mt-3 pt-3 border-t border-gray-200">
-          <div className="text-xs text-gray-700 space-y-1">
-            {data.details.specificActions.slice(0, 3).map((action, idx) => (
-              <div key={idx} className="flex items-start gap-1">
-                <span className="text-gray-400">•</span>
-                <span>{action}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+      <Handle type="source" position={Position.Right} style={{ background: '#555' }} />
+    </>
   );
 };
 
 // Decision node (diamond shape)
-const DecisionNode = ({ data }) => {
+const DecisionNode = ({ data, selected }) => {
   return (
-    <div className="relative w-32 h-32 flex items-center justify-center">
-      <div className="absolute inset-0 bg-yellow-100 border-2 border-yellow-400 transform rotate-45 shadow-md"></div>
-      <div className="relative z-10 text-center text-xs font-medium text-gray-900 px-2 max-w-[80px]">
-        {data.title}
+    <>
+      <Handle type="target" position={Position.Top} style={{ background: '#555' }} />
+      <div className="relative w-32 h-32 flex items-center justify-center">
+        <div className={`absolute inset-0 bg-yellow-100 border-2 border-yellow-500 transform rotate-45 shadow-lg ${
+          selected ? 'ring-4 ring-blue-400' : ''
+        }`}></div>
+        <div className="relative z-10 text-center text-xs font-medium text-gray-900 px-2 max-w-[80px]">
+          {data.title}
+        </div>
       </div>
-    </div>
+      <Handle type="source" position={Position.Bottom} style={{ background: '#555' }} />
+    </>
   );
 };
 
@@ -86,24 +144,26 @@ const nodeTypes = {
   decision: DecisionNode,
 };
 
-export const ReactFlowChart = ({ processData }) => {
+export const ReactFlowChart = ({ processData, onNodeClick }) => {
+  const [isLayouting, setIsLayouting] = useState(true);
+
   // Convert backend data structure to ReactFlow format
   const initialNodes = useMemo(() => {
     if (!processData?.nodes) return [];
 
     return processData.nodes.map((node) => {
-      // Determine node type
       const nodeType = node.type === 'decision' ? 'decision' : 'process';
 
       return {
         id: node.id,
         type: nodeType,
-        position: node.position || { x: 0, y: 0 },
+        position: { x: 0, y: 0 },
         data: {
           title: node.title,
           type: node.type,
           category: node.category,
           details: node.operationalDetails || node.details || {},
+          originalNode: node,
         },
       };
     });
@@ -117,28 +177,64 @@ export const ReactFlowChart = ({ processData }) => {
       source: edge.source,
       target: edge.target,
       label: edge.label || '',
-      type: edge.style === 'dashed' ? 'step' : 'smoothstep',
-      animated: edge.style !== 'dashed',
+      type: 'smoothstep',
+      animated: true,
       markerEnd: {
         type: MarkerType.ArrowClosed,
         width: 20,
         height: 20,
+        color: '#64748b',
       },
       style: {
         strokeWidth: 2,
-        stroke: '#94a3b8',
+        stroke: '#64748b',
       },
     }));
   }, [processData]);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  // Create swim lane backgrounds
+  // Apply automatic layout on mount
+  useEffect(() => {
+    const applyLayout = async () => {
+      if (initialNodes.length > 0) {
+        setIsLayouting(true);
+        const { nodes: layoutedNodes, edges: layoutedEdges } = await getLayoutedElements(
+          initialNodes,
+          initialEdges,
+          'RIGHT'
+        );
+        setNodes(layoutedNodes);
+        setEdges(layoutedEdges);
+        setIsLayouting(false);
+      }
+    };
+
+    applyLayout();
+  }, [initialNodes, initialEdges]);
+
+  const handleNodeClick = useCallback((event, node) => {
+    if (onNodeClick) {
+      onNodeClick(node.data.originalNode);
+    }
+  }, [onNodeClick]);
+
   const swimLanes = useMemo(() => {
     if (!processData?.swimLanes) return [];
     return processData.swimLanes;
   }, [processData]);
+
+  if (isLayouting) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <div className="text-sm text-gray-600">Optimizing layout...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-full bg-gray-50">
@@ -147,84 +243,44 @@ export const ReactFlowChart = ({ processData }) => {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
+        onNodeClick={handleNodeClick}
         nodeTypes={nodeTypes}
         fitView
         minZoom={0.1}
         maxZoom={2}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
+        fitViewOptions={{ padding: 0.2 }}
         proOptions={{ hideAttribution: true }}
       >
-        {/* Swim lane backgrounds */}
-        {swimLanes.length > 0 && (
-          <svg className="react-flow__swimlanes" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-            {swimLanes.map((lane, index) => {
-              // Calculate lane position based on nodes assigned to it
-              const laneNodes = nodes.filter(n => lane.nodeIds?.includes(n.id));
-              if (laneNodes.length === 0) return null;
-
-              const minY = Math.min(...laneNodes.map(n => n.position.y)) - 80;
-              const maxY = Math.max(...laneNodes.map(n => n.position.y + 150)) + 80;
-              const height = maxY - minY;
-
-              const colors = [
-                'rgba(239, 246, 255, 0.6)',  // blue
-                'rgba(240, 253, 244, 0.6)',  // green
-                'rgba(254, 252, 232, 0.6)',  // yellow
-                'rgba(253, 242, 248, 0.6)',  // pink
-              ];
-
-              return (
-                <g key={lane.id}>
-                  <rect
-                    x="-10000"
-                    y={minY}
-                    width="20000"
-                    height={height}
-                    fill={colors[index % colors.length]}
-                    stroke="#cbd5e1"
-                    strokeWidth="1"
-                  />
-                  <text
-                    x="20"
-                    y={minY + 30}
-                    fill="#475569"
-                    fontSize="14"
-                    fontWeight="600"
-                  >
-                    {lane.name || `Lane ${index + 1}`}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-        )}
-
-        <Background color="#e2e8f0" gap={16} />
+        <Background color="#cbd5e1" gap={20} size={1} />
         <Controls />
         <MiniMap
           nodeColor={(node) => {
             const colors = {
-              critical: '#fecaca',
-              trigger: '#bfdbfe',
-              action: '#bbf7d0',
-              decision: '#fef08a',
+              critical: '#fca5a5',
+              trigger: '#93c5fd',
+              action: '#86efac',
+              decision: '#fde047',
+              operational: '#6ee7b7',
             };
             return colors[node.data.type] || '#d1d5db';
           }}
           maskColor="rgba(0, 0, 0, 0.1)"
+          style={{ background: 'white' }}
         />
 
-        <Panel position="top-left" className="bg-white p-3 rounded-lg shadow-md">
-          <div className="text-sm font-semibold text-gray-900">
+        <Panel position="top-left" className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
+          <div className="text-sm font-bold text-gray-900">
             {processData?.name || 'Process Flowchart'}
           </div>
           {processData?.description && (
-            <div className="text-xs text-gray-600 mt-1">
+            <div className="text-xs text-gray-600 mt-1 max-w-xs">
               {processData.description}
             </div>
           )}
-          <div className="text-xs text-gray-500 mt-2">
-            {nodes.length} steps • {swimLanes.length} phases
+          <div className="text-xs text-gray-500 mt-2 flex items-center gap-2">
+            <span>{nodes.length} steps</span>
+            <span>•</span>
+            <span>{swimLanes.length} phases</span>
           </div>
         </Panel>
       </ReactFlow>
