@@ -435,57 +435,29 @@ const FlowNode = ({ node, onClick, onUpdateNode, isSelected, selectedNodeId, isO
         </div>
       </div>
       
-      {/* Apple-Style Expandable Indicator - THE INNOVATION! */}
+      {/* Subtle expandable indicator - shows only when hovering */}
       {hasSubSteps && !isExpanded && (
         <div 
-          className="absolute left-1/2 transform -translate-x-1/2"
+          className="absolute left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
           style={{
-            bottom: '-20px',
-            backgroundColor: '#007AFF',  // iOS Blue
+            bottom: '-16px',
+            backgroundColor: 'rgba(0, 122, 255, 0.9)',
             color: 'white',
-            padding: '8px 20px',
-            borderRadius: '20px',
-            fontSize: '11px',
-            fontWeight: '600',
-            boxShadow: '0 2px 8px rgba(0, 122, 255, 0.4)',
-            letterSpacing: '0.5px',
+            padding: '4px 12px',
+            borderRadius: '12px',
+            fontSize: '10px',
+            fontWeight: '500',
+            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.15)',
             cursor: 'pointer',
             zIndex: 100,
-            animation: 'gentle-bounce 2s ease-in-out infinite',
-            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
+            whiteSpace: 'nowrap',
           }}
           onClick={(e) => {
             e.stopPropagation();
             handleExpandToggle(e);
           }}
         >
-          ⬇️ TAP TO SEE {subSteps.length} STEPS ⬇️
-        </div>
-      )}
-
-      {hasSubSteps && isExpanded && (
-        <div 
-          className="absolute left-1/2 transform -translate-x-1/2"
-          style={{
-            bottom: '-20px',
-            backgroundColor: '#007AFF',
-            color: 'white',
-            padding: '8px 20px',
-            borderRadius: '20px',
-            fontSize: '11px',
-            fontWeight: '600',
-            boxShadow: '0 2px 8px rgba(0, 122, 255, 0.4)',
-            letterSpacing: '0.5px',
-            cursor: 'pointer',
-            zIndex: 100,
-            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif',
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleExpandToggle(e);
-          }}
-        >
-          ⬆️ TAP TO COLLAPSE ⬆️
+          {subSteps.length} steps
         </div>
       )}
       
