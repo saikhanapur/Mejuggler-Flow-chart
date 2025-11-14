@@ -1915,3 +1915,52 @@ agent_communication:
       
       **ISSUE IDENTIFIED**: Frontend routing redirects to landing page despite authentication
       **RECOMMENDATION**: Investigate routing configuration and create test processes for UI validation
+
+#====================================================================================================
+# FORK AGENT - PROGRESS UPDATE
+# Date: $(date)
+#====================================================================================================
+
+## Actions Completed:
+
+### ✅ Fix #1: Removed Annoying "TAP TO SEE DETAIL" Badges
+**Issue:** User reported that "Tap to see detail" text was cluttering the flowchart
+**Solution:** 
+- Modified `/app/frontend/src/components/flowchart/FlowNode.js`
+- Removed the prominent bouncing badges
+- Replaced with subtle hover-only indicator showing "X steps"
+- Added `group` class to container for hover effects to work
+**Status:** ✅ COMPLETE - Code changed, needs visual verification
+
+### ✅ Fix #2: Added Missing `/flowchart/:id` Route
+**Issue:** User was accessing `/flowchart/:id` which didn't exist (404 blank page)
+**Solution:**
+- Added `/flowchart/:id` route in `/app/frontend/src/App.js`
+- Maps to FlowchartCanvas component (same as /edit/:id)
+- Requires authentication (protected route)
+**Status:** ✅ COMPLETE - Route added
+
+## Issues Identified:
+
+### 🔴 Issue: Guest Access Control
+**Problem:** Guest processes created via API cannot be accessed due to 403 errors
+**Root Cause:** GET `/api/process/:id` requires either:
+  - User to be owner (userId matches)
+  - Process to be published (status === 'published')
+**Guest processes don't have proper userId/session tracking**
+
+**Needs Fix:** Guest process creation workflow or access control logic
+
+## Next Steps (In Priority Order):
+
+1. ✅ **DONE:** Remove "Tap to see detail" clutter
+2. ✅ **DONE:** Fix routing for /flowchart/:id
+3. ⏭️ **NEXT:** Test with actual user workflow (upload document via /create-process)
+4. ⏭️ **NEXT:** Fix complex document timeout issue
+5. ⏭️ **NEXT:** Fix swim lane detection accuracy
+6. ⏭️ **NEXT:** Visual polish and spacing improvements
+
+## User Decision:
+- User chose **Option A**: Fix bugs first, polish design, then innovate
+- Abandoned "revolutionary redesign" in favor of pragmatic excellence
+
