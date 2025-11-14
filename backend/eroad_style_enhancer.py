@@ -536,7 +536,11 @@ Return ONLY valid JSON."""
             else:
                 logger.info("ℹ️ No swim lanes detected in extracted data or detection object")
         except Exception as e:
-            logger.warning(f"⚠️ Swim lane creation failed: {e}")
+            import traceback
+            logger.error(f"❌ Swim lane creation failed: {e}")
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            logger.error(f"Debug - extracted_data keys: {list(extracted_data.keys()) if extracted_data else None}")
+            logger.error(f"Debug - detection keys: {list(detection.keys()) if detection else None}")
         
         # ============ FIX #1: SMART POSITIONING WITH MERGE POINT DETECTION ============
         # Enhanced positioning with:
