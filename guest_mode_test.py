@@ -11,7 +11,7 @@ import os
 import time
 
 # Configuration
-BASE_URL = "https://sopviz.preview.emergentagent.com/api"
+BASE_URL = "https://flowvision-2.preview.emergentagent.com/api"
 TIMEOUT = 60
 
 class GuestModeTester:
