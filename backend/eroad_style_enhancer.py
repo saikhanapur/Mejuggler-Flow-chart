@@ -454,12 +454,10 @@ Return ONLY valid JSON."""
                 
                 # Now assign nodes to swim lanes based on content matching and sequence
                 nodes = enhanced.get('nodes', [])
+                logger.info(f"📍 Assigning {len(nodes)} nodes to {len(normalized_swim_lanes)} swim lanes...")
                 
                 # Strategy: Try content matching first, then fall back to sequential assignment
                 unassigned_nodes = []
-                lane_assignment_counts = {f"lane_{i+1}": 0 for i in range(len(normalized_swim_lanes))}
-                
-                logger.info(f"📍 Assigning {len(nodes)} nodes to {len(normalized_swim_lanes)} swim lanes...")
                 
                 for node in nodes:
                     node_title = node.get('title', '').lower()
