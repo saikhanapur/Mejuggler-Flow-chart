@@ -173,7 +173,10 @@ const FlowchartCanvas = ({ processData }) => {
       <div className="max-w-[1600px] mx-auto px-6 py-8 flex gap-6">
         {/* Flowchart Panel */}
         <div className="flex-1 h-[calc(100vh-200px)] bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
-          <ReactFlowChart processData={process} />
+          <ReactFlowChart 
+            processData={process} 
+            onNodeClick={handleNodeClick}
+          />
         </div>
 
         {/* Step Details Panel - Fixed on Right */}
