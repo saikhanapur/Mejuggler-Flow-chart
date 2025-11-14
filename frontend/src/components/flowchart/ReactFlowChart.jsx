@@ -247,9 +247,14 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
         onNodeClick={handleNodeClick}
         nodeTypes={nodeTypes}
         fitView
-        minZoom={0.1}
-        maxZoom={2}
-        fitViewOptions={{ padding: 0.2 }}
+        minZoom={0.3}
+        maxZoom={1.5}
+        fitViewOptions={{ 
+          padding: 0.15,
+          includeHiddenNodes: false,
+          minZoom: 0.5,
+          maxZoom: 1,
+        }}
         proOptions={{ hideAttribution: true }}
       >
         <Background color="#cbd5e1" gap={20} size={1} />
