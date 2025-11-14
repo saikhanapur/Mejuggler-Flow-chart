@@ -404,41 +404,40 @@ Return ONLY valid JSON."""
         
         # ============ NEW: SWIM LANE CREATION FROM EXTRACTED DATA OR DETECTION ============
         try:
-            # Try multiple sources for swim lanes (proper fallback without 'or' bug)
+            # Try multiple sources for swim lanes
+            # Priority: extracted_data (from analyze_document) > detection (from UI)
             extracted_swim_lanes = extracted_data.get('swimLanes')
-            
+
+            # Fallback to detection object if no swim lanes in extracted_data
             if not extracted_swim_lanes and detection:
                 extracted_swim_lanes = detection.get('swimLanes')
-                logger.info(f"🏊 Swim lanes source: detection object")
-            elif extracted_swim_lanes:
-                logger.info(f"🏊 Swim lanes source: extracted_data")
-            
+
+            # Final fallback to empty list
             if not extracted_swim_lanes:
                 extracted_swim_lanes = []
-                logger.info("ℹ️ No swim lanes detected in either source")
-            
-            if extracted_swim_lanes:
-                logger.info(f"🏊 Found {len(extracted_swim_lanes)} swim lanes, normalizing field names...")
-                
-                # ============ CRITICAL FIX: FIELD NAME NORMALIZATION ============
-                # Problem: Different data sources use different field names:
-                #   - extracted_data uses: 'name' and 'purpose'
-                #   - detection uses: 'title' and 'team'
-                # Solution: Normalize to standard field names
-                normalized_swim_lanes = []
-                for lane_data in extracted_swim_lanes:
-                    normalized_lane = {
-                        'name': lane_data.get('name') or lane_data.get('title', 'Unnamed Lane'),
-                        'purpose': lane_data.get('purpose') or lane_data.get('team', ''),
-                        'steps': lane_data.get('steps', [])
-                    }
-                    normalized_swim_lanes.append(normalized_lane)
-                    logger.info(f"  Normalized lane: '{normalized_lane['name']}' (purpose: '{normalized_lane['purpose']}')")
-                
+
+            # CRITICAL FIX: Normalize field names from different sources
+            # detection uses: 'title' and 'team'
+            # extracted_data uses: 'name' and 'purpose'
+            normalized_swim_lanes = []
+            for lane_data in extracted_swim_lanes:
+                normalized_lane = {
+                    'name': lane_data.get('name') or lane_data.get('title', 'Unnamed Lane'),
+                    'purpose': lane_data.get('purpose') or lane_data.get('team', ''),
+                    'steps': lane_data.get('steps', [])
+                }
+                normalized_swim_lanes.append(normalized_lane)
+
+            logger.info(f"🏊 Swim lane sources - extracted_data: {bool(extracted_data.get('swimLanes'))}, detection: {bool(detection and detection.get('swimLanes')) if detection else False}")
+            logger.info(f"🏊 Normalized {len(normalized_swim_lanes)} swim lanes: {[l['name'] for l in normalized_swim_lanes]}")
+
+            if normalized_swim_lanes:
+                logger.info(f"🏊 Creating {len(normalized_swim_lanes)} swim lanes from normalized data")
+
                 # Create swim lane objects for frontend
                 swim_lane_objects = []
                 lane_colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444']
-                
+
                 for idx, lane_data in enumerate(normalized_swim_lanes):
                     lane_id = f"lane_{idx + 1}"
                     lane_obj = {
@@ -448,7 +447,7 @@ Return ONLY valid JSON."""
                         'color': lane_colors[idx % len(lane_colors)]
                     }
                     swim_lane_objects.append(lane_obj)
-                    logger.info(f"  Created swim lane object: {lane_obj['name']}")
+                    logger.info(f"  ✓ Created swim lane: {lane_obj['name']} (role: {lane_obj['role']})")
                 
                 # Add swim lanes to enhanced output
                 enhanced['swimLanes'] = swim_lane_objects
