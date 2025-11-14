@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Share2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import FlowchartDisplay from './FlowchartDisplay';
+import { ReactFlowChart } from './ReactFlowChart';
 import OperationalDetailsPanel from '../OperationalDetailsPanel';
 import ExportModal from '../ExportModal';
 import ShareModal from '../ShareModal';
