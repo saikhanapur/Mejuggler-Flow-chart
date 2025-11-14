@@ -77,9 +77,9 @@ const ProcessNode = ({ data, selected }) => {
 
   return (
     <>
-      <Handle type="target" position={Position.Left} style={{ background: '#555' }} />
+      <Handle type="target" position={Position.Top} style={{ background: '#64748b', width: 12, height: 12 }} />
       <div
-        className={`px-4 py-3 shadow-lg rounded-lg border-2 ${colorClass} min-w-[250px] transition-all duration-200 hover:shadow-xl cursor-pointer ${
+        className={`px-4 py-3 shadow-lg rounded-lg border-2 ${colorClass} w-[280px] transition-all duration-200 hover:shadow-xl cursor-pointer ${
           selected ? 'ring-4 ring-blue-400' : ''
         }`}
       >
@@ -116,7 +116,7 @@ const ProcessNode = ({ data, selected }) => {
           </div>
         )}
       </div>
-      <Handle type="source" position={Position.Right} style={{ background: '#555' }} />
+      <Handle type="source" position={Position.Bottom} style={{ background: '#64748b', width: 12, height: 12 }} />
     </>
   );
 };
