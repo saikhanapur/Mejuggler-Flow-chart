@@ -169,6 +169,21 @@ const AppContent = () => {
           </ProtectedRoute>
         } />
         
+        {/* Alias route for /flowchart/:id - redirects to /edit/:id for authenticated users */}
+        <Route path="/flowchart/:id" element={
+          <ProtectedRoute>
+            <Header 
+              theme={theme} 
+              onThemeChange={setTheme}
+              currentWorkspace={currentWorkspace}
+              workspaces={workspaces}
+              onWorkspaceChange={setCurrentWorkspace}
+              onWorkspacesUpdate={loadWorkspaces}
+            />
+            <FlowchartCanvas theme={theme} />
+          </ProtectedRoute>
+        } />
+        
         <Route path="/templates" element={
           <ProtectedRoute>
             <Header 
