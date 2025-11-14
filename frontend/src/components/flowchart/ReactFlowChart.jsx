@@ -16,19 +16,20 @@ import ELK from 'elkjs/lib/elk.bundled.js';
 
 const elk = new ELK();
 
-// Automatic layout with ELK
-const getLayoutedElements = async (nodes, edges, direction = 'RIGHT') => {
+// Automatic layout with ELK - VERTICAL for mobile-friendly display
+const getLayoutedElements = async (nodes, edges, direction = 'DOWN') => {
   const graph = {
     id: 'root',
     layoutOptions: {
       'elk.algorithm': 'layered',
       'elk.direction': direction,
-      'elk.spacing.nodeNode': '80',
-      'elk.layered.spacing.nodeNodeBetweenLayers': '80',
+      'elk.spacing.nodeNode': '50',  // Tighter spacing
+      'elk.layered.spacing.nodeNodeBetweenLayers': '60',  // Compact layers
+      'elk.layered.nodePlacement.strategy': 'SIMPLE',
     },
     children: nodes.map((node) => ({
       id: node.id,
-      width: 250,
+      width: 280,  // Slightly wider for better readability
       height: 100,
     })),
     edges: edges.map((edge) => ({
