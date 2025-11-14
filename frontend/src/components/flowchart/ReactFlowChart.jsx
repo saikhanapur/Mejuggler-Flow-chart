@@ -197,7 +197,7 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  // Apply automatic layout on mount - VERTICAL for mobile-friendly
+  // Apply automatic layout - respects direction
   useEffect(() => {
     const applyLayout = async () => {
       if (initialNodes.length > 0) {
@@ -205,7 +205,7 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
         const { nodes: layoutedNodes, edges: layoutedEdges } = await getLayoutedElements(
           initialNodes,
           initialEdges,
-          'DOWN'  // Vertical layout
+          layoutDirection
         );
         setNodes(layoutedNodes);
         setEdges(layoutedEdges);
@@ -214,7 +214,7 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
     };
 
     applyLayout();
-  }, [initialNodes, initialEdges]);
+  }, [initialNodes, initialEdges, layoutDirection]);
 
   const handleNodeClick = useCallback((event, node) => {
     if (onNodeClick) {
