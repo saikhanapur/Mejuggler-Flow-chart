@@ -436,7 +436,8 @@ Return ONLY valid JSON."""
 
                 # Create swim lane objects for frontend
                 swim_lane_objects = []
-                lane_colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444']
+                # Apple iOS color palette - instantly recognizable, professional
+                lane_colors = ['#007AFF', '#34C759', '#FF9500', '#FF3B30', '#5856D6']  # Blue, Green, Orange, Red, Purple
 
                 for idx, lane_data in enumerate(normalized_swim_lanes):
                     lane_id = f"lane_{idx + 1}"
