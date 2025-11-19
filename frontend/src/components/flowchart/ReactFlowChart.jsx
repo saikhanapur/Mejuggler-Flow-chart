@@ -72,8 +72,26 @@ const ProcessNode = ({ data, selected }) => {
     decision: 'bg-yellow-50 border-yellow-500',
   };
 
+  const statusBadgeColors = {
+    critical: 'bg-red-100 text-red-700 border-red-300',
+    trigger: 'bg-blue-100 text-blue-700 border-blue-300',
+    action: 'bg-green-100 text-green-700 border-green-300',
+    communication: 'bg-purple-100 text-purple-700 border-purple-300',
+    operational: 'bg-emerald-100 text-emerald-700 border-emerald-300',
+    monitoring: 'bg-amber-100 text-amber-700 border-amber-300',
+    verification: 'bg-teal-100 text-teal-700 border-teal-300',
+  };
+
   const colorClass = statusColors[data.type] || statusColors.operational;
-  const hasDetails = data.details?.specificActions && data.details.specificActions.length > 0;
+  const badgeColor = statusBadgeColors[data.type] || statusBadgeColors.operational;
+  
+  // Check if we have meaningful details to show
+  const hasActions = data.details?.specificActions && data.details.specificActions.length > 0;
+  const hasActors = data.details?.actors && data.details.actors.length > 0;
+  const hasTimeline = data.details?.timeline;
+  const hasPurpose = data.details?.purpose;
+  
+  const hasQuickInfo = hasActions || hasActors || hasTimeline;
 
   return (
     <>
@@ -90,28 +108,72 @@ const ProcessNode = ({ data, selected }) => {
               <div className="text-xs text-gray-600 mt-1">{data.category}</div>
             )}
           </div>
-          {hasDetails && (
+          {hasQuickInfo && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 setIsExpanded(!isExpanded);
               }}
-              className="text-gray-500 hover:text-gray-700 p-1 text-xs"
+              className="text-gray-500 hover:text-gray-700 p-1 text-xs flex-shrink-0"
+              title="Quick info"
             >
               {isExpanded ? '▲' : '▼'}
             </button>
           )}
         </div>
 
-        {isExpanded && hasDetails && (
-          <div className="mt-3 pt-3 border-t border-gray-200">
-            <div className="text-xs text-gray-700 space-y-1">
-              {data.details.specificActions.slice(0, 3).map((action, idx) => (
-                <div key={idx} className="flex items-start gap-1">
-                  <span className="text-gray-400">•</span>
-                  <span>{action}</span>
+        {/* ENHANCED DROPDOWN - Quick Abstract View */}
+        {isExpanded && hasQuickInfo && (
+          <div className="mt-3 pt-3 border-t border-gray-200 space-y-2">
+            {/* Key Actions - Top 2 only */}
+            {hasActions && (
+              <div>
+                <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                  ⚡ Key Actions
                 </div>
-              ))}
+                <div className="text-xs text-gray-700 space-y-1">
+                  {data.details.specificActions.slice(0, 2).map((action, idx) => (
+                    <div key={idx} className="flex items-start gap-1">
+                      <span className="text-blue-500 font-bold">•</span>
+                      <span className="line-clamp-2">{action}</span>
+                    </div>
+                  ))}
+                  {data.details.specificActions.length > 2 && (
+                    <div className="text-[10px] text-gray-500 italic">
+                      +{data.details.specificActions.length - 2} more (click node for full details)
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Timeline */}
+            {hasTimeline && (
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-gray-500">⏱️</span>
+                <span className="text-gray-700 font-medium">{data.details.timeline}</span>
+              </div>
+            )}
+
+            {/* Actors */}
+            {hasActors && (
+              <div className="flex items-start gap-2 text-xs">
+                <span className="text-gray-500 flex-shrink-0">👥</span>
+                <span className="text-gray-700 line-clamp-1">
+                  {data.details.actors.slice(0, 2).join(', ')}
+                  {data.details.actors.length > 2 && ` +${data.details.actors.length - 2}`}
+                </span>
+              </div>
+            )}
+
+            {/* Type Badge */}
+            <div className="flex items-center justify-between">
+              <span className={`text-[10px] px-2 py-0.5 rounded-full border ${badgeColor} font-medium uppercase tracking-wide`}>
+                {data.type}
+              </span>
+              <span className="text-[9px] text-gray-400 italic">
+                Click for full details →
+              </span>
             </div>
           </div>
         )}
