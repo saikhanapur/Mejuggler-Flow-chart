@@ -250,3 +250,14 @@ code {
 }
 
 
+
+/* Hide ReactFlow attribution/watermark */
+.react-flow__attribution {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.react-flow__panel.bottom.right {
+  display: none !important;
+}
