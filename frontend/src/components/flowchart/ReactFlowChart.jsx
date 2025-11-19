@@ -131,10 +131,7 @@ const ProcessNode = ({ data, selected, id }) => {
           </div>
           {hasQuickInfo && (
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsExpanded(!isExpanded);
-              }}
+              onClick={handleToggle}
               className="text-gray-500 hover:text-gray-700 p-1 text-xs flex-shrink-0"
               title="Quick info"
             >
