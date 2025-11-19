@@ -95,6 +95,25 @@ const ProcessNode = ({ data, selected, id }) => {
   
   const hasQuickInfo = hasActions || hasActors || hasTimeline;
 
+  // Calculate expanded height when dropdown opens
+  React.useEffect(() => {
+    if (isExpanded && contentRef.current) {
+      const height = contentRef.current.offsetHeight;
+      setExpandedHeight(height + 20); // Add some padding
+      if (data.onExpand) {
+        data.onExpand(id, true, height + 20);
+      }
+    } else if (!isExpanded && data.onExpand) {
+      data.onExpand(id, false, 0);
+      setExpandedHeight(0);
+    }
+  }, [isExpanded, id, data]);
+
+  const handleToggle = (e) => {
+    e.stopPropagation();
+    setIsExpanded(!isExpanded);
+  };
+
   return (
     <>
       <Handle type="target" position={Position.Top} style={{ background: '#64748b', width: 12, height: 12 }} />
