@@ -142,7 +142,7 @@ const ProcessNode = ({ data, selected, id }) => {
 
         {/* ENHANCED DROPDOWN - Quick Abstract View */}
         {isExpanded && hasQuickInfo && (
-          <div className="mt-3 pt-3 border-t border-gray-200 space-y-2">
+          <div ref={contentRef} className="mt-3 pt-3 border-t border-gray-200 space-y-2">
             {/* Key Actions - Top 2 only */}
             {hasActions && (
               <div>
