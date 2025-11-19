@@ -478,12 +478,12 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
           style={{ background: 'white' }}
         />
 
-        <Panel position="top-left" className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
+        <Panel position="top-left" className="bg-white p-3 rounded-lg shadow-lg border border-gray-200 max-w-xs">
           <div className="text-sm font-bold text-gray-900">
             {processData?.name || 'Process Flowchart'}
           </div>
           {processData?.description && (
-            <div className="text-xs text-gray-600 mt-1 max-w-xs">
+            <div className="text-xs text-gray-600 mt-1">
               {processData.description}
             </div>
           )}
@@ -492,6 +492,32 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
             <span>•</span>
             <span>{swimLanes.length} phases</span>
           </div>
+
+          {/* Swim Lane Legend */}
+          {swimLaneBoundaries.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <div className="text-xs font-semibold text-gray-700 mb-2">🏊 Process Phases:</div>
+              <div className="space-y-1.5">
+                {swimLaneBoundaries.map((lane, idx) => {
+                  const colors = laneColorPalette[idx % laneColorPalette.length];
+                  return (
+                    <div key={lane.id} className="flex items-center gap-2">
+                      <div 
+                        className="w-6 h-6 rounded flex items-center justify-center text-white text-[10px] font-bold"
+                        style={{ backgroundColor: colors.border }}
+                      >
+                        {idx + 1}
+                      </div>
+                      <span className="text-xs text-gray-700 font-medium">
+                        {lane.name}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="mt-3 pt-3 border-t border-gray-200">
             <div className="text-xs text-gray-600 mb-2">Layout:</div>
             <div className="flex gap-2">
