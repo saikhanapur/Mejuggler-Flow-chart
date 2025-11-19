@@ -342,6 +342,18 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
     { bg: 'rgba(254, 226, 226, 0.7)', border: '#fca5a5', text: '#991b1b' }, // Red
   ];
 
+  // Early return AFTER all hooks
+  if (isLayouting) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <div className="text-sm text-gray-600">Optimizing layout...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-full bg-gray-50">
       <ReactFlow
