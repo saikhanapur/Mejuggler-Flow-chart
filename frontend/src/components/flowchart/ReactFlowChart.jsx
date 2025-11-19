@@ -248,6 +248,7 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
           category: node.category,
           details: node.operationalDetails || node.details || {},
           originalNode: node,
+          onExpand: null, // Will be set after layout
         },
       };
     });
