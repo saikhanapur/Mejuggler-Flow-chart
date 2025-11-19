@@ -288,6 +288,57 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
     }
   }, [onNodeClick]);
 
+  // Smart layout adjustment when node expands/collapses
+  const handleNodeExpand = useCallback((nodeId, isExpanded, expandedHeight) => {
+    if (layoutDirection !== 'DOWN') return; // Only for vertical layout
+
+    setExpandedNodeId(isExpanded ? nodeId : null);
+
+    setNodes((currentNodes) => {
+      const expandedNodeIndex = currentNodes.findIndex(n => n.id === nodeId);
+      if (expandedNodeIndex === -1) return currentNodes;
+
+      const expandedNode = currentNodes[expandedNodeIndex];
+      const basePosition = baseNodePositions.find(bp => bp.id === nodeId);
+      
+      if (!basePosition) return currentNodes;
+
+      // Calculate how much space the expanded content needs
+      const extraSpace = isExpanded ? expandedHeight : 0;
+
+      // Update all nodes
+      return currentNodes.map((node, index) => {
+        const nodeBasePos = baseNodePositions.find(bp => bp.id === node.id);
+        if (!nodeBasePos) return node;
+
+        // If this node is below the expanded node, push it down
+        if (nodeBasePos.position.y > basePosition.position.y) {
+          return {
+            ...node,
+            position: {
+              ...node.position,
+              y: nodeBasePos.position.y + extraSpace,
+            },
+            style: {
+              ...node.style,
+              transition: 'all 0.3s ease-in-out',
+            },
+          };
+        }
+
+        // If this is the expanded node or above it, keep original position
+        return {
+          ...node,
+          position: nodeBasePos.position,
+          style: {
+            ...node.style,
+            transition: 'all 0.3s ease-in-out',
+          },
+        };
+      });
+    });
+  }, [layoutDirection, baseNodePositions, setNodes]);
+
   const swimLanes = useMemo(() => {
     if (!processData?.swimLanes) return [];
     return processData.swimLanes;
