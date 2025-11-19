@@ -273,6 +273,8 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
         );
         setNodes(layoutedNodes);
         setEdges(layoutedEdges);
+        setBaseNodePositions(layoutedNodes.map(n => ({ id: n.id, position: n.position })));
+        setExpandedNodeId(null); // Reset expansion on layout change
         setIsLayouting(false);
       }
     };
