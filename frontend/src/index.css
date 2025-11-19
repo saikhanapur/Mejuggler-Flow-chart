@@ -261,3 +261,26 @@ code {
 .react-flow__panel.bottom.right {
   display: none !important;
 }
+
+/* Swim lane layering and styling */
+.react-flow__swimlanes {
+  z-index: 0 !important;
+}
+
+.react-flow__nodes {
+  z-index: 1 !important;
+}
+
+.react-flow__edges {
+  z-index: 2 !important;
+}
+
+/* Smooth swim lane transitions */
+.react-flow__swimlanes rect {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Ensure swim lanes don't interfere with interactions */
+.react-flow__swimlanes * {
+  pointer-events: none;
+}
