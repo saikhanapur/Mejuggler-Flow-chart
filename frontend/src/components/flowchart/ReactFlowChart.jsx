@@ -96,7 +96,7 @@ const ProcessNode = ({ data, selected, id }) => {
   const hasQuickInfo = hasActions || hasActors || hasTimeline;
 
   // Calculate expanded height when dropdown opens
-  React.useEffect(() => {
+  useEffect(() => {
     if (isExpanded && contentRef.current) {
       const height = contentRef.current.offsetHeight;
       setExpandedHeight(height + 20); // Add some padding
