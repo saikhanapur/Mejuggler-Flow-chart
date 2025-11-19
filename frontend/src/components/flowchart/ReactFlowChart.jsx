@@ -56,8 +56,10 @@ const getLayoutedElements = async (nodes, edges, direction = 'DOWN') => {
 };
 
 // Custom node component for process steps
-const ProcessNode = ({ data, selected }) => {
+const ProcessNode = ({ data, selected, id }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [expandedHeight, setExpandedHeight] = useState(0);
+  const contentRef = React.useRef(null);
 
   const statusColors = {
     critical: 'bg-red-50 border-red-500',
