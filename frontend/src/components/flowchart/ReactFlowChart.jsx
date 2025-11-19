@@ -300,6 +300,59 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
     );
   }
 
+  // Calculate swim lane boundaries for visual rendering
+  const swimLaneBoundaries = useMemo(() => {
+    if (!swimLanes || swimLanes.length === 0 || nodes.length === 0) return [];
+
+    return swimLanes.map((lane, index) => {
+      // Find nodes assigned to this lane
+      const laneNodes = nodes.filter(n => lane.nodeIds?.includes(n.id));
+      
+      if (laneNodes.length === 0) return null;
+
+      // Calculate boundaries based on layout direction
+      if (layoutDirection === 'DOWN') {
+        // For vertical layout: horizontal bands (top to bottom)
+        const minY = Math.min(...laneNodes.map(n => n.position.y)) - 60;
+        const maxY = Math.max(...laneNodes.map(n => n.position.y)) + 160;
+        
+        return {
+          id: lane.id,
+          name: lane.name || `Phase ${index + 1}`,
+          x: -5000, // Extend far left
+          y: minY,
+          width: 10000, // Extend far right
+          height: maxY - minY,
+          index,
+        };
+      } else {
+        // For horizontal layout: vertical columns (left to right)
+        const minX = Math.min(...laneNodes.map(n => n.position.x)) - 60;
+        const maxX = Math.max(...laneNodes.map(n => n.position.x)) + 340;
+        
+        return {
+          id: lane.id,
+          name: lane.name || `Phase ${index + 1}`,
+          x: minX,
+          y: -5000,
+          width: maxX - minX,
+          height: 10000,
+          index,
+        };
+      }
+    }).filter(Boolean);
+  }, [swimLanes, nodes, layoutDirection]);
+
+  // Accessible color palette for swim lanes
+  const laneColorPalette = [
+    { bg: 'rgba(239, 246, 255, 0.7)', border: '#93c5fd', text: '#1e40af' }, // Blue
+    { bg: 'rgba(240, 253, 244, 0.7)', border: '#86efac', text: '#166534' }, // Green
+    { bg: 'rgba(254, 243, 199, 0.7)', border: '#fde047', text: '#854d0e' }, // Yellow
+    { bg: 'rgba(253, 242, 248, 0.7)', border: '#f9a8d4', text: '#9f1239' }, // Pink
+    { bg: 'rgba(243, 232, 255, 0.7)', border: '#d8b4fe', text: '#6b21a8' }, // Purple
+    { bg: 'rgba(254, 226, 226, 0.7)', border: '#fca5a5', text: '#991b1b' }, // Red
+  ];
+
   return (
     <div className="w-full h-full bg-gray-50">
       <ReactFlow
@@ -320,6 +373,94 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
         }}
         proOptions={{ hideAttribution: true }}
       >
+        {/* Swim Lane Backgrounds - Rendered BEHIND nodes */}
+        {swimLaneBoundaries.length > 0 && (
+          <svg 
+            className="react-flow__swimlanes" 
+            style={{ 
+              position: 'absolute', 
+              top: 0, 
+              left: 0, 
+              width: '100%', 
+              height: '100%', 
+              pointerEvents: 'none',
+              zIndex: 0,
+            }}
+          >
+            <defs>
+              {/* Gradient definitions for subtle depth */}
+              {swimLaneBoundaries.map((lane, idx) => {
+                const colors = laneColorPalette[idx % laneColorPalette.length];
+                return (
+                  <linearGradient 
+                    key={`gradient-${lane.id}`} 
+                    id={`gradient-${lane.id}`} 
+                    x1="0%" 
+                    y1="0%" 
+                    x2="0%" 
+                    y2="100%"
+                  >
+                    <stop offset="0%" style={{ stopColor: colors.bg, stopOpacity: 0.9 }} />
+                    <stop offset="100%" style={{ stopColor: colors.bg, stopOpacity: 0.7 }} />
+                  </linearGradient>
+                );
+              })}
+            </defs>
+
+            {swimLaneBoundaries.map((lane, idx) => {
+              const colors = laneColorPalette[idx % laneColorPalette.length];
+              
+              return (
+                <g key={lane.id}>
+                  {/* Lane background with gradient */}
+                  <rect
+                    x={lane.x}
+                    y={lane.y}
+                    width={lane.width}
+                    height={lane.height}
+                    fill={`url(#gradient-${lane.id})`}
+                    stroke={colors.border}
+                    strokeWidth="2"
+                    strokeDasharray={layoutDirection === 'DOWN' ? '8,4' : '8,4'}
+                    rx="8"
+                  />
+                  
+                  {/* Lane label */}
+                  <text
+                    x={layoutDirection === 'DOWN' ? 40 : lane.x + lane.width / 2}
+                    y={layoutDirection === 'DOWN' ? lane.y + 35 : -4800}
+                    fill={colors.text}
+                    fontSize="16"
+                    fontWeight="700"
+                    textAnchor={layoutDirection === 'DOWN' ? 'start' : 'middle'}
+                  >
+                    {lane.name}
+                  </text>
+                  
+                  {/* Subtle phase number badge */}
+                  <circle
+                    cx={layoutDirection === 'DOWN' ? 20 : lane.x + 20}
+                    cy={layoutDirection === 'DOWN' ? lane.y + 30 : -4800}
+                    r="12"
+                    fill={colors.border}
+                    opacity="0.8"
+                  />
+                  <text
+                    x={layoutDirection === 'DOWN' ? 20 : lane.x + 20}
+                    y={layoutDirection === 'DOWN' ? lane.y + 35 : -4795}
+                    fill="white"
+                    fontSize="11"
+                    fontWeight="700"
+                    textAnchor="middle"
+                  >
+                    {idx + 1}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+        )}
+
         <Background color="#cbd5e1" gap={20} size={1} />
         <Controls />
         <MiniMap
