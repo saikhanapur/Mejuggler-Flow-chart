@@ -290,7 +290,17 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
           initialEdges,
           layoutDirection
         );
-        setNodes(layoutedNodes);
+        
+        // Inject onExpand callback into each node's data
+        const nodesWithCallbacks = layoutedNodes.map(node => ({
+          ...node,
+          data: {
+            ...node.data,
+            onExpand: handleNodeExpand,
+          },
+        }));
+        
+        setNodes(nodesWithCallbacks);
         setEdges(layoutedEdges);
         setBaseNodePositions(layoutedNodes.map(n => ({ id: n.id, position: n.position })));
         setExpandedNodeId(null); // Reset expansion on layout change
@@ -299,7 +309,7 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
     };
 
     applyLayout();
-  }, [initialNodes, initialEdges, layoutDirection]);
+  }, [initialNodes, initialEdges, layoutDirection, handleNodeExpand]);
 
   const handleNodeClick = useCallback((event, node) => {
     if (onNodeClick) {
