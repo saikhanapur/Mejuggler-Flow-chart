@@ -289,18 +289,7 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
     return processData.swimLanes;
   }, [processData]);
 
-  if (isLayouting) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <div className="text-sm text-gray-600">Optimizing layout...</div>
-        </div>
-      </div>
-    );
-  }
-
-  // Calculate swim lane boundaries for visual rendering
+  // Calculate swim lane boundaries for visual rendering - MUST BE BEFORE EARLY RETURN
   const swimLaneBoundaries = useMemo(() => {
     if (!swimLanes || swimLanes.length === 0 || nodes.length === 0) return [];
 
