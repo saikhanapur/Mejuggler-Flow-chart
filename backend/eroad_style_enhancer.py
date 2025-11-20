@@ -61,7 +61,7 @@ Key principles:
 3. ADD VALUE - Current vs Ideal shows improvement opportunities
 4. CLASSIFY - Use visual status types for instant recognition
 5. USE DETECTED STRUCTURE - Swim lanes, phases, decisions, loops from analysis"""
-        ).with_model("anthropic", "claude-4-sonnet-20250514")
+        ).with_model("openai", "gpt-5")
         
         # Prepare extracted data summary
         steps = extracted_data.get('steps', [])
