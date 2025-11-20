@@ -201,9 +201,9 @@ Document to analyze:
         
         chat = LlmChat(
             api_key=self.api_key,
-            session_id=str(uuid.uuid4()),
+            session_id=f"flow_{uuid.uuid4()}",
             system_message="You are an expert document analyst extracting structured information."
-        )
+        ).with_model("anthropic", "claude-4-sonnet-20250514")
         response = await chat.send_message(UserMessage(text=prompt))
         
         # Parse AI response
@@ -337,9 +337,9 @@ Document to analyze:
         
         chat = LlmChat(
             api_key=self.api_key,
-            session_id=str(uuid.uuid4()),
+            session_id=f"flow_{uuid.uuid4()}",
             system_message="You are an expert document analyst extracting structured information."
-        )
+        ).with_model("anthropic", "claude-4-sonnet-20250514")
         response = await chat.send_message(UserMessage(text=prompt))
         
         resources = self._parse_json_response(response)
@@ -465,9 +465,9 @@ Rules:
         
         chat = LlmChat(
             api_key=self.api_key,
-            session_id=str(uuid.uuid4()),
+            session_id=f"flow_{uuid.uuid4()}",
             system_message="You are an expert document analyst extracting structured information."
-        )
+        ).with_model("anthropic", "claude-4-sonnet-20250514")
         response = await chat.send_message(UserMessage(text=prompt))
         
         resource_links = self._parse_json_response(response)
