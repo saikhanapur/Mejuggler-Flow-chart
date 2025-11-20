@@ -203,7 +203,7 @@ Document to analyze:
             session_id=str(uuid.uuid4()),
             system_message="You are an expert document analyst extracting structured information."
         )
-        response = await chat.send_message_async(UserMessage(content=prompt))
+        response = await chat.send_message(UserMessage(content=prompt))
         
         # Parse AI response
         flow_data = self._parse_json_response(response.content)
@@ -339,7 +339,7 @@ Document to analyze:
             session_id=str(uuid.uuid4()),
             system_message="You are an expert document analyst extracting structured information."
         )
-        response = await chat.send_message_async(UserMessage(content=prompt))
+        response = await chat.send_message(UserMessage(content=prompt))
         
         resources = self._parse_json_response(response.content)
         
@@ -413,7 +413,7 @@ Document context:
 """
             
             chat = LlmChat(api_key=self.api_key, model="claude-sonnet-4-20250514")
-            response = await chat.send_message_async(UserMessage(content=prompt))
+            response = await chat.send_message(UserMessage(content=prompt))
             
             batch_context = self._parse_json_response(response.content)
             context_map.update(batch_context)
@@ -467,7 +467,7 @@ Rules:
             session_id=str(uuid.uuid4()),
             system_message="You are an expert document analyst extracting structured information."
         )
-        response = await chat.send_message_async(UserMessage(content=prompt))
+        response = await chat.send_message(UserMessage(content=prompt))
         
         resource_links = self._parse_json_response(response.content)
         
