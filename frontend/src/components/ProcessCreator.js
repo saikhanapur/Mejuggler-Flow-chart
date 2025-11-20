@@ -90,7 +90,7 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
         // TEMPORARY: Use EROAD until actionable intelligence is fully debugged
         const result = await api.generateEROADStyleFlowchart(input, inputType);
         
-        console.log('=== ACTIONABLE INTELLIGENCE RESULT ===');
+        console.log('=== GENERATION RESULT ===');
         console.log('Full result:', JSON.stringify(result, null, 2));
         console.log('multipleProcesses:', result.multipleProcesses);
         console.log('processCount:', result.processCount);
