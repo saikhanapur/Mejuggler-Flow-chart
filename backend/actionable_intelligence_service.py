@@ -206,7 +206,7 @@ Document to analyze:
         response = await chat.send_message(UserMessage(text=prompt))
         
         # Parse AI response
-        flow_data = self._parse_json_response(response.content)
+        flow_data = self._parse_json_response(response)
         
         # Validate data integrity
         flow_data = self._validate_flow_data(flow_data)
