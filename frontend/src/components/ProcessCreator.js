@@ -163,7 +163,7 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
           isGuest: isGuestMode
         };
         
-        console.log('Creating actionable intelligence process:', processData);
+        console.log('Creating process:', processData);
         
         const createdProcess = await api.createProcess(processData);
         
