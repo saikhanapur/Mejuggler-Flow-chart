@@ -413,7 +413,11 @@ Document context:
 {document_text[:10000]}
 """
             
-            chat = LlmChat(api_key=self.api_key, model="claude-sonnet-4-20250514")
+            chat = LlmChat(
+                api_key=self.api_key,
+                session_id=f"context_{uuid.uuid4()}",
+                system_message="You are an expert document analyst extracting structured information."
+            ).with_model("anthropic", "claude-4-sonnet-20250514")
             response = await chat.send_message(UserMessage(text=prompt))
             
             batch_context = self._parse_json_response(response)
