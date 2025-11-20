@@ -3479,10 +3479,67 @@ async def actionable_intelligence_generation(
         logger.info(f"✅ Extraction complete! Completeness: {validation['completeness_score']}%")
         logger.info(f"📊 Extracted: {validation['extracted_counts']}")
         
+        # Transform nodes to match Process model schema
+        transformed_nodes = []
+        for node in intelligence.get("nodes", []):
+            # Build description from quickContext and fullDetails
+            purpose = node.get("fullDetails", {}).get("purpose", "")
+            timeline = node.get("quickContext", {}).get("timeline", "")
+            actors = node.get("quickContext", {}).get("actors", [])
+            
+            description_parts = []
+            if purpose:
+                description_parts.append(f"Purpose: {purpose}")
+            if timeline:
+                description_parts.append(f"Timeline: {timeline}")
+            if actors:
+                description_parts.append(f"Actors: {', '.join(actors)}")
+            
+            transformed_node = {
+                "id": node.get("id"),
+                "title": node.get("title"),
+                "type": node.get("type", "action"),
+                "status": node.get("category", "operational"),  # Map category to status
+                "description": "\n\n".join(description_parts) if description_parts else node.get("title", ""),
+                "actors": actors,
+                "swimLane": node.get("swimLane"),
+                "subSteps": node.get("quickContext", {}).get("keyActions", []),
+                "dependencies": [],
+                "parallelWith": [],
+                "failures": [],
+                "position": {"x": 0, "y": 0},
+                # Preserve the rich intelligence data
+                "operationalDetails": {
+                    "purpose": purpose,
+                    "specificActions": node.get("fullDetails", {}).get("allActions", []),
+                    "timeline": timeline,
+                    "owner": node.get("fullDetails", {}).get("owner"),
+                    "successCriteria": node.get("fullDetails", {}).get("successCriteria"),
+                    "troubleshooting": node.get("fullDetails", {}).get("troubleshooting", []),
+                    "decisionLogic": node.get("fullDetails", {}).get("decisionLogic"),
+                },
+                # Store actionable intelligence metadata
+                "aiRecommendations": {
+                    "linkedResources": node.get("linkedResources", {}),
+                    "urgency": node.get("quickContext", {}).get("urgency"),
+                }
+            }
+            transformed_nodes.append(transformed_node)
+        
+        # Transform edges (keep as-is, they match the schema)
+        transformed_edges = intelligence.get("edges", [])
+        
+        # Build transformed process
+        transformed_intelligence = {
+            **intelligence,
+            "nodes": transformed_nodes,
+            "edges": transformed_edges,
+        }
+        
         # Return in format expected by frontend
         return {
             "multipleProcesses": False,
-            "processes": [intelligence],
+            "processes": [transformed_intelligence],
             "metadata": result["metadata"],
             "validation": validation
         }
