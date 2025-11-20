@@ -453,6 +453,44 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
     await processWithAI(extractedText, 'document', null, null);
   };
 
+
+  const processWithComprehensiveResult = async (comprehensiveResult) => {
+    // 🎯 NEW: Direct processing with comprehensive result (no additional AI calls needed)
+    setProcessing(true);
+    setShowContextAdder(false);
+    
+    try {
+      console.log('🎯 Using comprehensive extraction result directly');
+      
+      setProcessingStep('Preparing actionable intelligence flowchart...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // The comprehensive result is already in the format we need
+      setExtractedData(comprehensiveResult);
+      
+      const process = comprehensiveResult.processes[0];
+      const validation = comprehensiveResult.validation;
+      
+      toast.success(
+        <div>
+          <div className="font-semibold">✅ Actionable Intelligence Ready!</div>
+          <div className="text-sm text-slate-600 mt-1">
+            {process.nodes.length} steps • 
+            {(process.resources?.contacts || []).length} contacts • 
+            {(process.resources?.templates || []).length} templates • 
+            {validation?.completeness_score || 0}% complete
+          </div>
+        </div>,
+        { duration: 5000 }
+      );
+    } catch (error) {
+      toast.error('Failed to process comprehensive result');
+      console.error(error);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const processWithAI = async (input, inputType, additionalContext, smartAnswers) => {
     setProcessing(true);
     setShowContextAdder(false);
