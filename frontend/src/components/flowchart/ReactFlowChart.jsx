@@ -412,7 +412,11 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
   }, [onNodeClick]);
 
   const swimLanes = useMemo(() => {
-    if (!processData?.swimLanes) return [];
+    if (!processData?.swimLanes) {
+      console.log('ℹ️ No swim lanes data from backend');
+      return [];
+    }
+    console.log(`🏊 Swim lanes detected: ${processData.swimLanes.length}`, processData.swimLanes);
     return processData.swimLanes;
   }, [processData]);
 
