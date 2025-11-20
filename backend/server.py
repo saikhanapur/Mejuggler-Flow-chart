@@ -4107,17 +4107,25 @@ async def create_process(process_data: dict, request: Request, response: Respons
                 detail=f"Missing required fields: {', '.join(missing_fields)}"
             )
             
+        # Log what we're trying to create
+        logger.info(f"📝 Creating process with {len(process_data.get('nodes', []))} nodes and {len(process_data.get('edges', []))} edges")
+        
         # Create and validate Process object
         process = Process(**process_data)
         
         # Convert to dict for MongoDB
         doc = process.model_dump()
+        
+        # Log what Pydantic produced
+        logger.info(f"📊 After Pydantic validation: {len(doc.get('nodes', []))} nodes, {len(doc.get('edges', []))} edges")
+        
         doc['createdAt'] = doc['createdAt'].isoformat() if isinstance(doc['createdAt'], datetime) else doc['createdAt']
         doc['updatedAt'] = doc['updatedAt'].isoformat() if isinstance(doc['updatedAt'], datetime) else doc['updatedAt']
         if doc.get('publishedAt'):
             doc['publishedAt'] = doc['publishedAt'].isoformat() if isinstance(doc['publishedAt'], datetime) else doc['publishedAt']
         
         await db.processes.insert_one(doc)
+        logger.info(f"✅ Process saved to MongoDB with ID: {doc.get('id')}")
         return process
     except HTTPException:
         raise
