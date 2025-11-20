@@ -128,14 +128,14 @@ class ActionableIntelligenceService:
         # ⚠️ CRITICAL: Check document size and warn about truncation
         doc_length = len(document_text)
         
-        if doc_length > 80000:
+        if doc_length > 40000:
             logger.warning(
                 f"⚠️ LARGE DOCUMENT WARNING: {doc_length:,} characters\n"
-                f"   Processing first 80,000 chars (~40 pages).\n"
-                f"   Document may be truncated. Consider chunking implementation."
+                f"   Processing first 40,000 chars (~20 pages).\n"
+                f"   Document may be truncated for performance."
             )
         
-        if doc_length > 150000:
+        if doc_length > 100000:
             logger.error(
                 f"❌ VERY LARGE DOCUMENT: {doc_length:,} characters\n"
                 f"   This significantly exceeds recommended limits.\n"
