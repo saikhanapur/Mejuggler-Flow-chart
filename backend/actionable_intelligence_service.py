@@ -5,6 +5,7 @@
 import json
 import re
 import logging
+import uuid
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timezone
 from emergentintegrations.llm.chat import LlmChat, UserMessage
