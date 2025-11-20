@@ -202,9 +202,8 @@ Document to analyze:
         chat = LlmChat(
             api_key=self.api_key,
             session_id=f"flow_{uuid.uuid4()}",
-            system_message="You are an expert document analyst extracting structured information.",
-            max_tokens=32000
-        ).with_model("anthropic", "claude-4-sonnet-20250514")
+            system_message="You are an expert document analyst extracting structured information."
+        ).with_model("anthropic", "claude-4-sonnet-20250514").with_params(max_tokens=32000)
         response = await chat.send_message(UserMessage(text=prompt))
         
         logger.info(f"🤖 AI Response (first 500 chars): {response[:500]}")
@@ -345,9 +344,8 @@ Document to analyze:
         chat = LlmChat(
             api_key=self.api_key,
             session_id=f"flow_{uuid.uuid4()}",
-            system_message="You are an expert document analyst extracting structured information.",
-            max_tokens=32000
-        ).with_model("anthropic", "claude-4-sonnet-20250514")
+            system_message="You are an expert document analyst extracting structured information."
+        ).with_model("anthropic", "claude-4-sonnet-20250514").with_params(max_tokens=32000)
         response = await chat.send_message(UserMessage(text=prompt))
         
         resources = self._parse_json_response(response)
@@ -478,9 +476,8 @@ Rules:
         chat = LlmChat(
             api_key=self.api_key,
             session_id=f"flow_{uuid.uuid4()}",
-            system_message="You are an expert document analyst extracting structured information.",
-            max_tokens=32000
-        ).with_model("anthropic", "claude-4-sonnet-20250514")
+            system_message="You are an expert document analyst extracting structured information."
+        ).with_model("anthropic", "claude-4-sonnet-20250514").with_params(max_tokens=32000)
         response = await chat.send_message(UserMessage(text=prompt))
         
         resource_links = self._parse_json_response(response)
