@@ -90,7 +90,7 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
         // 🎯 Actionable Intelligence: Complete extraction with all resources
         const result = await api.analyzeDocumentComprehensive(input, inputType);
         
-        console.log('=== EROAD GENERATION RESULT ===');
+        console.log('=== ACTIONABLE INTELLIGENCE RESULT ===');
         console.log('Full result:', JSON.stringify(result, null, 2));
         console.log('multipleProcesses:', result.multipleProcesses);
         console.log('processCount:', result.processCount);
