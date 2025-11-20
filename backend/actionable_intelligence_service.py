@@ -341,7 +341,7 @@ Document to analyze:
         )
         response = await chat.send_message(UserMessage(text=prompt))
         
-        resources = self._parse_json_response(response.content)
+        resources = self._parse_json_response(response)
         
         # Generate IDs if missing
         resources = self._ensure_resource_ids(resources)
