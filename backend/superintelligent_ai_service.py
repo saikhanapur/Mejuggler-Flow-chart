@@ -248,7 +248,7 @@ Be thorough. Return valid JSON only."""
                 simplified_prompt = f"""Analyze this document and extract basic information. Return ONLY a valid JSON object.
 
 Document:
-{document_text[:40000]}
+{document_text[:20000]}
 
 Return this exact JSON structure (no additional text):
 {{
