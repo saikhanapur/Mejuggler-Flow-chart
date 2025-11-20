@@ -415,7 +415,7 @@ Document context:
             chat = LlmChat(api_key=self.api_key, model="claude-sonnet-4-20250514")
             response = await chat.send_message(UserMessage(text=prompt))
             
-            batch_context = self._parse_json_response(response.content)
+            batch_context = self._parse_json_response(response)
             context_map.update(batch_context)
         
         return context_map
