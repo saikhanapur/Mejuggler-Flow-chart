@@ -48,10 +48,10 @@ class SuperintelligentAIService:
         
         # ⚠️ CRITICAL: Check document size and warn
         doc_length = len(document_text)
-        if doc_length > 40000:
+        if doc_length > 20000:
             logger.warning(
                 f"⚠️ LARGE DOCUMENT: {doc_length:,} characters\n"
-                f"   Processing first 40,000 chars (~20 pages)"
+                f"   Processing first 20,000 chars (~10 pages)"
             )
         if doc_length > 100000:
             logger.error(
