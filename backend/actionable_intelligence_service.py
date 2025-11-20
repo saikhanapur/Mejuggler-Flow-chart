@@ -219,7 +219,7 @@ CRITICAL RULES:
 - VALIDATE IDs: All edge sources/targets must exist in nodes
 
 Document to analyze:
-{document_text[:40000]}
+{document_text[:20000]}
 """
         
         chat = LlmChat(
