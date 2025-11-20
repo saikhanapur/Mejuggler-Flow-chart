@@ -280,44 +280,7 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  // Apply automatic layout - respects direction
-  useEffect(() => {
-    const applyLayout = async () => {
-      if (initialNodes.length > 0) {
-        setIsLayouting(true);
-        const { nodes: layoutedNodes, edges: layoutedEdges } = await getLayoutedElements(
-          initialNodes,
-          initialEdges,
-          layoutDirection
-        );
-        
-        // Inject onExpand callback into each node's data
-        const nodesWithCallbacks = layoutedNodes.map(node => ({
-          ...node,
-          data: {
-            ...node.data,
-            onExpand: handleNodeExpand,
-          },
-        }));
-        
-        setNodes(nodesWithCallbacks);
-        setEdges(layoutedEdges);
-        setBaseNodePositions(layoutedNodes.map(n => ({ id: n.id, position: n.position })));
-        setExpandedNodeId(null); // Reset expansion on layout change
-        setIsLayouting(false);
-      }
-    };
-
-    applyLayout();
-  }, [initialNodes, initialEdges, layoutDirection, handleNodeExpand]);
-
-  const handleNodeClick = useCallback((event, node) => {
-    if (onNodeClick) {
-      onNodeClick(node.data.originalNode);
-    }
-  }, [onNodeClick]);
-
-  // Smart layout adjustment when node expands/collapses
+  // Smart layout adjustment when node expands/collapses - MUST BE BEFORE useEffect
   const handleNodeExpand = useCallback((nodeId, isExpanded, expandedHeight) => {
     if (layoutDirection !== 'DOWN') return; // Only for vertical layout
 
