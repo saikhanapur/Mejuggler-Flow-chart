@@ -30,6 +30,15 @@ export const api = {
     return res.data;
   },
 
+  // 🎯 NEW: Actionable Intelligence - Comprehensive extraction
+  analyzeDocumentComprehensive: async (text, inputType) => {
+    const res = await axios.post(`${API}/process/actionable-intelligence-generate`, { 
+      text, 
+      inputType
+    });
+    return res.data;
+  },
+
   parseProcess: async (text, inputType, additionalContext = null, contextAnswers = null) => {
     const res = await axios.post(`${API}/process/parse`, { 
       text, 
