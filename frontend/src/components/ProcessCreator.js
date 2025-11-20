@@ -87,8 +87,8 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
       setProcessingStep('Creating intelligent flowchart...');
       
       try {
-        // 🎯 Actionable Intelligence: Complete extraction with all resources
-        const result = await api.analyzeDocumentComprehensive(input, inputType);
+        // TEMPORARY: Use EROAD until actionable intelligence is fully debugged
+        const result = await api.generateEROADStyleFlowchart(input, inputType);
         
         console.log('=== ACTIONABLE INTELLIGENCE RESULT ===');
         console.log('Full result:', JSON.stringify(result, null, 2));
