@@ -417,9 +417,9 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
           
           const timeoutPromise = new Promise((_, reject) => 
             setTimeout(() => {
-              console.error('⏱️ Layout TIMEOUT after 15 seconds!');
+              console.error('⏱️ Layout TIMEOUT after 60 seconds!');
               reject(new Error('Layout timeout'));
-            }, 15000)
+            }, 60000)
           );
           
           const { nodes: layoutedNodes, edges: layoutedEdges } = await Promise.race([
