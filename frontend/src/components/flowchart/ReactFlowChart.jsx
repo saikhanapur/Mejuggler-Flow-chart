@@ -331,7 +331,7 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
     });
   }, [layoutDirection, baseNodePositions, setNodes]);
 
-  // Apply automatic layout - respects direction (NOW AFTER handleNodeExpand)
+  // Apply automatic layout - respects direction
   useEffect(() => {
     const applyLayout = async () => {
       if (initialNodes.length > 0) {
@@ -342,16 +342,7 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
           layoutDirection
         );
         
-        // Inject onExpand callback into each node's data
-        const nodesWithCallbacks = layoutedNodes.map(node => ({
-          ...node,
-          data: {
-            ...node.data,
-            onExpand: handleNodeExpand,
-          },
-        }));
-        
-        setNodes(nodesWithCallbacks);
+        setNodes(layoutedNodes);
         setEdges(layoutedEdges);
         setBaseNodePositions(layoutedNodes.map(n => ({ id: n.id, position: n.position })));
         setExpandedNodeId(null); // Reset expansion on layout change
@@ -360,7 +351,7 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
     };
 
     applyLayout();
-  }, [initialNodes, initialEdges, layoutDirection, handleNodeExpand]);
+  }, [initialNodes, initialEdges, layoutDirection]); // REMOVED handleNodeExpand from deps!
 
   const handleNodeClick = useCallback((event, node) => {
     if (onNodeClick) {
