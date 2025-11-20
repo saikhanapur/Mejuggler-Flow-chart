@@ -39,8 +39,25 @@ class SuperintelligentAIService:
         STAGE 0: Document Intelligence & Classification
         
         Now includes EROAD-style enhancement option
+        
+        CRITICAL: Document Size Handling
+        - Processes up to 80,000 characters (~40 pages)
+        - Warns if document exceeds limits
         """
         logger.info("🧠 STAGE 0: Document Intelligence & Classification")
+        
+        # ⚠️ CRITICAL: Check document size and warn
+        doc_length = len(document_text)
+        if doc_length > 80000:
+            logger.warning(
+                f"⚠️ LARGE DOCUMENT: {doc_length:,} characters\n"
+                f"   Processing first 80,000 chars (~40 pages)"
+            )
+        if doc_length > 150000:
+            logger.error(
+                f"❌ VERY LARGE DOCUMENT: {doc_length:,} characters\n"
+                f"   Results will likely be incomplete."
+            )
         
         try:
             # Check learning database for similar patterns
