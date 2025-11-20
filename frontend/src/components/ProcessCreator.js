@@ -87,8 +87,8 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
       setProcessingStep('Creating intelligent flowchart...');
       
       try {
-        // EROAD-style: Extract → Enhance → Display
-        const result = await api.generateEROADStyleFlowchart(input, inputType);
+        // 🎯 Actionable Intelligence: Complete extraction with all resources
+        const result = await api.analyzeDocumentComprehensive(input, inputType);
         
         console.log('=== EROAD GENERATION RESULT ===');
         console.log('Full result:', JSON.stringify(result, null, 2));
