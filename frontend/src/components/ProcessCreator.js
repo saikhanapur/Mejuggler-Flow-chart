@@ -306,16 +306,43 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
   };
 
   const analyzeDocumentFallback = async (text, inputType) => {
-    // Fallback to regular API if streaming fails
+    // 🎯 Using NEW Actionable Intelligence Service for comprehensive extraction
     try {
-      const analysisResult = await api.analyzeDocument(text, inputType);
+      console.log('🎯 Using Actionable Intelligence Service...');
+      const comprehensiveResult = await api.analyzeDocumentComprehensive(text, inputType);
+      
+      // Transform to expected format for compatibility
+      const analysisResult = {
+        is_multi_process: comprehensiveResult.multipleProcesses || false,
+        process_count: comprehensiveResult.processes?.length || 1,
+        process_type: comprehensiveResult.processes?.[0]?.type || 'business_continuity',
+        detected_steps: comprehensiveResult.processes?.[0]?.nodes?.length || 0,
+        complexity: comprehensiveResult.processes?.[0]?.nodes?.length > 20 ? 'complex' : 'moderate',
+        metadata: comprehensiveResult.metadata,
+        validation: comprehensiveResult.validation
+      };
+      
+      console.log('✅ Comprehensive extraction complete:', {
+        nodes: analysisResult.detected_steps,
+        completeness: comprehensiveResult.validation?.completeness_score
+      });
+      
       setAnalysis(analysisResult);
       setShowLiveProgress(false);
-      handleAnalysisComplete(analysisResult, text, inputType);
+      handleAnalysisComplete(analysisResult, text, inputType, comprehensiveResult);
     } catch (error) {
-      setAnalyzing(false);
-      setShowLiveProgress(false);
-      toast.error('Analysis failed. Please try again.');
+      console.error('❌ Comprehensive analysis failed, falling back to simple:', error);
+      // Fallback to old simple service if comprehensive fails
+      try {
+        const analysisResult = await api.analyzeDocument(text, inputType);
+        setAnalysis(analysisResult);
+        setShowLiveProgress(false);
+        handleAnalysisComplete(analysisResult, text, inputType);
+      } catch (fallbackError) {
+        setAnalyzing(false);
+        setShowLiveProgress(false);
+        toast.error('Analysis failed. Please try again.');
+      }
     }
   };
 
