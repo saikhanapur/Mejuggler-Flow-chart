@@ -177,7 +177,7 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
         }, 1000);
         
       } catch (error) {
-        console.error('Actionable intelligence generation failed:', error);
+        console.error('Generation failed:', error);
         toast.error(`Failed to generate flowchart: ${error.message || 'Please try again.'}`);
         setProcessing(false);
       }
