@@ -281,48 +281,47 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  // Smart layout adjustment when node expands/collapses - MUST BE BEFORE useEffect
+  // Smart layout adjustment when node expands/collapses - handles MULTIPLE expanded nodes!
   const handleNodeExpand = useCallback((nodeId, isExpanded, expandedHeight) => {
     if (layoutDirection !== 'DOWN') return; // Only for vertical layout
+
+    // Update the expanded nodes registry
+    if (isExpanded) {
+      expandedNodesRef.current[nodeId] = expandedHeight;
+    } else {
+      delete expandedNodesRef.current[nodeId];
+    }
 
     setExpandedNodeId(isExpanded ? nodeId : null);
 
     setNodes((currentNodes) => {
-      const expandedNodeIndex = currentNodes.findIndex(n => n.id === nodeId);
-      if (expandedNodeIndex === -1) return currentNodes;
+      // Sort base positions by Y coordinate to process top-to-bottom
+      const sortedBasePositions = [...baseNodePositionsRef.current].sort((a, b) => 
+        a.position.y - b.position.y
+      );
 
-      const expandedNode = currentNodes[expandedNodeIndex];
-      const basePosition = baseNodePositionsRef.current.find(bp => bp.id === nodeId);
-      
-      if (!basePosition) return currentNodes;
-
-      // Calculate how much space the expanded content needs
-      const extraSpace = isExpanded ? expandedHeight : 0;
-
-      // Update all nodes
-      return currentNodes.map((node, index) => {
+      // Calculate cumulative offset for each node
+      return currentNodes.map((node) => {
         const nodeBasePos = baseNodePositionsRef.current.find(bp => bp.id === node.id);
         if (!nodeBasePos) return node;
 
-        // If this node is below the expanded node, push it down
-        if (nodeBasePos.position.y > basePosition.position.y) {
-          return {
-            ...node,
-            position: {
-              ...node.position,
-              y: nodeBasePos.position.y + extraSpace,
-            },
-            style: {
-              ...node.style,
-              transition: 'all 0.3s ease-in-out',
-            },
-          };
+        // Calculate total offset from all expanded nodes above this one
+        let cumulativeOffset = 0;
+        for (const [expandedId, height] of Object.entries(expandedNodesRef.current)) {
+          const expandedBasePos = baseNodePositionsRef.current.find(bp => bp.id === expandedId);
+          if (expandedBasePos && expandedBasePos.position.y < nodeBasePos.position.y) {
+            cumulativeOffset += height;
+          }
         }
 
-        // If this is the expanded node or above it, keep original position
+        // Apply the cumulative offset
         return {
           ...node,
-          position: nodeBasePos.position,
+          position: {
+            ...node.position,
+            x: nodeBasePos.position.x,
+            y: nodeBasePos.position.y + cumulativeOffset,
+          },
           style: {
             ...node.style,
             transition: 'all 0.3s ease-in-out',
@@ -330,7 +329,7 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
         };
       });
     });
-  }, [layoutDirection, setNodes]); // Removed baseNodePositions dependency!
+  }, [layoutDirection, setNodes]);
 
   // Apply automatic layout - respects direction
   useEffect(() => {
