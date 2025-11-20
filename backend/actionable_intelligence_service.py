@@ -588,10 +588,13 @@ Rules:
             content = re.sub(r'```\s*$', '', content)
             content = content.strip()
             
-            return json.loads(content)
+            parsed = json.loads(content)
+            logger.info(f"✅ Successfully parsed JSON response")
+            return parsed
         except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse JSON: {e}")
-            logger.error(f"Content: {content[:500]}")
+            logger.error(f"❌ Failed to parse JSON: {e}")
+            logger.error(f"❌ Content preview: {content[:1000]}")
+            logger.error(f"❌ Returning empty dict - THIS WILL CAUSE 0 NODES!")
             return {}
     
     def _validate_flow_data(self, flow_data: Dict) -> Dict:
