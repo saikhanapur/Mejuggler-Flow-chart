@@ -357,6 +357,7 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
         setNodes(nodesWithCallbacks);
         setEdges(layoutedEdges);
         setExpandedNodeId(null); // Reset expansion on layout change
+        expandedNodesRef.current = {}; // Clear all expanded nodes tracking
         setIsLayouting(false);
       }
     };
