@@ -124,7 +124,7 @@ When you upload a document now, you should see:
 ## How to Test
 
 1. **Upload RingCentral Document:**
-   - Go to: https://flowvision-2.preview.emergentagent.com
+   - Go to: https://sop-transformer.preview.emergentagent.com
    - Upload: BCP_RingCentral Outage All_v1.3.pdf
    - Wait for generation
 
