@@ -376,29 +376,56 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
     const applyLayout = async () => {
       if (initialNodes.length > 0) {
         setIsLayouting(true);
-        const { nodes: layoutedNodes, edges: layoutedEdges } = await getLayoutedElements(
-          initialNodes,
-          initialEdges,
-          layoutDirection
-        );
         
-        // Store base positions in ref (doesn't trigger re-renders)
-        baseNodePositionsRef.current = layoutedNodes.map(n => ({ id: n.id, position: n.position }));
-        
-        // Inject onExpand callback
-        const nodesWithCallbacks = layoutedNodes.map(node => ({
-          ...node,
-          data: {
-            ...node.data,
-            onExpand: handleNodeExpand,
-          },
-        }));
-        
-        setNodes(nodesWithCallbacks);
-        setEdges(layoutedEdges);
-        setExpandedNodeId(null); // Reset expansion on layout change
-        expandedNodesRef.current = {}; // Clear all expanded nodes tracking
-        setIsLayouting(false);
+        try {
+          // Add timeout to prevent infinite hanging
+          const layoutPromise = getLayoutedElements(
+            initialNodes,
+            initialEdges,
+            layoutDirection
+          );
+          
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Layout timeout')), 15000)
+          );
+          
+          const { nodes: layoutedNodes, edges: layoutedEdges } = await Promise.race([
+            layoutPromise,
+            timeoutPromise
+          ]);
+          
+          // Store base positions in ref (doesn't trigger re-renders)
+          baseNodePositionsRef.current = layoutedNodes.map(n => ({ id: n.id, position: n.position }));
+          
+          // Inject onExpand callback
+          const nodesWithCallbacks = layoutedNodes.map(node => ({
+            ...node,
+            data: {
+              ...node.data,
+              onExpand: handleNodeExpand,
+            },
+          }));
+          
+          setNodes(nodesWithCallbacks);
+          setEdges(layoutedEdges);
+          setExpandedNodeId(null); // Reset expansion on layout change
+          expandedNodesRef.current = {}; // Clear all expanded nodes tracking
+        } catch (error) {
+          console.error('❌ Layout failed:', error);
+          // Use fallback simple layout
+          const fallbackNodes = initialNodes.map((node, index) => ({
+            ...node,
+            position: { x: 100, y: index * 200 },
+            data: {
+              ...node.data,
+              onExpand: handleNodeExpand,
+            },
+          }));
+          setNodes(fallbackNodes);
+          setEdges(initialEdges);
+        } finally {
+          setIsLayouting(false);
+        }
       }
     };
 
