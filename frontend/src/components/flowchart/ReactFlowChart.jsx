@@ -391,11 +391,19 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
 
   // Apply automatic layout - respects direction
   useEffect(() => {
+    console.log('🔧 Layout effect triggered', {
+      initialNodesCount: initialNodes.length,
+      initialEdgesCount: initialEdges.length,
+      layoutDirection
+    });
+    
     const applyLayout = async () => {
       if (initialNodes.length > 0) {
+        console.log('🚀 Starting layout calculation...');
         setIsLayouting(true);
         
         try {
+          console.log('⏱️ Calling getLayoutedElements with timeout...');
           // Add timeout to prevent infinite hanging
           const layoutPromise = getLayoutedElements(
             initialNodes,
@@ -404,13 +412,21 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
           );
           
           const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Layout timeout')), 15000)
+            setTimeout(() => {
+              console.error('⏱️ Layout TIMEOUT after 15 seconds!');
+              reject(new Error('Layout timeout'));
+            }, 15000)
           );
           
           const { nodes: layoutedNodes, edges: layoutedEdges } = await Promise.race([
             layoutPromise,
             timeoutPromise
           ]);
+          
+          console.log('✅ Layout calculation complete!', {
+            nodesCount: layoutedNodes.length,
+            edgesCount: layoutedEdges.length
+          });
           
           // Store base positions in ref (doesn't trigger re-renders)
           baseNodePositionsRef.current = layoutedNodes.map(n => ({ id: n.id, position: n.position }));
@@ -424,6 +440,7 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
             },
           }));
           
+          console.log('📐 Setting nodes and edges...');
           setNodes(nodesWithCallbacks);
           setEdges(layoutedEdges);
           setExpandedNodeId(null); // Reset expansion on layout change
@@ -439,11 +456,16 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
               onExpand: handleNodeExpand,
             },
           }));
+          console.log('🔄 Using fallback layout with', fallbackNodes.length, 'nodes');
           setNodes(fallbackNodes);
           setEdges(initialEdges);
         } finally {
+          console.log('🏁 Layout complete, setting isLayouting = false');
           setIsLayouting(false);
         }
+      } else {
+        console.warn('⚠️ No initialNodes, skipping layout');
+        setIsLayouting(false);
       }
     };
 
