@@ -206,11 +206,17 @@ Document to analyze:
         ).with_model("anthropic", "claude-4-sonnet-20250514")
         response = await chat.send_message(UserMessage(text=prompt))
         
+        logger.info(f"🤖 AI Response (first 500 chars): {response[:500]}")
+        
         # Parse AI response
         flow_data = self._parse_json_response(response)
         
+        logger.info(f"📊 Parsed flow_data has {len(flow_data.get('nodes', []))} nodes")
+        
         # Validate data integrity
         flow_data = self._validate_flow_data(flow_data)
+        
+        logger.info(f"✅ After validation: {len(flow_data.get('nodes', []))} nodes")
         
         return flow_data
     
