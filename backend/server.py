@@ -3634,7 +3634,7 @@ async def generate_coverage_report(process_id: str, input_data: ProcessInput):
             api_key=os.environ.get("EMERGENT_LLM_KEY"),
             session_id=f"coverage_{uuid.uuid4()}",
             system_message="You are an expert at verifying process documentation completeness."
-        ).with_model("anthropic", "claude-4-sonnet-20250514")
+        ).with_model("openai", "gpt-5")
         
         # Extract node titles and operational details for comparison
         node_info = []
