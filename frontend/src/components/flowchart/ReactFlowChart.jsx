@@ -291,7 +291,7 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
       if (expandedNodeIndex === -1) return currentNodes;
 
       const expandedNode = currentNodes[expandedNodeIndex];
-      const basePosition = baseNodePositions.find(bp => bp.id === nodeId);
+      const basePosition = baseNodePositionsRef.current.find(bp => bp.id === nodeId);
       
       if (!basePosition) return currentNodes;
 
@@ -300,7 +300,7 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
 
       // Update all nodes
       return currentNodes.map((node, index) => {
-        const nodeBasePos = baseNodePositions.find(bp => bp.id === node.id);
+        const nodeBasePos = baseNodePositionsRef.current.find(bp => bp.id === node.id);
         if (!nodeBasePos) return node;
 
         // If this node is below the expanded node, push it down
@@ -329,7 +329,7 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
         };
       });
     });
-  }, [layoutDirection, baseNodePositions, setNodes]);
+  }, [layoutDirection, setNodes]); // Removed baseNodePositions dependency!
 
   // Apply automatic layout - respects direction
   useEffect(() => {
