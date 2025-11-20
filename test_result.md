@@ -1964,3 +1964,98 @@ agent_communication:
 - User chose **Option A**: Fix bugs first, polish design, then innovate
 - Abandoned "revolutionary redesign" in favor of pragmatic excellence
 
+
+#====================================================================================================
+# FORK AGENT - CRITICAL BLOCKER FIX
+# Date: 2025-11-20
+#====================================================================================================
+
+## BLOCKER IDENTIFIED: Frontend Calling Wrong API Endpoint
+
+### Issue Summary:
+The frontend was calling the OLD `api.generateEROADStyleFlowchart()` endpoint which uses `superintelligent_ai_service.py` instead of the NEW powerful `actionable_intelligence_service.py` that extracts comprehensive intelligence (contacts, templates, systems, etc.)
+
+### Root Cause:
+- Backend had the correct endpoint: `/api/process/actionable-intelligence-generate` ✅
+- Frontend API utility had the correct function: `api.analyzeDocumentComprehensive()` ✅
+- BUT ProcessCreator.js was calling the wrong function: `api.generateEROADStyleFlowchart()` ❌
+
+### Fixes Applied:
+
+#### 1. Backend Service Bug Fixes:
+**File**: `/app/backend/actionable_intelligence_service.py`
+
+- ✅ Fixed: `send_message_async()` → `send_message()` (4 occurrences)
+- ✅ Fixed: `UserMessage(content=...)` → `UserMessage(text=...)` (4 occurrences)
+- ✅ Fixed: `response.content` → `response` (4 occurrences)
+- ✅ Fixed: LlmChat initialization - added `.with_model("anthropic", "claude-4-sonnet-20250514")` (4 occurrences)
+- ✅ Added: `import uuid` for session ID generation
+
+#### 2. Frontend API Wiring Fix:
+**File**: `/app/frontend/src/components/ProcessCreator.js`
+
+**Before:**
+```javascript
+const result = await api.generateEROADStyleFlowchart(input, inputType);
+```
+
+**After:**
+```javascript
+const result = await api.analyzeDocumentComprehensive(input, inputType);
+```
+
+### Backend Endpoint Verification:
+
+**Test Command:**
+```bash
+curl -X POST "https://sop-transformer.preview.emergentagent.com/api/process/actionable-intelligence-generate" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Emergency Response: Step 1 - Call Mike at 555-0100. Step 2 - Check https://monitor.com.",
+    "inputType": "document"
+  }'
+```
+
+**Result:** ✅ HTTP 200 SUCCESS
+
+**Response Structure:**
+```json
+{
+  "multipleProcesses": false,
+  "processes": [{
+    "id": "...",
+    "name": "User Document",
+    "type": "actionable_intelligence",
+    "nodes": [...],  // With full quickContext and fullDetails
+    "edges": [...],
+    "swimLanes": [...],
+    "resources": {
+      "contacts": [...],     // ✅ NEW
+      "templates": [...],    // ✅ NEW
+      "systems": [...],      // ✅ NEW
+      "guides": [...]        // ✅ NEW
+    },
+    "resourceLinks": {...}   // ✅ NEW: Links resources to nodes
+  }],
+  "metadata": {...},
+  "validation": {
+    "completeness_score": 45,
+    "extracted_counts": {...}
+  }
+}
+```
+
+## Status:
+
+- ✅ Backend endpoint: WORKING
+- ✅ Frontend wiring: FIXED
+- ⏳ Integration testing: PENDING (needs user testing with complex document)
+- ⏳ UI display of resources: NOT YET IMPLEMENTED
+
+## Next Steps:
+
+1. User to test with complex SOP document
+2. Verify rich data flows correctly to UI
+3. Tune AI prompts for accuracy (swim lanes, decision points)
+4. Implement UI components for displaying resources (badges, panel)
+
