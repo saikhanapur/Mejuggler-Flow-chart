@@ -439,7 +439,7 @@ Return JSON:
 }}
 
 Document context:
-{document_text[:80000]}
+{document_text[:40000]}
 """
             
             chat = LlmChat(
