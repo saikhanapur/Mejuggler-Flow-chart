@@ -548,10 +548,10 @@ TARGET NODES:
 {chr(10).join(node_summary)}
 
 REFERENCE MATERIAL:
-{reference_content[:15000]}
+{reference_content[:80000]}
 
 FULL DOCUMENT CONTEXT (for cross-reference):
-{document_text[:25000]}
+{document_text[:80000]}
 
 FOR EACH NODE, EXTRACT:
 1. **specificActions**: DETAILED HOW-TO STEPS (break down the action into specific instructions)
