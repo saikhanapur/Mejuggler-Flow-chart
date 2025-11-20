@@ -54,7 +54,7 @@ class EnterpriseAIService:
             api_key=self.api_key,
             session_id=f"structure_{hash(input_text[:100])}",
             system_message="You are an expert process architect. Extract HIGH-LEVEL strategic phases, not micro-steps."
-        ).with_model("anthropic", "claude-4-sonnet-20250514")
+        ).with_model("openai", "gpt-5")
         
         prompt = f"""SMART PROCESS EXTRACTION
 
@@ -141,7 +141,7 @@ RETURN VALID JSON ONLY"""
                 api_key=self.api_key,
                 session_id=f"enrich_{hash(input_text[:100])}",
                 system_message="Extract EXECUTABLE details that ADD VALUE."
-            ).with_model("anthropic", "claude-4-sonnet-20250514")
+            ).with_model("openai", "gpt-5")
             
             prompt = f"""EXTRACT VALUE-ADD OPERATIONAL DETAILS
 
