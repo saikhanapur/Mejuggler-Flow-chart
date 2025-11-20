@@ -346,22 +346,32 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
     }
   };
 
-  const handleAnalysisComplete = (analysisResult, text, inputType) => {
+  const handleAnalysisComplete = (analysisResult, text, inputType, comprehensiveResult = null) => {
     setAnalyzing(false);
     
-    // Show success toast
+    // Show success toast with completeness score if available
+    const completenessInfo = comprehensiveResult?.validation?.completeness_score 
+      ? ` • ${comprehensiveResult.validation.completeness_score}% complete`
+      : '';
+    
     toast.success(
       <div>
         <div className="font-semibold">✨ Analysis Complete!</div>
         <div className="text-sm text-slate-600 mt-1">
           {analysisResult.is_multi_process 
             ? `${analysisResult.process_count} processes detected!`
-            : `${analysisResult.process_type} • ${analysisResult.detected_steps} steps • ${analysisResult.complexity} complexity`
+            : `${analysisResult.process_type} • ${analysisResult.detected_steps} steps • ${analysisResult.complexity} complexity${completenessInfo}`
           }
         </div>
       </div>,
       { duration: 4000 }
     );
+    
+    // If we have comprehensive result, use it directly
+    if (comprehensiveResult && comprehensiveResult.processes) {
+      processWithComprehensiveResult(comprehensiveResult);
+      return;
+    }
     
     // Skip questions for multi-process documents
     if (analysisResult.is_multi_process) {
