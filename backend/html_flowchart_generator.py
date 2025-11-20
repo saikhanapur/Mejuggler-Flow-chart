@@ -42,7 +42,7 @@ You generate COMPLETE, SELF-CONTAINED HTML files that:
 6. Are mobile-responsive
 
 Your HTML should be production-ready and beautiful."""
-        ).with_model("anthropic", "claude-4-sonnet-20250514")
+        ).with_model("openai", "gpt-5")
         
         # Reference the actual HTML structure from the example
         prompt = f"""GENERATE COMPLETE INTERACTIVE HTML FLOWCHART
