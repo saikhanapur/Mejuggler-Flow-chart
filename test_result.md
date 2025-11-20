@@ -2059,3 +2059,41 @@ curl -X POST "https://sop-transformer.preview.emergentagent.com/api/process/acti
 3. Tune AI prompts for accuracy (swim lanes, decision points)
 4. Implement UI components for displaying resources (badges, panel)
 
+
+#====================================================================================================
+# CRITICAL FIX: Actionable Intelligence Service Now Extracts Nodes Correctly
+# Date: 2025-11-20
+#====================================================================================================
+
+## ROOT CAUSE (via Troubleshoot Agent):
+Claude 4 Sonnet response truncation due to missing max_tokens parameter in LlmChat initialization.
+- AI was generating valid JSON but responses were cut off at ~12,000 characters
+- Default token limit (~4,096) much lower than Claude 4 Sonnet's 64,000 capacity  
+- Truncated JSON caused parse failures → empty dict {} → 0 nodes extracted
+
+## FIX APPLIED:
+Added `.with_params(max_tokens=32000)` to all 4 LlmChat instances in actionable_intelligence_service.py:
+- Stage 1: Flow structure extraction
+- Stage 2: Resource extraction
+- Stage 3: Contextual intelligence
+- Stage 4: Resource linking
+
+## VERIFICATION:
+✅ Backend endpoint tested successfully:
+```bash
+curl POST /api/process/actionable-intelligence-generate
+Result: 5 nodes extracted, 5 edges (previously 0 nodes)
+```
+
+## STATUS:
+- ✅ Backend: FIXED - extracting nodes correctly
+- ✅ Frontend: Wired to use actionable intelligence endpoint
+- ⏳ User testing: Ready for complex document upload
+- ⏳ Decision points & branches: Needs verification with real SOP
+
+## NEXT:
+User should test with complex BCP SOP document to verify:
+1. All nodes extracted (not just simplified steps)
+2. Decision points render as diamonds with YES/NO branches
+3. Swim lanes display correctly
+4. No timeout issues
