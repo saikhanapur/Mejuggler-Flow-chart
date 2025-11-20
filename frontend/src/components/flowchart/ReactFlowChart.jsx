@@ -230,6 +230,7 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
   const [layoutDirection, setLayoutDirection] = useState('DOWN');
   const [expandedNodeId, setExpandedNodeId] = useState(null);
   const baseNodePositionsRef = useRef([]);
+  const expandedNodesRef = useRef({}); // Track ALL expanded nodes: { nodeId: expandedHeight }
 
   // Convert backend data structure to ReactFlow format
   const initialNodes = useMemo(() => {
