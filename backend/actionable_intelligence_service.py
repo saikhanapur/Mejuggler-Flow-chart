@@ -198,7 +198,7 @@ Document to analyze:
 {document_text[:15000]}
 """
         
-        chat = LlmChat(api_key=self.api_key, model="claude-sonnet-4-20250514")
+        chat = LlmChat(api_key=self.api_key)
         response = await chat.send_message_async(UserMessage(content=prompt))
         
         # Parse AI response
@@ -330,7 +330,7 @@ Document to analyze:
 {document_text}
 """
         
-        chat = LlmChat(api_key=self.api_key, model="claude-sonnet-4-20250514")
+        chat = LlmChat(api_key=self.api_key)
         response = await chat.send_message_async(UserMessage(content=prompt))
         
         resources = self._parse_json_response(response.content)
@@ -454,7 +454,7 @@ Rules:
 - Some steps may have no linked resources (empty arrays)
 """
         
-        chat = LlmChat(api_key=self.api_key, model="claude-sonnet-4-20250514")
+        chat = LlmChat(api_key=self.api_key)
         response = await chat.send_message_async(UserMessage(content=prompt))
         
         resource_links = self._parse_json_response(response.content)
