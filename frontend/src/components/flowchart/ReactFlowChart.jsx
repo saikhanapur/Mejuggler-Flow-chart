@@ -353,6 +353,21 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
     applyLayout();
   }, [initialNodes, initialEdges, layoutDirection]); // REMOVED handleNodeExpand from deps!
 
+  // Inject onExpand callback into nodes AFTER layout (separate effect to avoid circular dependency)
+  useEffect(() => {
+    if (nodes.length > 0 && !isLayouting) {
+      setNodes((currentNodes) =>
+        currentNodes.map(node => ({
+          ...node,
+          data: {
+            ...node.data,
+            onExpand: handleNodeExpand,
+          },
+        }))
+      );
+    }
+  }, [handleNodeExpand, isLayouting]); // Only when handleNodeExpand changes or layout finishes
+
   const handleNodeClick = useCallback((event, node) => {
     if (onNodeClick) {
       onNodeClick(node.data.originalNode);
