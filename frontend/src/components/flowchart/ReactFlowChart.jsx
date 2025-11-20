@@ -342,31 +342,27 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
           layoutDirection
         );
         
-        setNodes(layoutedNodes);
+        // Store base positions in ref (doesn't trigger re-renders)
+        baseNodePositionsRef.current = layoutedNodes.map(n => ({ id: n.id, position: n.position }));
+        
+        // Inject onExpand callback
+        const nodesWithCallbacks = layoutedNodes.map(node => ({
+          ...node,
+          data: {
+            ...node.data,
+            onExpand: handleNodeExpand,
+          },
+        }));
+        
+        setNodes(nodesWithCallbacks);
         setEdges(layoutedEdges);
-        setBaseNodePositions(layoutedNodes.map(n => ({ id: n.id, position: n.position })));
         setExpandedNodeId(null); // Reset expansion on layout change
         setIsLayouting(false);
       }
     };
 
     applyLayout();
-  }, [initialNodes, initialEdges, layoutDirection]); // REMOVED handleNodeExpand from deps!
-
-  // Inject onExpand callback into nodes AFTER layout (separate effect to avoid circular dependency)
-  useEffect(() => {
-    if (nodes.length > 0 && !isLayouting) {
-      setNodes((currentNodes) =>
-        currentNodes.map(node => ({
-          ...node,
-          data: {
-            ...node.data,
-            onExpand: handleNodeExpand,
-          },
-        }))
-      );
-    }
-  }, [handleNodeExpand, isLayouting]); // Only when handleNodeExpand changes or layout finishes
+  }, [initialNodes, initialEdges, layoutDirection, handleNodeExpand]); // Safe now with ref!
 
   const handleNodeClick = useCallback((event, node) => {
     if (onNodeClick) {
