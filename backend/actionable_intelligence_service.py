@@ -623,5 +623,4 @@ Rules:
         return resources
 
 
-# Import for uuid
-import uuid
+# End of file
