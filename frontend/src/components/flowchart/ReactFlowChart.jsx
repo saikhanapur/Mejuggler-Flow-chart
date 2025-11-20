@@ -422,7 +422,12 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
 
   // Calculate swim lane boundaries for visual rendering - MUST BE BEFORE EARLY RETURN
   const swimLaneBoundaries = useMemo(() => {
-    if (!swimLanes || swimLanes.length === 0 || nodes.length === 0) return [];
+    if (!swimLanes || swimLanes.length === 0 || nodes.length === 0) {
+      if (swimLanes && swimLanes.length > 0) {
+        console.warn('⚠️ Swim lanes exist but no nodes yet to calculate boundaries');
+      }
+      return [];
+    }
 
     return swimLanes.map((lane, index) => {
       // Find nodes assigned to this lane
