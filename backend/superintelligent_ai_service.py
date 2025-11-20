@@ -75,7 +75,7 @@ Extract:
 4. Systems/tools mentioned
 5. Timing requirements
 6. Parallel processes (things happening simultaneously)"""
-            ).with_model("anthropic", "claude-4-sonnet-20250514")
+            ).with_model("openai", "gpt-5")
             
             prompt = f"""EXTRACT STRUCTURED DATA FROM DOCUMENT - WORLD-CLASS ANALYSIS
 
@@ -424,7 +424,7 @@ CRITICAL:
                 api_key=self.api_key,
                 session_id=f"enrich_{uuid.uuid4()}",
                 system_message="Add descriptions to flowchart nodes. Keep brief."
-            ).with_model("anthropic", "claude-4-sonnet-20250514")
+            ).with_model("openai", "gpt-5")
             
             prompt = f"""ADD DESCRIPTIONS TO NODES
 
@@ -927,7 +927,7 @@ Return valid JSON only."""
 - HR (Recruitment, Onboarding, Performance, Offboarding)
 
 Your job: Identify ALL structural patterns in the document."""
-            ).with_model("anthropic", "claude-4-sonnet-20250514")
+            ).with_model("openai", "gpt-5")
             
             prompt = f"""COMPREHENSIVE DOCUMENT STRUCTURE ANALYSIS
 
