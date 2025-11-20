@@ -18,6 +18,8 @@ const elk = new ELK();
 
 // Automatic layout with ELK - VERTICAL for mobile-friendly display
 const getLayoutedElements = async (nodes, edges, direction = 'DOWN') => {
+  console.log('🎨 getLayoutedElements called', { nodesCount: nodes.length, edgesCount: edges.length, direction });
+  
   try {
     // Validate data before sending to ELK
     const validNodeIds = new Set(nodes.map(n => n.id));
@@ -50,7 +52,9 @@ const getLayoutedElements = async (nodes, edges, direction = 'DOWN') => {
       })),
     };
 
+    console.log('🔄 Calling ELK layout...');
     const layoutedGraph = await elk.layout(graph);
+    console.log('✅ ELK layout returned successfully');
 
     const layoutedNodes = nodes.map((node) => {
       const layoutedNode = layoutedGraph.children?.find((n) => n.id === node.id);
