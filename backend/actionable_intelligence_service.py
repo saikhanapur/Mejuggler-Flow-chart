@@ -469,7 +469,7 @@ Rules:
         )
         response = await chat.send_message(UserMessage(text=prompt))
         
-        resource_links = self._parse_json_response(response.content)
+        resource_links = self._parse_json_response(response)
         
         return resource_links
     
