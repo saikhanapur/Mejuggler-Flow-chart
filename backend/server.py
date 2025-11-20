@@ -3418,6 +3418,84 @@ async def simple_flowchart_generation(
 # ==================== END SIMPLE ONE-SHOT ====================
 
 @api_router.post("/process/extract-summary", response_model=ExtractionSummary)
+
+
+@api_router.post("/process/actionable-intelligence-generate")
+async def actionable_intelligence_generation(
+    input_data: ProcessInput,
+    request: Request
+):
+    """
+    🎯 REVOLUTIONARY: Actionable Intelligence Generation
+    
+    Goes beyond flowcharts to extract EVERYTHING:
+    - Process flow (steps, decisions, swim lanes)
+    - Contact information (who to call in emergencies)
+    - Email templates (ready to copy/paste)
+    - System access guides (URLs, credentials)
+    - Contextual intelligence (purpose, timelines, troubleshooting)
+    
+    This is what makes us 100x better than Lucidchart.
+    """
+    try:
+        from actionable_intelligence_service import ActionableIntelligenceService
+        
+        user = await get_current_user(request)
+        user_id = user.get("id") if user else None
+        
+        # CRITICAL: Check budget before expensive AI operations
+        from budget_monitor import BudgetMonitor
+        can_proceed, budget_message, budget_details = BudgetMonitor.check_budget()
+        
+        if not can_proceed:
+            logger.error(f"❌ Budget check failed: {budget_message}")
+            raise HTTPException(
+                status_code=402,  # Payment Required
+                detail=budget_message
+            )
+        
+        # Log budget warning if low
+        if "warning" in budget_message.lower() or "critical" in budget_message.lower():
+            logger.warning(f"⚠️ Budget warning: {budget_message}")
+        
+        logger.info(f"🎯 Actionable Intelligence generation for user {user_id}")
+        logger.info(f"📄 Document length: {len(input_data.text)} characters")
+        
+        # Initialize service
+        service = ActionableIntelligenceService(
+            api_key=os.environ.get("EMERGENT_LLM_KEY")
+        )
+        
+        # Process document comprehensively
+        result = await service.process_document_comprehensively(
+            document_text=input_data.text,
+            document_name="User Document"
+        )
+        
+        # Extract actionable intelligence
+        intelligence = result["actionable_intelligence"]
+        validation = result["validation"]
+        
+        logger.info(f"✅ Extraction complete! Completeness: {validation['completeness_score']}%")
+        logger.info(f"📊 Extracted: {validation['extracted_counts']}")
+        
+        # Return in format expected by frontend
+        return {
+            "multipleProcesses": False,
+            "processes": [intelligence],
+            "metadata": result["metadata"],
+            "validation": validation
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Actionable intelligence generation failed: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to generate actionable intelligence: {str(e)}"
+        )
+
 async def extract_summary(input_data: ProcessInput):
     """
     Extract summary of key elements from document BEFORE generating flowchart.
