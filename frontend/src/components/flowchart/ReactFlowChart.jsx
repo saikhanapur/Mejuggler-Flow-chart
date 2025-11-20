@@ -255,11 +255,26 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
   const baseNodePositionsRef = useRef([]);
   const expandedNodesRef = useRef({}); // Track ALL expanded nodes: { nodeId: expandedHeight }
 
+  // DEBUG: Log processData on mount
+  useEffect(() => {
+    console.log('🎯 ReactFlowChart mounted with processData:', {
+      hasProcessData: !!processData,
+      nodeCount: processData?.nodes?.length || 0,
+      edgeCount: processData?.edges?.length || 0,
+      processDataKeys: processData ? Object.keys(processData) : []
+    });
+  }, []);
+
   // Convert backend data structure to ReactFlow format
   const initialNodes = useMemo(() => {
-    if (!processData?.nodes) return [];
+    console.log('📊 Computing initialNodes, processData.nodes:', processData?.nodes?.length || 0);
+    
+    if (!processData?.nodes || processData.nodes.length === 0) {
+      console.warn('⚠️ No nodes in processData!');
+      return [];
+    }
 
-    return processData.nodes.map((node) => {
+    const nodes = processData.nodes.map((node) => {
       const nodeType = node.type === 'decision' ? 'decision' : 'process';
 
       return {
@@ -276,6 +291,9 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
         },
       };
     });
+    
+    console.log('✅ Computed', nodes.length, 'initial nodes');
+    return nodes;
   }, [processData]);
 
   const initialEdges = useMemo(() => {
