@@ -102,7 +102,7 @@ class ActionableIntelligenceService:
                     "document_name": document_name,
                     "processed_at": datetime.now(timezone.utc).isoformat(),
                     "extraction_stages": self.extraction_stages,
-                    "ai_model": "claude-sonnet-4-20250514"
+                    "ai_model": "claude-sonnet-4"
                 }
             }
             
