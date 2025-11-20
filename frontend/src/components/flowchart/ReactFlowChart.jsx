@@ -18,41 +18,64 @@ const elk = new ELK();
 
 // Automatic layout with ELK - VERTICAL for mobile-friendly display
 const getLayoutedElements = async (nodes, edges, direction = 'DOWN') => {
-  const graph = {
-    id: 'root',
-    layoutOptions: {
-      'elk.algorithm': 'layered',
-      'elk.direction': direction,
-      'elk.spacing.nodeNode': '50',  // Tighter spacing
-      'elk.layered.spacing.nodeNodeBetweenLayers': '60',  // Compact layers
-      'elk.layered.nodePlacement.strategy': 'SIMPLE',
-    },
-    children: nodes.map((node) => ({
-      id: node.id,
-      width: 280,  // Slightly wider for better readability
-      height: 100,
-    })),
-    edges: edges.map((edge) => ({
-      id: edge.id,
-      sources: [edge.source],
-      targets: [edge.target],
-    })),
-  };
+  try {
+    // Validate data before sending to ELK
+    const validNodeIds = new Set(nodes.map(n => n.id));
+    const validEdges = edges.filter(edge => 
+      validNodeIds.has(edge.source) && validNodeIds.has(edge.target)
+    );
 
-  const layoutedGraph = await elk.layout(graph);
+    if (validEdges.length !== edges.length) {
+      console.warn(`⚠️ Filtered ${edges.length - validEdges.length} invalid edges before layout`);
+    }
 
-  const layoutedNodes = nodes.map((node) => {
-    const layoutedNode = layoutedGraph.children?.find((n) => n.id === node.id);
-    return {
+    const graph = {
+      id: 'root',
+      layoutOptions: {
+        'elk.algorithm': 'layered',
+        'elk.direction': direction,
+        'elk.spacing.nodeNode': '50',
+        'elk.layered.spacing.nodeNodeBetweenLayers': '60',
+        'elk.layered.nodePlacement.strategy': 'SIMPLE',
+      },
+      children: nodes.map((node) => ({
+        id: node.id,
+        width: 280,
+        height: 100,
+      })),
+      edges: validEdges.map((edge) => ({
+        id: edge.id,
+        sources: [edge.source],
+        targets: [edge.target],
+      })),
+    };
+
+    const layoutedGraph = await elk.layout(graph);
+
+    const layoutedNodes = nodes.map((node) => {
+      const layoutedNode = layoutedGraph.children?.find((n) => n.id === node.id);
+      return {
+        ...node,
+        position: {
+          x: layoutedNode?.x || 0,
+          y: layoutedNode?.y || 0,
+        },
+      };
+    });
+
+    return { nodes: layoutedNodes, edges: validEdges };
+  } catch (error) {
+    console.error('❌ ELK Layout Error:', error);
+    // Fallback: Simple vertical layout without ELK
+    const fallbackNodes = nodes.map((node, index) => ({
       ...node,
       position: {
-        x: layoutedNode?.x || 0,
-        y: layoutedNode?.y || 0,
+        x: 100,
+        y: index * 200,
       },
-    };
-  });
-
-  return { nodes: layoutedNodes, edges };
+    }));
+    return { nodes: fallbackNodes, edges };
+  }
 };
 
 // Custom node component for process steps
