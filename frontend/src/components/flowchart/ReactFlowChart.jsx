@@ -256,26 +256,43 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
   }, [processData]);
 
   const initialEdges = useMemo(() => {
-    if (!processData?.edges) return [];
+    if (!processData?.edges || !processData?.nodes) return [];
 
-    return processData.edges.map((edge) => ({
-      id: edge.id,
-      source: edge.source,
-      target: edge.target,
-      label: edge.label || '',
-      type: 'smoothstep',
-      animated: true,
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        width: 20,
-        height: 20,
-        color: '#64748b',
-      },
-      style: {
-        strokeWidth: 2,
-        stroke: '#64748b',
-      },
-    }));
+    // Get all valid node IDs for validation
+    const validNodeIds = new Set(processData.nodes.map(n => n.id));
+
+    // Filter out edges that reference non-existent nodes (CRITICAL BUG FIX)
+    return processData.edges
+      .filter(edge => {
+        const hasValidSource = validNodeIds.has(edge.source);
+        const hasValidTarget = validNodeIds.has(edge.target);
+        
+        if (!hasValidSource || !hasValidTarget) {
+          console.warn(`⚠️ Skipping invalid edge: ${edge.id} (source: ${edge.source}, target: ${edge.target})`);
+          console.warn(`   Valid nodes: ${Array.from(validNodeIds).join(', ')}`);
+          return false;
+        }
+        
+        return true;
+      })
+      .map((edge) => ({
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        label: edge.label || '',
+        type: 'smoothstep',
+        animated: true,
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 20,
+          height: 20,
+          color: '#64748b',
+        },
+        style: {
+          strokeWidth: 2,
+          stroke: '#64748b',
+        },
+      }));
   }, [processData]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
