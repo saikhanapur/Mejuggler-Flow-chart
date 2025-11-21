@@ -3127,6 +3127,87 @@ async def semantic_search(
 
 # ==================== EROAD-STYLE HYBRID APPROACH ====================
 
+@api_router.post("/process/extract-only")
+async def extract_document_intelligence(
+    input_data: ProcessInput,
+    request: Request
+):
+    """
+    EXTRACTION ONLY - Returns structured intelligence without generating flowchart
+    
+    Used for preview/review before flowchart generation
+    Extracts: contacts, timings, actions, decisions, swim lanes, references
+    """
+    try:
+        from superintelligent_ai_service import SuperintelligentAIService
+        
+        user = await get_current_user(request)
+        user_id = user.get("id") if user else None
+        
+        # Budget check
+        from budget_monitor import BudgetMonitor
+        can_proceed, budget_message, budget_details = BudgetMonitor.check_budget()
+        
+        if not can_proceed:
+            logger.error(f"❌ Budget check failed: {budget_message}")
+            raise HTTPException(
+                status_code=402,
+                detail=budget_message
+            )
+        
+        logger.info(f"🔍 Extracting intelligence from document ({len(input_data.text)} chars)")
+        
+        service = SuperintelligentAIService(api_key=os.environ.get('EMERGENT_LLM_KEY'))
+        
+        # Parse processes to extract basic structure
+        result = await service.parse_process(
+            input_text=input_data.text,
+            input_type=input_data.inputType
+        )
+        
+        # Take first process for extraction
+        if not result.get('processes') or len(result['processes']) == 0:
+            raise HTTPException(status_code=500, detail="No processes detected in document")
+        
+        process_data = result['processes'][0]
+        
+        # Extract intelligence (contacts, timings, etc.)
+        enhanced = await service.generate_intelligent_quickReference(
+            document_text=input_data.text,
+            nodes=process_data.get('nodes', []),
+            document_name=f"Document_{user_id or 'guest'}"
+        )
+        
+        # Return extraction data
+        return {
+            "success": True,
+            "extraction": {
+                "emergencyContacts": enhanced.get('emergencyContacts', {}),
+                "keyTimings": enhanced.get('keyTimings', []),
+                "criticalActions": enhanced.get('criticalActions', []),
+                "supportingReferences": enhanced.get('supportingReferences', []),
+                "decisionPoints": [
+                    {
+                        "question": node.get('title'),
+                        "branches": node.get('decisionOptions')
+                    }
+                    for node in process_data.get('nodes', [])
+                    if node.get('isDecisionPoint')
+                ],
+                "swimLanes": process_data.get('swimLanes', []),
+                "nodeCount": len(process_data.get('nodes', [])),
+                "edgeCount": len(process_data.get('edges', []))
+            },
+            "rawText": input_data.text[:1000] + "..." if len(input_data.text) > 1000 else input_data.text
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Extraction failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Extraction failed: {str(e)}")
+
+
 @api_router.post("/process/eroad-style")
 async def eroad_style_generation(
     input_data: ProcessInput,
