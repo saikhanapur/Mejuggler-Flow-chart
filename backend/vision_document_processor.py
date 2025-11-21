@@ -138,8 +138,8 @@ class VisionDocumentProcessor:
                 # Create vision chat
                 chat = LlmChat(
                     api_key=self.api_key,
-                    system_message="You are an expert at analyzing flowcharts and SOPs. Extract ALL text, structure, and process information from this document image.",
-                    model="claude-4-sonnet-20250514"
+                    session_id=f"vision_page_{idx}",
+                    system_message="You are an expert at analyzing flowcharts and SOPs. Extract ALL text, structure, and process information from this document image."
                 )
                 
                 # Construct vision prompt
