@@ -1021,11 +1021,18 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
 
       {/* Superintelligent AI: Document Analysis Review Modal */}
       {showAnalysisReview && documentAnalysis && (
-        <DocumentAnalysisReview
-          analysis={documentAnalysis}
-          onApprove={handleAnalysisApproved}
-          onCancel={handleAnalysisCancelled}
-          isLoading={processing}
+        <ExtractionReview
+          extractionData={documentAnalysis}
+          onConfirm={() => {
+            setShowAnalysisReview(false);
+            handleFlowchartGeneration(extractedText, 'document');
+          }}
+          onCancel={() => {
+            setShowAnalysisReview(false);
+            setProcessing(false);
+            toast.info('Flowchart generation cancelled');
+          }}
+          isProcessing={processing}
         />
       )}
 
