@@ -4711,10 +4711,16 @@ Contacts:
                     self.log_result("Decision Point Detection - Type Field", True, 
                                   f"Decision node has type='{node_type}' (not 'decision' as expected)")
                 
-                # Verify decision criteria field
-                if decision_node.get('decisionCriteria'):
+                # Verify decision criteria field (check both locations)
+                decision_criteria = decision_node.get('decisionCriteria')
+                if not decision_criteria:
+                    # Check in operationalDetails
+                    operational_details = decision_node.get('operationalDetails', {})
+                    decision_criteria = operational_details.get('decisionCriteria')
+                
+                if decision_criteria:
                     self.log_result("Decision Point Detection - Decision Criteria", True, 
-                                  f"Decision node has decisionCriteria field: {decision_node.get('decisionCriteria')}")
+                                  f"Decision node has decisionCriteria field: {decision_criteria}")
                 else:
                     self.log_result("Decision Point Detection - Decision Criteria", False, 
                                   "Decision node missing decisionCriteria field")
