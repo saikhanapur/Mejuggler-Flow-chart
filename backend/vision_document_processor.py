@@ -30,7 +30,7 @@ class VisionDocumentProcessor:
         
         Returns:
             (is_text_based, confidence)
-            - is_text_based: True if PDF has extractable text
+            - is_text_based: True if PDF has extractable text WITHOUT visual elements
             - confidence: 0.0-1.0 confidence score
         """
         try:
@@ -39,27 +39,55 @@ class VisionDocumentProcessor:
             # Check first 3 pages (or all if fewer)
             pages_to_check = min(3, len(pdf_reader.pages))
             total_text_length = 0
+            total_images = 0
             
             for i in range(pages_to_check):
                 page = pdf_reader.pages[i]
                 text = page.extract_text()
                 total_text_length += len(text.strip())
+                
+                # Count images/visual elements
+                try:
+                    if '/XObject' in page['/Resources']:
+                        xobject = page['/Resources']['/XObject'].get_object()
+                        images = [k for k in xobject if xobject[k]['/Subtype'] == '/Image']
+                        total_images += len(images)
+                except:
+                    pass
             
-            # Heuristic: If we got substantial text, it's text-based
             avg_text_per_page = total_text_length / pages_to_check
+            avg_images_per_page = total_images / pages_to_check
             
-            # Threshold: 100+ characters per page = text-based
-            if avg_text_per_page > 100:
-                confidence = min(1.0, avg_text_per_page / 500)
-                logger.info(f"📄 Text-based PDF detected: {avg_text_per_page:.0f} chars/page (confidence: {confidence:.2f})")
+            # IMPROVED HEURISTIC:
+            # If PDF has many images (>50 per page), it's likely a visual flowchart
+            # Even if it has embedded text
+            if avg_images_per_page > 50:
+                logger.info(f"🖼️ Visual flowchart PDF detected: {avg_images_per_page:.0f} images/page, {avg_text_per_page:.0f} chars/page")
+                return False, 0.9
+            
+            # If it has substantial text but few images, it's text-based
+            if avg_text_per_page > 500 and avg_images_per_page < 10:
+                confidence = min(1.0, avg_text_per_page / 1000)
+                logger.info(f"📄 Text-based PDF detected: {avg_text_per_page:.0f} chars/page, {avg_images_per_page:.0f} images/page (confidence: {confidence:.2f})")
                 return True, confidence
-            else:
-                logger.info(f"🖼️ Visual/Scanned PDF detected: {avg_text_per_page:.0f} chars/page")
+            
+            # If it has moderate text and moderate images, prefer vision for accuracy
+            if avg_images_per_page > 10:
+                logger.info(f"🖼️ Visual PDF with embedded text: {avg_images_per_page:.0f} images/page, {avg_text_per_page:.0f} chars/page")
                 return False, 0.8
+            
+            # Low text, low images - default to vision
+            if avg_text_per_page < 100:
+                logger.info(f"🖼️ Scanned/Visual PDF detected: {avg_text_per_page:.0f} chars/page")
+                return False, 0.7
+            
+            # Moderate text, few images - use text extraction
+            logger.info(f"📄 Text document detected: {avg_text_per_page:.0f} chars/page, {avg_images_per_page:.0f} images/page")
+            return True, 0.7
                 
         except Exception as e:
             logger.error(f"Error detecting PDF type: {e}")
-            # Default to visual processing if detection fails
+            # Default to visual processing if detection fails (better safe than sorry)
             return False, 0.5
     
     def extract_text_from_pdf(self, pdf_bytes: bytes) -> str:
