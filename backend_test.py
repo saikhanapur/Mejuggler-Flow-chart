@@ -4598,12 +4598,174 @@ Contacts:
         
         return result
 
+    def test_decision_point_detection_and_rendering(self):
+        """Test decision point detection and rendering data flow as requested"""
+        print("\n🔍 DECISION POINT DETECTION & RENDERING TEST")
+        print("-" * 60)
+        print("🎯 Testing decision point detection with isDecisionPoint flag")
+        
+        try:
+            # Document with clear decision point as specified
+            test_document = """
+            Emergency Response Procedure
+            
+            Step 1: Assess the situation immediately
+            Step 2: Determine severity level
+            Step 3: Is this critical? If YES, escalate to emergency team. If NO, document and proceed with standard protocol.
+            Step 4: If escalated, notify all stakeholders within 15 minutes
+            Step 5: If standard protocol, update incident log and assign to appropriate team
+            Step 6: Monitor resolution progress
+            Step 7: Close incident when resolved
+            
+            Key Contacts:
+            - Emergency Team: 111
+            - Manager: 0800 123 456
+            """
+            
+            payload = {
+                "text": test_document,
+                "inputType": "document"
+            }
+            
+            print(f"📄 Testing with document containing decision: 'Is this critical? If YES, escalate. If NO, document.'")
+            
+            response = self.session.post(f"{self.base_url}/process/eroad-style", 
+                                       json=payload, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                result = response.json()
+                print(f"✅ API Response: 200 OK")
+                
+                # Verify response includes nodes array
+                if 'nodes' not in result:
+                    self.log_result("Decision Point Detection - Nodes Array", False, 
+                                  "Response missing 'nodes' array")
+                    return
+                
+                nodes = result.get('nodes', [])
+                print(f"📊 Found {len(nodes)} nodes in response")
+                
+                if len(nodes) == 0:
+                    self.log_result("Decision Point Detection - Nodes Array", False, 
+                                  "Nodes array is empty")
+                    return
+                
+                self.log_result("Decision Point Detection - Nodes Array", True, 
+                              f"Response contains nodes array with {len(nodes)} nodes")
+                
+                # Look for decision nodes
+                decision_nodes = []
+                for node in nodes:
+                    if node.get('isDecisionPoint') == True:
+                        decision_nodes.append(node)
+                
+                print(f"🔍 Found {len(decision_nodes)} nodes with isDecisionPoint=true")
+                
+                if len(decision_nodes) == 0:
+                    self.log_result("Decision Point Detection - isDecisionPoint Flag", False, 
+                                  "No nodes found with isDecisionPoint=true")
+                    
+                    # Print all nodes for debugging
+                    print("\n🔍 DEBUG: All nodes in response:")
+                    for i, node in enumerate(nodes):
+                        print(f"   Node {i+1}: {node.get('title', 'No title')}")
+                        print(f"      type: {node.get('type', 'No type')}")
+                        print(f"      isDecisionPoint: {node.get('isDecisionPoint', 'Not set')}")
+                        print(f"      decisionCriteria: {node.get('decisionCriteria', 'Not set')}")
+                        print()
+                    return
+                
+                # Test the first decision node
+                decision_node = decision_nodes[0]
+                
+                print(f"\n🎯 DECISION NODE ANALYSIS:")
+                print(f"   Title: {decision_node.get('title', 'No title')}")
+                print(f"   Type: {decision_node.get('type', 'No type')}")
+                print(f"   isDecisionPoint: {decision_node.get('isDecisionPoint')}")
+                print(f"   decisionCriteria: {decision_node.get('decisionCriteria', 'Not set')}")
+                print(f"   decisionOptions: {decision_node.get('decisionOptions', 'Not set')}")
+                
+                # Verify isDecisionPoint is true
+                if decision_node.get('isDecisionPoint') != True:
+                    self.log_result("Decision Point Detection - isDecisionPoint Flag", False, 
+                                  f"Decision node has isDecisionPoint={decision_node.get('isDecisionPoint')}, expected True")
+                    return
+                
+                self.log_result("Decision Point Detection - isDecisionPoint Flag", True, 
+                              "Found node with isDecisionPoint=true")
+                
+                # Verify type field value (should NOT be 'decision')
+                node_type = decision_node.get('type')
+                print(f"🔍 Decision node type: '{node_type}'")
+                
+                if node_type == 'decision':
+                    self.log_result("Decision Point Detection - Type Field", False, 
+                                  f"Decision node has type='decision', but should be something else (like 'critical', 'action', etc.)")
+                else:
+                    self.log_result("Decision Point Detection - Type Field", True, 
+                                  f"Decision node has type='{node_type}' (not 'decision' as expected)")
+                
+                # Verify decision criteria field
+                if decision_node.get('decisionCriteria'):
+                    self.log_result("Decision Point Detection - Decision Criteria", True, 
+                                  f"Decision node has decisionCriteria field: {decision_node.get('decisionCriteria')}")
+                else:
+                    self.log_result("Decision Point Detection - Decision Criteria", False, 
+                                  "Decision node missing decisionCriteria field")
+                
+                # Verify decision options field
+                if decision_node.get('decisionOptions'):
+                    self.log_result("Decision Point Detection - Decision Options", True, 
+                                  f"Decision node has decisionOptions field: {decision_node.get('decisionOptions')}")
+                else:
+                    self.log_result("Decision Point Detection - Decision Options", False, 
+                                  "Decision node missing decisionOptions field")
+                
+                # Print full decision node data structure
+                print(f"\n📋 FULL DECISION NODE DATA STRUCTURE:")
+                print("=" * 60)
+                import json
+                print(json.dumps(decision_node, indent=2))
+                print("=" * 60)
+                
+                # Summary
+                print(f"\n✅ DECISION POINT DETECTION SUMMARY:")
+                print(f"   • Found {len(decision_nodes)} decision node(s)")
+                print(f"   • isDecisionPoint: {decision_node.get('isDecisionPoint')}")
+                print(f"   • type: '{decision_node.get('type')}'")
+                print(f"   • Has decisionCriteria: {bool(decision_node.get('decisionCriteria'))}")
+                print(f"   • Has decisionOptions: {bool(decision_node.get('decisionOptions'))}")
+                
+                # Final validation
+                if (decision_node.get('isDecisionPoint') == True and 
+                    decision_node.get('type') != 'decision' and
+                    decision_node.get('decisionCriteria') and
+                    decision_node.get('decisionOptions')):
+                    
+                    self.log_result("Decision Point Detection - Complete Validation", True, 
+                                  "Decision point detection working correctly: isDecisionPoint=true, type!=decision, has criteria and options")
+                else:
+                    self.log_result("Decision Point Detection - Complete Validation", False, 
+                                  "Decision point detection incomplete or incorrect")
+                
+            else:
+                self.log_result("Decision Point Detection - API Call", False, 
+                              f"HTTP {response.status_code}: {response.text}")
+                
+        except Exception as e:
+            self.log_result("Decision Point Detection - API Call", False, f"Error: {str(e)}")
+
     def run_all_tests(self):
         """Run all backend tests in order - ENTERPRISE SCALE COMPREHENSIVE TESTING"""
         print(f"🚀 FlowForge AI - ENTERPRISE SCALE PRE-AUTHENTICATION REVIEW")
         print(f"📍 Base URL: {self.base_url}")
         print(f"🎯 Target: 1000s of paying enterprise customers")
         print("=" * 80)
+        
+        # PRIORITY TEST: Decision Point Detection (as requested)
+        print("\n🎯 PRIORITY TEST: DECISION POINT DETECTION")
+        print("-" * 60)
+        self.test_decision_point_detection_and_rendering()
         
         # Test basic connectivity first
         if not self.test_root_endpoint():
