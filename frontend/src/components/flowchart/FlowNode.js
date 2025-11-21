@@ -110,6 +110,18 @@ const FlowNode = ({ data, id, type, onClick, onUpdateNode, isSelected, selectedN
   // ReactFlow passes data, id, type separately - reconstruct node for compatibility
   const node = data?.originalNode || { ...data, id, type };
   
+  // DEBUG: Log node data to understand structure
+  useEffect(() => {
+    console.log(`🔍 FlowNode ${id} data:`, {
+      id,
+      type,
+      'data.originalNode': data?.originalNode,
+      'node.isDecisionPoint': node.isDecisionPoint,
+      'node.title': node.title,
+      'full node': node
+    });
+  }, [id, data, node, type]);
+  
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(data?.title || node.title);
@@ -122,6 +134,13 @@ const FlowNode = ({ data, id, type, onClick, onUpdateNode, isSelected, selectedN
 
   // Check node type - FIXED: Check for isDecisionPoint or type='decision'
   const isDecision = node.isDecisionPoint || type === 'decision' || false;
+  
+  console.log(`🎯 Node ${id} isDecision check:`, {
+    isDecision,
+    'node.isDecisionPoint': node.isDecisionPoint,
+    'type': type,
+    'will render as': isDecision ? 'DIAMOND' : 'RECTANGLE'
+  });
   const isMerge = node.isMergePoint || false;
   const isCritical = node.status === 'critical' || node.status === 'trigger';
   const isLoop = node.isLoop || false;
