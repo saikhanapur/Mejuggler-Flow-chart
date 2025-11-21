@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Status configurations matching reference design
 const STATUS_CONFIG = {
