@@ -148,6 +148,8 @@ const FlowNode = ({ data, id, type, onClick, onUpdateNode, isSelected, selectedN
     if (editedTitle.trim() && editedTitle !== (data?.title || node.title)) {
       try {
         await onUpdateNode(id, 'title', editedTitle.trim());
+      } catch (error) {
+        console.error('Failed to update node title:', error);
       }
     }
     setIsEditingTitle(false);
