@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 import time
 
 # Configuration
-BASE_URL = "https://sop-transformer.preview.emergentagent.com/api"
+BASE_URL = "https://sopchart.preview.emergentagent.com/api"
 TIMEOUT = 60
 
 class ManualNodeEditingTester:

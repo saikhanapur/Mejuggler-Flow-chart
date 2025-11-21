@@ -2008,7 +2008,7 @@ const result = await api.analyzeDocumentComprehensive(input, inputType);
 
 **Test Command:**
 ```bash
-curl -X POST "https://sop-transformer.preview.emergentagent.com/api/process/actionable-intelligence-generate" \
+curl -X POST "https://sopchart.preview.emergentagent.com/api/process/actionable-intelligence-generate" \
   -H "Content-Type: application/json" \
   -d '{
     "text": "Emergency Response: Step 1 - Call Mike at 555-0100. Step 2 - Check https://monitor.com.",
