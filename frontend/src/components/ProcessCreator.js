@@ -21,6 +21,7 @@ import LiveProgressPanel from './LiveProgressPanel';
 import DocumentAnalysisReview from './DocumentAnalysisReview';
 import CoverageReportPanel from './CoverageReportPanel';
 import DynamicLoadingScreen from './DynamicLoadingScreen';
+import ExtractionReview from './ExtractionReview';
 import { api } from '@/utils/api';
 import { streamDocumentAnalysis } from '@/utils/sseClient';
 import { toast } from 'sonner';
