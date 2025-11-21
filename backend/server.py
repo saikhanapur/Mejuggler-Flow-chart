@@ -3166,22 +3166,44 @@ async def extract_document_intelligence(
             system_message="You are an expert at extracting reference information from documents."
         )
         
-        prompt = f"""Extract ONLY the reference information from this document. Do NOT create a flowchart.
+        prompt = f"""You are extracting CRITICAL EMERGENCY REFERENCE information. DO NOT SKIP ANYTHING - lives depend on this.
 
-Document:
+Document (EXTRACT EVERYTHING):
 {input_data.text[:15000]}
 
-Extract and return JSON:
+Extract COMPREHENSIVE JSON including:
+
+1. ALL Emergency Contacts (names, phones, extensions, options)
+2. ALL Scripts/Templates (Modica messages, email templates, call scripts)
+3. ALL Key Timings (frequencies, deadlines, checkpoints)
+4. ALL Critical Actions (remove P0/P1/P2 labels, just list actions)
+5. ALL System Links (URLs, system names, access info)
+6. ALL Reference Documents (forms, procedures, guides)
+7. ALL Decision Points
+8. ALL Swim Lanes/Sections
+
+Return JSON:
 {{
-  "emergencyContacts": {{"Name": "Phone/Email"}},
-  "keyTimings": ["timing requirement 1", "timing 2"],
-  "criticalActions": ["action 1", "action 2"],
-  "supportingReferences": ["ref 1", "ref 2"],
-  "decisionPoints": [{{"question": "Is X?", "branches": {{"yes": "path1", "no": "path2"}}}}],
-  "swimLanes": ["Lane 1", "Lane 2"]
+  "emergencyContacts": {{
+    "Name": {{
+      "phone": "full phone with country code",
+      "extension": "ext number",
+      "options": [{{"number": "1", "description": "what option 1 does"}}],
+      "role": "job title/role"
+    }}
+  }},
+  "messageTemplates": {{
+    "templateName": "Complete message/script text"
+  }},
+  "keyTimings": ["Every 30 minutes: description", "Within X: action"],
+  "criticalActions": ["Action without P0/P1/P2", "Next action"],
+  "systemLinks": [{{"name": "System Name", "url": "URL", "purpose": "what it's for"}}],
+  "supportingReferences": ["Document name: brief description"],
+  "decisionPoints": [{{"question": "Decision?", "branches": {{"yes": "yes path", "no": "no path"}}}}],
+  "swimLanes": ["Section 1", "Section 2"]
 }}
 
-Be thorough but fast. Extract ALL contacts with phone numbers."""
+CRITICAL: Include FULL text of message templates, call scripts, email templates. Do NOT summarize or skip."""
         
         try:
             response = await chat.send_message(UserMessage(text=prompt))
