@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download, Share2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Download, Share2, Sparkles, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ReactFlowChart } from './ReactFlowChart';
 import OperationalDetailsPanel from '../OperationalDetailsPanel';
 import ExportModal from '../ExportModal';
 import ShareModal from '../ShareModal';
 import AIRefineChat from '../AIRefineChat';
+import ReferencesModal from './ReferencesModal';
 import { api } from '@/utils/api';
 import { toast } from 'sonner';
 
