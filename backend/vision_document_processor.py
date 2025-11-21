@@ -10,7 +10,7 @@ from typing import Dict, Tuple
 from PIL import Image
 import pypdf
 from pdf2image import convert_from_bytes
-from emergentintegrations.anthropic import LlmChat, UserMessage
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 logger = logging.getLogger(__name__)
 
