@@ -159,7 +159,7 @@ const FlowNode = ({ data, id, type, onClick, onUpdateNode, isSelected, selectedN
     if (e.key === 'Enter') {
       handleTitleSave(e);
     } else if (e.key === 'Escape') {
-      setEditedTitle(node.title);
+      setEditedTitle(data?.title || node.title);
       setIsEditingTitle(false);
     }
   };
