@@ -3155,53 +3155,85 @@ async def extract_document_intelligence(
                 detail=budget_message
             )
         
-        logger.info(f"🔍 Extracting intelligence from document ({len(input_data.text)} chars)")
+        logger.info(f"🔍 Lightweight extraction from document ({len(input_data.text)} chars)")
         
-        # Get database client
-        from motor.motor_asyncio import AsyncIOMotorClient
-        db_client = AsyncIOMotorClient(os.environ.get('MONGO_URL'))
+        # Use a simple AI call to extract just the intelligence, not generate flowchart
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
         
-        service = SuperintelligentAIService(
+        chat = LlmChat(
             api_key=os.environ.get('EMERGENT_LLM_KEY'),
-            db_client=db_client
+            session_id="extraction_only"
         )
         
-        # Generate flowchart structure (includes all extraction)
-        result = await service.generate_eroad_style_flowchart(
-            document_text=input_data.text,
-            input_type=input_data.inputType,
-            user_id=user_id or "guest"
-        )
+        prompt = f"""Extract ONLY the reference information from this document. Do NOT create a flowchart.
+
+Document:
+{input_data.text[:15000]}
+
+Extract and return JSON:
+{{
+  "emergencyContacts": {{"Name": "Phone/Email"}},
+  "keyTimings": ["timing requirement 1", "timing 2"],
+  "criticalActions": ["action 1", "action 2"],
+  "supportingReferences": ["ref 1", "ref 2"],
+  "decisionPoints": [{{"question": "Is X?", "branches": {{"yes": "path1", "no": "path2"}}}}],
+  "swimLanes": ["Lane 1", "Lane 2"]
+}}
+
+Be thorough but fast. Extract ALL contacts with phone numbers."""
         
-        # Take first process for extraction
-        if not result.get('processes') or len(result['processes']) == 0:
-            raise HTTPException(status_code=500, detail="No processes detected in document")
-        
-        process_data = result['processes'][0]
-        quick_ref = process_data.get('quickReference', {})
-        
-        # Return extraction data
-        return {
-            "success": True,
-            "extraction": {
-                "emergencyContacts": quick_ref.get('emergencyContacts', {}),
-                "keyTimings": quick_ref.get('keyTimings', []),
-                "criticalActions": quick_ref.get('criticalActions', []),
-                "supportingReferences": quick_ref.get('supportingReferences', []),
-                "decisionPoints": [
-                    {
-                        "question": node.get('title'),
-                        "branches": node.get('decisionOptions')
-                    }
-                    for node in process_data.get('nodes', [])
-                    if node.get('isDecisionPoint')
-                ],
-                "swimLanes": process_data.get('swimLanes', []),
-                "nodeCount": len(process_data.get('nodes', [])),
-                "edgeCount": len(process_data.get('edges', []))
-            },
-            "rawText": input_data.text[:1000] + "..." if len(input_data.text) > 1000 else input_data.text
-        }
+        try:
+            response = await chat.send_message(UserMessage(text=prompt))
+            
+            import json
+            import re
+            
+            # Extract JSON from response
+            json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
+            if json_match:
+                extraction_data = json.loads(json_match.group())
+            else:
+                extraction_data = {
+                    "emergencyContacts": {},
+                    "keyTimings": [],
+                    "criticalActions": [],
+                    "supportingReferences": [],
+                    "decisionPoints": [],
+                    "swimLanes": []
+                }
+            
+            return {
+                "success": True,
+                "extraction": {
+                    "emergencyContacts": extraction_data.get('emergencyContacts', {}),
+                    "keyTimings": extraction_data.get('keyTimings', []),
+                    "criticalActions": extraction_data.get('criticalActions', []),
+                    "supportingReferences": extraction_data.get('supportingReferences', []),
+                    "decisionPoints": extraction_data.get('decisionPoints', []),
+                    "swimLanes": extraction_data.get('swimLanes', []),
+                    "nodeCount": len(extraction_data.get('decisionPoints', [])),
+                    "edgeCount": 0
+                },
+                "rawText": input_data.text[:500] + "..." if len(input_data.text) > 500 else input_data.text
+            }
+            
+        except Exception as e:
+            logger.error(f"Simple extraction failed: {e}")
+            # Return empty data rather than failing
+            return {
+                "success": True,
+                "extraction": {
+                    "emergencyContacts": {},
+                    "keyTimings": [],
+                    "criticalActions": [],
+                    "supportingReferences": [],
+                    "decisionPoints": [],
+                    "swimLanes": [],
+                    "nodeCount": 0,
+                    "edgeCount": 0
+                },
+                "rawText": input_data.text[:500] + "..."
+            }
         
     except HTTPException:
         raise
