@@ -4923,34 +4923,66 @@ async def get_comments(process_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.post("/upload")
-async def upload_document(file: UploadFile = File(...)):
-    """Upload and extract text from documents"""
+async def upload_document(file: UploadFile = File(...), force_vision: bool = False):
+    """
+    Upload and extract text from documents using HYBRID processing
+    - Auto-detects text vs visual PDFs
+    - Uses vision AI for visual/scanned documents
+    - Uses text extraction for text-based documents
+    """
     if not DOCUMENT_SUPPORT:
         raise HTTPException(status_code=501, detail="Document processing not available")
     
     try:
         content = await file.read()
-        text = ""
         
-        if file.filename.endswith('.pdf'):
-            pdf_reader = pypdf.PdfReader(io.BytesIO(content))
-            for page in pdf_reader.pages:
-                text += page.extract_text() + "\n"
+        # Use hybrid vision processor for PDFs and images
+        if file.filename.endswith(('.pdf', '.png', '.jpg', '.jpeg')):
+            from vision_document_processor import VisionDocumentProcessor
+            
+            # Get Emergent LLM key
+            llm_key = os.environ.get('EMERGENT_LLM_KEY')
+            if not llm_key:
+                logger.warning("⚠️ EMERGENT_LLM_KEY not found, falling back to text extraction")
+                # Fallback to text extraction
+                if file.filename.endswith('.pdf'):
+                    pdf_reader = pypdf.PdfReader(io.BytesIO(content))
+                    text = ""
+                    for page in pdf_reader.pages:
+                        text += page.extract_text() + "\n"
+                    return {"text": text, "method": "text_fallback"}
+                else:
+                    raise HTTPException(status_code=500, detail="Vision processing requires EMERGENT_LLM_KEY")
+            
+            # Use hybrid processor
+            processor = VisionDocumentProcessor(api_key=llm_key)
+            result = await processor.process_document(
+                file_bytes=content,
+                filename=file.filename,
+                force_vision=force_vision
+            )
+            
+            logger.info(f"📄 Document processed via {result['method']}: {len(result['text'])} chars")
+            return {
+                "text": result["text"],
+                "method": result["method"],
+                "confidence": result.get("confidence", 0),
+                "pages_processed": result.get("pages_processed", 1)
+            }
         
         elif file.filename.endswith('.docx'):
             doc = docx.Document(io.BytesIO(content))
+            text = ""
             for para in doc.paragraphs:
                 text += para.text + "\n"
-        
-        elif file.filename.endswith(('.png', '.jpg', '.jpeg')):
-            image = Image.open(io.BytesIO(content))
-            text = pytesseract.image_to_string(image)
+            return {"text": text, "method": "docx"}
         
         else:
             text = content.decode('utf-8')
+            return {"text": text, "method": "text"}
         
-        return {"text": text}
     except Exception as e:
+        logger.error(f"❌ Document processing failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to extract text: {str(e)}")
 
 @api_router.post("/transcribe")
