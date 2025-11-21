@@ -133,11 +133,17 @@ const ReferencesModal = ({ isOpen, onClose, quickReference, gapAnalysis }) => {
                           )}
                           {options.length > 0 && (
                             <div className="mt-2 space-y-1">
-                              {options.map((opt, i) => (
-                                <div key={i} className="text-xs text-pink-700 pl-2 border-l-2 border-pink-300">
-                                  {opt}
-                                </div>
-                              ))}
+                              {options.map((opt, i) => {
+                                // Handle both string and object formats
+                                const optionText = typeof opt === 'object' && opt !== null
+                                  ? `Press ${opt.number}: ${opt.description}`
+                                  : String(opt);
+                                return (
+                                  <div key={i} className="text-xs text-pink-700 pl-2 border-l-2 border-pink-300">
+                                    {optionText}
+                                  </div>
+                                );
+                              })}
                             </div>
                           )}
                         </div>
