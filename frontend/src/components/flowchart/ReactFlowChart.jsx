@@ -36,14 +36,15 @@ const getLayoutedElements = async (nodes, edges, direction = 'DOWN') => {
       layoutOptions: {
         'elk.algorithm': 'layered',
         'elk.direction': direction,
-        'elk.spacing.nodeNode': '50',
-        'elk.layered.spacing.nodeNodeBetweenLayers': '60',
+        'elk.spacing.nodeNode': '80',  // Increased for better spacing around diamonds
+        'elk.layered.spacing.nodeNodeBetweenLayers': '100',  // More vertical space
         'elk.layered.nodePlacement.strategy': 'SIMPLE',
       },
       children: nodes.map((node) => ({
         id: node.id,
-        width: 280,
-        height: 100,
+        // Decision nodes are larger (200x200) so give them proper dimensions
+        width: node.type === 'decision' ? 200 : 280,
+        height: node.type === 'decision' ? 200 : 100,
       })),
       edges: validEdges.map((edge) => ({
         id: edge.id,
