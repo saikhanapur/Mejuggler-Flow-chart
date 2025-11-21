@@ -270,50 +270,20 @@ const DecisionNode = ({ data, selected }) => {
         }} 
       />
       
-      {/* Diamond container with proper sizing */}
-      <div className="relative w-[200px] h-[200px] flex items-center justify-center">
-        {/* SVG Diamond - matches FlowNode.js design */}
-        <svg 
-          width="200" 
-          height="200" 
-          className="absolute inset-0"
-          style={{ 
-            filter: selected 
-              ? 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.8))' 
-              : 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))' 
+      {/* Beautiful yellow gradient diamond - RESTORED */}
+      <div className="relative w-32 h-32 flex items-center justify-center">
+        <div 
+          className={`absolute inset-0 transform rotate-45 shadow-lg ${
+            selected ? 'ring-4 ring-blue-400' : ''
+          }`}
+          style={{
+            background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+            border: '3px solid #f59e0b'
           }}
-        >
-          <defs>
-            <linearGradient id={`yellowGradient-${data.title}`} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#fbbf24" />
-              <stop offset="100%" stopColor="#f59e0b" />
-            </linearGradient>
-          </defs>
-          
-          {/* Diamond path */}
-          <path
-            d="M 100 10 L 190 100 L 100 190 L 10 100 Z"
-            fill={`url(#yellowGradient-${data.title})`}
-            stroke="#f59e0b"
-            strokeWidth="3"
-            className="transition-all duration-300"
-          />
-        </svg>
-        
-        {/* Text content - centered and multi-line */}
-        <div className="relative z-10 flex flex-col items-center justify-center text-center px-8">
-          {textLines.map((line, index) => (
-            <div
-              key={index}
-              className="text-white text-xs font-semibold leading-tight"
-              style={{ 
-                fontFamily: 'Inter, sans-serif',
-                textShadow: '0 1px 2px rgba(0,0,0,0.3)'
-              }}
-            >
-              {line}
-            </div>
-          ))}
+        />
+        <div className="relative z-10 text-center text-xs font-semibold text-white px-2 max-w-[80px]"
+          style={{ textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+          {data.title}
         </div>
       </div>
       
