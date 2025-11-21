@@ -246,6 +246,15 @@ const FlowchartCanvas = ({ processData }) => {
           onClose={() => setShowShareModal(false)}
         />
       )}
+
+      {showReferencesModal && (
+        <ReferencesModal
+          isOpen={showReferencesModal}
+          onClose={() => setShowReferencesModal(false)}
+          quickReference={process?.quickReference || {}}
+          processName={process?.name || ''}
+        />
+      )}
     </div>
   );
 };
