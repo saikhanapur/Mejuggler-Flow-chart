@@ -122,13 +122,13 @@ const FlowNode = ({ data, id, type, onClick, onUpdateNode, isSelected, selectedN
 
   // Check node type - FIXED: Check for isDecisionPoint or type='decision'
   const isDecision = node.isDecisionPoint || type === 'decision' || false;
-  const isMerge = originalNode.isMergePoint || false;
-  const isCritical = originalNode.status === 'critical' || originalNode.status === 'trigger';
-  const isLoop = originalNode.isLoop || false;
-  const hasGap = originalNode.operationalDetails?.gap || false;
+  const isMerge = node.isMergePoint || false;
+  const isCritical = node.status === 'critical' || node.status === 'trigger';
+  const isLoop = node.isLoop || false;
+  const hasGap = node.operationalDetails?.gap || false;
   
   // Check if node has sub-steps to show
-  const subSteps = originalNode.operationalDetails?.specificActions || originalNode.subSteps || [];
+  const subSteps = node.operationalDetails?.specificActions || node.subSteps || [];
   const hasSubSteps = subSteps.length > 0;
   
   // Handle expand/collapse (prevent event bubbling to onClick)
