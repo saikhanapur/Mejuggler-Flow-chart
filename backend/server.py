@@ -3189,8 +3189,11 @@ Be thorough but fast. Extract ALL contacts with phone numbers."""
             import json
             import re
             
+            # Response is a string directly
+            response_text = response if isinstance(response, str) else str(response)
+            
             # Extract JSON from response
-            json_match = re.search(r'\{.*\}', response.text, re.DOTALL)
+            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
             if json_match:
                 extraction_data = json.loads(json_match.group())
             else:
