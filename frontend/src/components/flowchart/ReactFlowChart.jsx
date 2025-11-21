@@ -461,35 +461,43 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
           }
         }
         
+        // Determine edge color based on YES/NO
+        const isYesEdge = edgeLabel === 'YES';
+        const isNoEdge = edgeLabel === 'NO';
+        const edgeColor = isYesEdge ? '#10b981' : isNoEdge ? '#ef4444' : '#64748b';
+        
         return {
           id: edge.id,
           source: edge.source,
           target: edge.target,
           label: edgeLabel,
           type: 'smoothstep',
-          animated: true,
+          animated: isYesEdge || isNoEdge,  // Animate decision edges for emphasis
           markerEnd: {
             type: MarkerType.ArrowClosed,
             width: 20,
             height: 20,
-            color: '#64748b',
+            color: edgeColor,
           },
           style: {
-            strokeWidth: 2,
-            stroke: '#64748b',
+            strokeWidth: edgeLabel ? 2.5 : 2,  // Thicker lines for labeled edges
+            stroke: edgeColor,
           },
-          // Add label styling for better visibility
+          // Enhanced label styling for better visibility
           labelStyle: {
-            fill: '#1f2937',
-            fontWeight: 600,
-            fontSize: 12,
+            fill: edgeColor,
+            fontWeight: 700,
+            fontSize: 13,
+            fontFamily: 'Inter, sans-serif',
           },
           labelBgStyle: {
             fill: '#ffffff',
-            fillOpacity: 0.9,
+            fillOpacity: 0.95,
+            stroke: edgeColor,
+            strokeWidth: 1,
           },
-          labelBgPadding: [8, 4],
-          labelBgBorderRadius: 4,
+          labelBgPadding: [10, 6],
+          labelBgBorderRadius: 6,
         };
       }));
   }, [processData]);
