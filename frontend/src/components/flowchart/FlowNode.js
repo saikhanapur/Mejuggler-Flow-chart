@@ -186,7 +186,7 @@ const FlowNode = ({ data, id, type, onClick, onUpdateNode, isSelected, selectedN
       );
     };
     
-    const textLines = wrapText(node.title);
+    const textLines = wrapText(data?.title || node.title || "Decision");
     
     return (
       <div
