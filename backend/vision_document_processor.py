@@ -338,27 +338,42 @@ Be EXTREMELY thorough. Missing information = failure."""
             raise
     
     async def _process_image_file(self, image_bytes: bytes) -> str:
-        """Process standalone image files with vision"""
+        """Process standalone image files with native Anthropic vision"""
         try:
             # Convert to base64
             img_base64 = base64.b64encode(image_bytes).decode()
             
-            chat = LlmChat(
-                api_key=self.api_key,
-                session_id="vision_image",
-                system_message="You are an expert at analyzing flowcharts and process documents."
+            # Initialize Anthropic client
+            client = anthropic.Anthropic(api_key=self.api_key)
+            
+            prompt = """Extract ALL information from this process document/flowchart image.
+Include: all text, process steps, decisions, contacts, timings, references, swim lanes, and structural information.
+Be extremely thorough - extract EVERYTHING you see."""
+            
+            # Call Claude Vision API
+            message = client.messages.create(
+                model="claude-4-sonnet-20250514",
+                max_tokens=4000,
+                messages=[{
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": "image/png",
+                                "data": img_base64
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": prompt
+                        }
+                    ]
+                }]
             )
             
-            prompt = """Extract all information from this process document/flowchart image.
-Include all text, process steps, decisions, contacts, and structural information."""
-            
-            response = await chat.send_message(UserMessage(
-                text=prompt,
-                image_data=img_base64,
-                image_format="png"
-            ))
-            
-            return response.text
+            return message.content[0].text
             
         except Exception as e:
             logger.error(f"Image processing failed: {e}")
