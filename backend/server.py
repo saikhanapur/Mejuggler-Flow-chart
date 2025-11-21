@@ -3232,8 +3232,10 @@ CRITICAL: Include FULL text of message templates, call scripts, email templates.
                 "success": True,
                 "extraction": {
                     "emergencyContacts": extraction_data.get('emergencyContacts', {}),
+                    "messageTemplates": extraction_data.get('messageTemplates', {}),
                     "keyTimings": extraction_data.get('keyTimings', []),
                     "criticalActions": extraction_data.get('criticalActions', []),
+                    "systemLinks": extraction_data.get('systemLinks', []),
                     "supportingReferences": extraction_data.get('supportingReferences', []),
                     "decisionPoints": extraction_data.get('decisionPoints', []),
                     "swimLanes": extraction_data.get('swimLanes', []),
