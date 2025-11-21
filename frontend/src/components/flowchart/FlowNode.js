@@ -106,10 +106,13 @@ const StatusIcon = ({ status }) => {
   }
 };
 
-const FlowNode = ({ node, onClick, onUpdateNode, isSelected, selectedNodeId, isOnCriticalPath }) => {
+const FlowNode = ({ data, id, type, onClick, onUpdateNode, isSelected, selectedNodeId, isOnCriticalPath }) => {
+  // ReactFlow passes data, id, type separately - reconstruct node for compatibility
+  const node = data?.originalNode || { ...data, id, type };
+  
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [editedTitle, setEditedTitle] = useState(node.title);
+  const [editedTitle, setEditedTitle] = useState(data?.title || node.title);
   
   const config = STATUS_CONFIG[node.status] || STATUS_CONFIG.operational;
   
