@@ -109,9 +109,17 @@ const ExtractionReview = ({ extractionData, onConfirm, onCancel, isProcessing })
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <div className="flex items-center gap-2 mb-1">
                 <AlertTriangle className="w-4 h-4 text-orange-600" />
-                <span className="text-sm font-medium text-slate-600">Critical Actions</span>
+                <span className="text-sm font-medium text-slate-600">Actions</span>
               </div>
               <p className="text-2xl font-bold text-slate-900">{actions.length}</p>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <div className="flex items-center gap-2 mb-1">
+                <FileText className="w-4 h-4 text-green-600" />
+                <span className="text-sm font-medium text-slate-600">Scripts/Templates</span>
+              </div>
+              <p className="text-2xl font-bold text-slate-900">{Object.keys(messageTemplates).length}</p>
             </div>
           </div>
         </div>
