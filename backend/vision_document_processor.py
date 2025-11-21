@@ -109,21 +109,24 @@ class VisionDocumentProcessor:
     
     async def process_visual_pdf(self, pdf_bytes: bytes, filename: str) -> str:
         """
-        Process visual/scanned PDF using Claude Vision
+        Process visual/scanned PDF using Claude Vision API (Native Anthropic SDK)
         Converts PDF pages to images and analyzes with vision model
         """
         try:
             logger.info(f"🔍 Processing visual PDF: {filename}")
             
-            # Convert PDF to images (first 5 pages to avoid token limits)
+            # Convert PDF to images (first 3 pages to manage costs)
             images = convert_from_bytes(
                 pdf_bytes,
                 first_page=1,
-                last_page=min(5, 10),  # Limit to 5 pages for now
+                last_page=min(3, 10),
                 dpi=150  # Balance between quality and size
             )
             
             logger.info(f"📸 Converted {len(images)} pages to images")
+            
+            # Initialize Anthropic client
+            client = anthropic.Anthropic(api_key=self.api_key)
             
             # Process each page with Claude Vision
             all_extracted_text = []
@@ -136,46 +139,122 @@ class VisionDocumentProcessor:
                 image.save(buffered, format="PNG", optimize=True, quality=85)
                 img_base64 = base64.b64encode(buffered.getvalue()).decode()
                 
-                # Create vision chat
-                chat = LlmChat(
-                    api_key=self.api_key,
-                    session_id=f"vision_page_{idx}",
-                    system_message="You are an expert at analyzing flowcharts and SOPs. Extract ALL text, structure, and process information from this document image."
+                # Construct comprehensive vision prompt
+                prompt = f"""You are an expert at analyzing business process flowcharts and SOPs.
+
+Analyze this flowchart document (page {idx}) and extract EVERYTHING with extreme precision:
+
+## CRITICAL INSTRUCTIONS:
+Extract ALL information - treat this like a life-or-death emergency procedure where missing ANY detail could be catastrophic.
+
+## SECTION 1: PROCESS STRUCTURE
+For each shape/node you see:
+- Exact text inside the shape
+- Shape type (rectangle, diamond, oval, etc.)
+- Shape color (blue, yellow, green, red, grey, white, etc.)
+- Position in the flow (which swim lane, sequence number)
+- What it connects TO (list all arrows going out)
+- What connects to IT (list all arrows coming in)
+
+## SECTION 2: DECISION POINTS
+For EVERY diamond shape:
+- Exact decision question
+- YES branch destination
+- NO branch destination
+- Any conditions or criteria mentioned
+
+## SECTION 3: SWIM LANES / COLUMNS
+Identify all vertical or horizontal sections:
+- Section names (e.g., "Onshore Actions", "Offshore Actions")
+- Which steps belong to which section
+- Any role labels (Supervisor, Patrol Officer, etc.)
+
+## SECTION 4: CONTACTS & REFERENCES
+Extract EVERY single:
+- Name (person, team, role)
+- Phone number (including country code, extensions)
+- Email address
+- System names
+- Document references
+- Links or URLs
+
+## SECTION 5: TIMINGS & DEADLINES
+Extract ALL time-related information:
+- Durations (e.g., "30 minutes", "1 hour")
+- Frequencies (e.g., "every 30 minutes", "daily")
+- Deadlines (e.g., "within 24 hours")
+- Sequences (e.g., "step 1, then step 2")
+
+## SECTION 6: REFERENCE BOXES
+Look for yellow/highlighted boxes containing:
+- Message templates
+- Email scripts
+- Call scripts
+- Quick reference guides
+- Contact lists
+
+## SECTION 7: PARALLEL PROCESSES
+Identify any processes that happen simultaneously:
+- Which steps can run in parallel
+- Which steps must be sequential
+- Any synchronization points
+
+## OUTPUT FORMAT:
+Provide a complete, detailed extraction structured as:
+
+SWIM LANES:
+[List all swim lanes/sections with their exact names]
+
+PROCESS STEPS (in order):
+Step N: [Exact text] (Shape: rectangle/diamond/oval, Color: X, Lane: Y)
+→ Connects to: [Step IDs or descriptions]
+
+DECISION POINTS:
+Decision N: "[Exact question]"
+- YES → [destination]
+- NO → [destination]
+
+CONTACTS:
+- [Name]: [Phone] / [Email]
+- [...]
+
+TIMINGS:
+- [Time requirement]
+- [...]
+
+REFERENCES:
+- [Document/template name]
+- [...]
+
+MESSAGE TEMPLATES:
+[Copy any message/email templates word-for-word]
+
+Be EXTREMELY thorough. Missing information = failure."""
+
+                # Call Claude Vision API
+                message = client.messages.create(
+                    model="claude-4-sonnet-20250514",
+                    max_tokens=4000,
+                    messages=[{
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": "image/png",
+                                    "data": img_base64
+                                }
+                            },
+                            {
+                                "type": "text",
+                                "text": prompt
+                            }
+                        ]
+                    }]
                 )
                 
-                # Construct vision prompt
-                prompt = f"""Analyze this SOP/flowchart document (page {idx}):
-
-Extract EVERYTHING you see:
-1. All text content (titles, steps, descriptions, annotations)
-2. Flowchart structure:
-   - Shapes (rectangles, diamonds, ovals) and their text
-   - Decision points (diamond shapes) with YES/NO branches
-   - Connections between nodes (arrows, flow direction)
-   - Color coding if visible (green, yellow, red boxes)
-3. Important details:
-   - Names, phone numbers, email addresses
-   - Timings, deadlines, durations
-   - System names, URLs, links
-   - Instructions in "yellow boxes" or annotations
-4. Process flow:
-   - Sequential steps
-   - Parallel processes
-   - Conditional branches
-   - Loops or iterations
-
-Preserve the logical structure and relationships. Include ALL information - nothing should be missed.
-
-Output as clear, structured text that preserves the process flow."""
-
-                # Send message with image
-                response = await chat.send_message(UserMessage(
-                    text=prompt,
-                    image_data=img_base64,
-                    image_format="png"
-                ))
-                
-                page_text = response.text
+                page_text = message.content[0].text
                 all_extracted_text.append(f"=== PAGE {idx} ===\n{page_text}\n")
                 logger.info(f"✅ Page {idx} extracted: {len(page_text)} characters")
             
