@@ -4741,11 +4741,13 @@ Contacts:
                 print("=" * 60)
                 
                 # Summary
+                has_criteria = bool(decision_node.get('decisionCriteria') or 
+                                  decision_node.get('operationalDetails', {}).get('decisionCriteria'))
                 print(f"\n✅ DECISION POINT DETECTION SUMMARY:")
                 print(f"   • Found {len(decision_nodes)} decision node(s)")
                 print(f"   • isDecisionPoint: {decision_node.get('isDecisionPoint')}")
                 print(f"   • type: '{decision_node.get('type')}'")
-                print(f"   • Has decisionCriteria: {bool(decision_node.get('decisionCriteria'))}")
+                print(f"   • Has decisionCriteria: {has_criteria}")
                 print(f"   • Has decisionOptions: {bool(decision_node.get('decisionOptions'))}")
                 
                 # Final validation
