@@ -148,6 +148,33 @@ const FlowchartCanvas = ({ processData }) => {
                 <Sparkles className="w-4 h-4" />
                 AI Edit
               </Button>
+              {/* Show References Button - only if data exists */}
+              {(() => {
+                const quickRef = process?.quickReference || {};
+                const hasContacts = Object.keys(quickRef.emergencyContacts || {}).length > 0;
+                const hasReferences = (quickRef.supportingReferences || []).length > 0;
+                const hasCriticalActions = (quickRef.criticalActions || []).length > 0;
+                const hasTimings = (quickRef.keyTimings || []).length > 0;
+                const hasAnyData = hasContacts || hasReferences || hasCriticalActions || hasTimings;
+                
+                if (!hasAnyData) return null;
+                
+                return (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowReferencesModal(true)}
+                    className="flex items-center gap-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Quick Reference ({
+                      Object.keys(quickRef.emergencyContacts || {}).length +
+                      (quickRef.criticalActions || []).length +
+                      (quickRef.keyTimings || []).length
+                    })
+                  </Button>
+                );
+              })()}
               <Button
                 variant="outline"
                 size="sm"
