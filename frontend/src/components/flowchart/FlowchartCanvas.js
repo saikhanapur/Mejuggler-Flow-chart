@@ -20,6 +20,7 @@ const FlowchartCanvas = ({ processData }) => {
   const [showExportModal, setShowExportModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
+  const [showReferencesModal, setShowReferencesModal] = useState(false);
 
   useEffect(() => {
     if (!processData) {
