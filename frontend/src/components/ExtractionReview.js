@@ -185,12 +185,58 @@ const ExtractionReview = ({ extractionData, onConfirm, onCancel, isProcessing })
             renderItem={(items) => (
               <ul className="space-y-2">
                 {items.map((action, idx) => (
-                  <li key={idx} className="flex items-start gap-2 p-2 hover:bg-slate-50 rounded">
-                    <span className="text-orange-600 font-bold mt-0.5">•</span>
-                    <span className="text-sm text-slate-700">{action}</span>
+                  <li key={idx} className="flex items-start gap-2 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                    <span className="text-orange-600 font-bold mt-0.5">→</span>
+                    <span className="text-sm text-slate-700 font-medium">{action}</span>
                   </li>
                 ))}
               </ul>
+            )}
+          />
+
+          <Section
+            title="Message Templates & Scripts"
+            icon={FileText}
+            count={Object.keys(messageTemplates).length}
+            items={messageTemplates}
+            sectionKey="templates"
+            renderItem={(items) => (
+              <div className="space-y-4">
+                {Object.entries(items).map(([name, script]) => (
+                  <div key={name} className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <h4 className="font-semibold text-green-900 mb-2">{name}</h4>
+                    <div className="text-sm text-slate-700 whitespace-pre-wrap font-mono bg-white p-3 rounded border border-green-100">
+                      {script}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          />
+
+          <Section
+            title="System Links & Access"
+            icon={FileText}
+            count={systemLinks.length}
+            items={systemLinks}
+            sectionKey="systems"
+            renderItem={(items) => (
+              <div className="space-y-2">
+                {items.map((link, idx) => (
+                  <div key={idx} className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="font-semibold text-blue-900">{link.name || link}</p>
+                    {link.url && (
+                      <a href={link.url} target="_blank" rel="noopener noreferrer" 
+                         className="text-xs text-blue-600 hover:underline block mt-1">
+                        {link.url}
+                      </a>
+                    )}
+                    {link.purpose && (
+                      <p className="text-xs text-slate-600 mt-1">{link.purpose}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
             )}
           />
 
