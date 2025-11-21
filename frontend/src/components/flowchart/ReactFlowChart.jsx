@@ -442,7 +442,7 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
         target: edge.target,
         label: edgeLabel,
         type: 'smoothstep',
-        animated: isYesEdge || isNoEdge,
+        animated: true,  // ALWAYS animate - those beautiful flowing dotted lines!
         markerEnd: {
           type: MarkerType.ArrowClosed,
           width: 20,
@@ -450,22 +450,23 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
           color: edgeColor,
         },
         style: {
-          strokeWidth: edgeLabel ? 2.5 : 2,
+          strokeWidth: 2,
           stroke: edgeColor,
+          strokeDasharray: '5, 5',  // DOTTED LINES - the beautiful flowing effect!
         },
         labelStyle: {
           fill: edgeColor,
           fontWeight: 700,
-          fontSize: 13,
+          fontSize: 14,
           fontFamily: 'Inter, sans-serif',
         },
         labelBgStyle: {
           fill: '#ffffff',
           fillOpacity: 0.95,
           stroke: edgeColor,
-          strokeWidth: 1,
+          strokeWidth: 1.5,
         },
-        labelBgPadding: [10, 6],
+        labelBgPadding: [12, 8],
         labelBgBorderRadius: 6,
       };
     });
