@@ -80,15 +80,50 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
   };
 
   const handleInputComplete = async (input, inputType) => {
-    // For documents, use EROAD-style hybrid approach
+    // For documents, use EXTRACTION FIRST, then generate flowchart after review
     if (inputType === 'document') {
       setExtractedText(input);
       setProcessing(true);
-      setProcessingStep('Creating intelligent flowchart...');
+      setProcessingStep('🔍 Extracting intelligence from document...');
       
       try {
-        // Using proven EROAD service with intelligent 10-15 node grouping
-        const result = await api.generateEROADStyleFlowchart(input, inputType);
+        // STEP 1: Extract intelligence ONLY (no flowchart generation yet)
+        const extractionResult = await api.extractDocumentIntelligence(input, inputType);
+        
+        console.log('=== EXTRACTION RESULT ===');
+        console.log('Extraction:', JSON.stringify(extractionResult, null, 2));
+        
+        if (!extractionResult.success) {
+          throw new Error('Extraction failed');
+        }
+        
+        // Show extraction review modal
+        setDocumentAnalysis(extractionResult.extraction);
+        setShowAnalysisReview(true);
+        setProcessing(false);
+        
+        // Wait for user confirmation before generating flowchart
+        return;
+        
+      } catch (error) {
+        console.error('Extraction failed:', error);
+        toast.error('Failed to extract document intelligence');
+        setProcessing(false);
+        return;
+      }
+    }
+    
+    // For non-documents, proceed directly
+    handleFlowchartGeneration(input, inputType);
+  };
+  
+  const handleFlowchartGeneration = async (input, inputType) => {
+    setProcessing(true);
+    setProcessingStep('Creating intelligent flowchart...');
+    
+    try {
+      // Using proven EROAD service with intelligent 10-15 node grouping
+      const result = await api.generateEROADStyleFlowchart(input, inputType);
         
         console.log('=== GENERATION RESULT ===');
         console.log('Full result:', JSON.stringify(result, null, 2));
