@@ -432,74 +432,75 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
     });
 
     // Filter out edges that reference non-existent nodes (CRITICAL BUG FIX)
-    return processData.edges
-      .filter(edge => {
-        const hasValidSource = validNodeIds.has(edge.source);
-        const hasValidTarget = validNodeIds.has(edge.target);
+    const validEdges = processData.edges.filter(edge => {
+      const hasValidSource = validNodeIds.has(edge.source);
+      const hasValidTarget = validNodeIds.has(edge.target);
+      
+      if (!hasValidSource || !hasValidTarget) {
+        console.warn(`⚠️ Skipping invalid edge: ${edge.id}`);
+        return false;
+      }
+      
+      return true;
+    });
+    
+    // Map edges and add YES/NO labels for decision nodes
+    const enhancedEdges = validEdges.map((edge) => {
+      // CRITICAL FIX: Add YES/NO labels for decision edges
+      let edgeLabel = edge.label || '';
+      
+      // Check if this edge comes from a decision node
+      if (decisionNodesMap.has(edge.source)) {
+        const decisionOptions = decisionNodesMap.get(edge.source);
         
-        if (!hasValidSource || !hasValidTarget) {
-          console.warn(`⚠️ Skipping invalid edge: ${edge.id} (source: ${edge.source}, target: ${edge.target})`);
-          console.warn(`   Valid nodes: ${Array.from(validNodeIds).join(', ')}`);
-          return false;
+        // Determine if this edge is the YES or NO path
+        if (decisionOptions.yes === edge.target) {
+          edgeLabel = 'YES';
+        } else if (decisionOptions.no === edge.target) {
+          edgeLabel = 'NO';
         }
-        
-        return true;
-      })
-      .map((edge) => {
-        // CRITICAL FIX: Add YES/NO labels for decision edges
-        let edgeLabel = edge.label || '';
-        
-        // Check if this edge comes from a decision node
-        if (decisionNodesMap.has(edge.source)) {
-          const decisionOptions = decisionNodesMap.get(edge.source);
-          
-          // Determine if this edge is the YES or NO path
-          if (decisionOptions.yes === edge.target) {
-            edgeLabel = 'YES';
-          } else if (decisionOptions.no === edge.target) {
-            edgeLabel = 'NO';
-          }
-        }
-        
-        // Determine edge color based on YES/NO
-        const isYesEdge = edgeLabel === 'YES';
-        const isNoEdge = edgeLabel === 'NO';
-        const edgeColor = isYesEdge ? '#10b981' : isNoEdge ? '#ef4444' : '#64748b';
-        
-        return {
-          id: edge.id,
-          source: edge.source,
-          target: edge.target,
-          label: edgeLabel,
-          type: 'smoothstep',
-          animated: isYesEdge || isNoEdge,  // Animate decision edges for emphasis
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            width: 20,
-            height: 20,
-            color: edgeColor,
-          },
-          style: {
-            strokeWidth: edgeLabel ? 2.5 : 2,  // Thicker lines for labeled edges
-            stroke: edgeColor,
-          },
-          // Enhanced label styling for better visibility
-          labelStyle: {
-            fill: edgeColor,
-            fontWeight: 700,
-            fontSize: 13,
-            fontFamily: 'Inter, sans-serif',
-          },
-          labelBgStyle: {
-            fill: '#ffffff',
-            fillOpacity: 0.95,
-            stroke: edgeColor,
-            strokeWidth: 1,
-          },
-          labelBgPadding: [10, 6],
-          labelBgBorderRadius: 6,
-        };
-      }));
+      }
+      
+      // Determine edge color based on YES/NO
+      const isYesEdge = edgeLabel === 'YES';
+      const isNoEdge = edgeLabel === 'NO';
+      const edgeColor = isYesEdge ? '#10b981' : isNoEdge ? '#ef4444' : '#64748b';
+      
+      return {
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        label: edgeLabel,
+        type: 'smoothstep',
+        animated: isYesEdge || isNoEdge,
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 20,
+          height: 20,
+          color: edgeColor,
+        },
+        style: {
+          strokeWidth: edgeLabel ? 2.5 : 2,
+          stroke: edgeColor,
+        },
+        labelStyle: {
+          fill: edgeColor,
+          fontWeight: 700,
+          fontSize: 13,
+          fontFamily: 'Inter, sans-serif',
+        },
+        labelBgStyle: {
+          fill: '#ffffff',
+          fillOpacity: 0.95,
+          stroke: edgeColor,
+          strokeWidth: 1,
+        },
+        labelBgPadding: [10, 6],
+        labelBgBorderRadius: 6,
+      };
+    });
+    
+    return enhancedEdges;
   }, [processData]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
