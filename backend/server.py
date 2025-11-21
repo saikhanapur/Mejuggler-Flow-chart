@@ -3157,7 +3157,14 @@ async def extract_document_intelligence(
         
         logger.info(f"🔍 Extracting intelligence from document ({len(input_data.text)} chars)")
         
-        service = SuperintelligentAIService(api_key=os.environ.get('EMERGENT_LLM_KEY'))
+        # Get database client
+        from motor.motor_asyncio import AsyncIOMotorClient
+        db_client = AsyncIOMotorClient(os.environ.get('MONGO_URL'))
+        
+        service = SuperintelligentAIService(
+            api_key=os.environ.get('EMERGENT_LLM_KEY'),
+            db_client=db_client
+        )
         
         # Parse processes to extract basic structure
         result = await service.parse_process(
