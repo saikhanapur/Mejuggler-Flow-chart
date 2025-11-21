@@ -425,15 +425,15 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
         
         // Determine if this edge is the YES or NO path
         if (decisionOptions.yes === edge.target) {
-          edgeLabel = 'YES';
+          edgeLabel = '✓ YES';  // More prominent with checkmark
         } else if (decisionOptions.no === edge.target) {
-          edgeLabel = 'NO';
+          edgeLabel = '✗ NO';   // More prominent with X mark
         }
       }
       
       // Determine edge color based on YES/NO
-      const isYesEdge = edgeLabel === 'YES';
-      const isNoEdge = edgeLabel === 'NO';
+      const isYesEdge = edgeLabel.includes('YES');
+      const isNoEdge = edgeLabel.includes('NO');
       const edgeColor = isYesEdge ? '#10b981' : isNoEdge ? '#ef4444' : '#64748b';
       
       return {
