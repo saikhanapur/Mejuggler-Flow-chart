@@ -307,6 +307,14 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
 
     // Get all valid node IDs for validation
     const validNodeIds = new Set(processData.nodes.map(n => n.id));
+    
+    // Create a map of decision nodes for quick lookup
+    const decisionNodesMap = new Map();
+    processData.nodes.forEach(node => {
+      if (node.isDecisionPoint && node.decisionOptions) {
+        decisionNodesMap.set(node.id, node.decisionOptions);
+      }
+    });
 
     // Filter out edges that reference non-existent nodes (CRITICAL BUG FIX)
     return processData.edges
@@ -322,23 +330,52 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
         
         return true;
       })
-      .map((edge) => ({
-        id: edge.id,
-        source: edge.source,
-        target: edge.target,
-        label: edge.label || '',
-        type: 'smoothstep',
-        animated: true,
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          width: 20,
-          height: 20,
-          color: '#64748b',
-        },
-        style: {
-          strokeWidth: 2,
-          stroke: '#64748b',
-        },
+      .map((edge) => {
+        // CRITICAL FIX: Add YES/NO labels for decision edges
+        let edgeLabel = edge.label || '';
+        
+        // Check if this edge comes from a decision node
+        if (decisionNodesMap.has(edge.source)) {
+          const decisionOptions = decisionNodesMap.get(edge.source);
+          
+          // Determine if this edge is the YES or NO path
+          if (decisionOptions.yes === edge.target) {
+            edgeLabel = 'YES';
+          } else if (decisionOptions.no === edge.target) {
+            edgeLabel = 'NO';
+          }
+        }
+        
+        return {
+          id: edge.id,
+          source: edge.source,
+          target: edge.target,
+          label: edgeLabel,
+          type: 'smoothstep',
+          animated: true,
+          markerEnd: {
+            type: MarkerType.ArrowClosed,
+            width: 20,
+            height: 20,
+            color: '#64748b',
+          },
+          style: {
+            strokeWidth: 2,
+            stroke: '#64748b',
+          },
+          // Add label styling for better visibility
+          labelStyle: {
+            fill: '#1f2937',
+            fontWeight: 600,
+            fontSize: 12,
+          },
+          labelBgStyle: {
+            fill: '#ffffff',
+            fillOpacity: 0.9,
+          },
+          labelBgPadding: [8, 4],
+          labelBgBorderRadius: 4,
+        };
       }));
   }, [processData]);
 
