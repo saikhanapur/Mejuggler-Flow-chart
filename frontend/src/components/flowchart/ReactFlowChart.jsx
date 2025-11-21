@@ -279,7 +279,9 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
     }
 
     const nodes = processData.nodes.map((node) => {
-      const nodeType = node.type === 'decision' ? 'decision' : 'process';
+      // CRITICAL FIX: Check BOTH type field AND isDecisionPoint flag
+      // Backend sets isDecisionPoint=true but may keep type='action' or 'operational'
+      const nodeType = (node.type === 'decision' || node.isDecisionPoint) ? 'decision' : 'process';
 
       return {
         id: node.id,
