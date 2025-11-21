@@ -3162,7 +3162,8 @@ async def extract_document_intelligence(
         
         chat = LlmChat(
             api_key=os.environ.get('EMERGENT_LLM_KEY'),
-            session_id="extraction_only"
+            session_id="extraction_only",
+            system_message="You are an expert at extracting reference information from documents."
         )
         
         prompt = f"""Extract ONLY the reference information from this document. Do NOT create a flowchart.
