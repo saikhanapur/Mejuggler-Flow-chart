@@ -228,20 +228,134 @@ const ProcessNode = ({ data, selected, id }) => {
   );
 };
 
-// Decision node (diamond shape)
+// Decision node (diamond shape) - IMPROVED WITH BETTER SPACING & DESIGN
 const DecisionNode = ({ data, selected }) => {
+  // Wrap text for better readability
+  const wrapText = (text, maxLength = 18) => {
+    const words = (text || "Decision").split(' ');
+    const lines = [];
+    let currentLine = '';
+    
+    words.forEach(word => {
+      if ((currentLine + word).length <= maxLength) {
+        currentLine += (currentLine ? ' ' : '') + word;
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+      }
+    });
+    if (currentLine) lines.push(currentLine);
+    
+    // Limit to 3 lines
+    return lines.slice(0, 3).map((line, i) => 
+      i === 2 && lines.length > 3 ? line.substring(0, 15) + '...' : line
+    );
+  };
+  
+  const textLines = wrapText(data.title);
+  
   return (
     <>
-      <Handle type="target" position={Position.Top} style={{ background: '#555' }} />
-      <div className="relative w-32 h-32 flex items-center justify-center">
-        <div className={`absolute inset-0 bg-yellow-100 border-2 border-yellow-500 transform rotate-45 shadow-lg ${
-          selected ? 'ring-4 ring-blue-400' : ''
-        }`}></div>
-        <div className="relative z-10 text-center text-xs font-medium text-gray-900 px-2 max-w-[80px]">
-          {data.title}
+      {/* Connection handles with better positioning for spacing */}
+      <Handle 
+        type="target" 
+        position={Position.Top} 
+        style={{ 
+          background: '#f59e0b',
+          width: 12,
+          height: 12,
+          border: '2px solid white',
+          top: -6
+        }} 
+      />
+      
+      {/* Diamond container with proper sizing */}
+      <div className="relative w-[200px] h-[200px] flex items-center justify-center">
+        {/* SVG Diamond - matches FlowNode.js design */}
+        <svg 
+          width="200" 
+          height="200" 
+          className="absolute inset-0"
+          style={{ 
+            filter: selected 
+              ? 'drop-shadow(0 0 10px rgba(59, 130, 246, 0.8))' 
+              : 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))' 
+          }}
+        >
+          <defs>
+            <linearGradient id={`yellowGradient-${data.title}`} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#fbbf24" />
+              <stop offset="100%" stopColor="#f59e0b" />
+            </linearGradient>
+          </defs>
+          
+          {/* Diamond path */}
+          <path
+            d="M 100 10 L 190 100 L 100 190 L 10 100 Z"
+            fill={`url(#yellowGradient-${data.title})`}
+            stroke="#f59e0b"
+            strokeWidth="3"
+            className="transition-all duration-300"
+          />
+        </svg>
+        
+        {/* Text content - centered and multi-line */}
+        <div className="relative z-10 flex flex-col items-center justify-center text-center px-8">
+          {textLines.map((line, index) => (
+            <div
+              key={index}
+              className="text-white text-xs font-semibold leading-tight"
+              style={{ 
+                fontFamily: 'Inter, sans-serif',
+                textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+              }}
+            >
+              {line}
+            </div>
+          ))}
         </div>
       </div>
-      <Handle type="source" position={Position.Bottom} style={{ background: '#555' }} />
+      
+      {/* Bottom handle for outgoing edges - better spacing */}
+      <Handle 
+        type="source" 
+        position={Position.Bottom} 
+        style={{ 
+          background: '#f59e0b',
+          width: 12,
+          height: 12,
+          border: '2px solid white',
+          bottom: -6
+        }} 
+      />
+      
+      {/* Left handle for YES branch */}
+      <Handle 
+        type="source" 
+        position={Position.Left}
+        id="yes"
+        style={{ 
+          background: '#10b981',
+          width: 12,
+          height: 12,
+          border: '2px solid white',
+          left: 40
+        }} 
+      />
+      
+      {/* Right handle for NO branch */}
+      <Handle 
+        type="source" 
+        position={Position.Right}
+        id="no"
+        style={{ 
+          background: '#ef4444',
+          width: 12,
+          height: 12,
+          border: '2px solid white',
+          right: 40
+        }} 
+      />
     </>
   );
 };
