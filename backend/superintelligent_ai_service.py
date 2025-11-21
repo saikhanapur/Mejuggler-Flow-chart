@@ -339,7 +339,7 @@ Return ONLY the JSON, nothing else."""
             api_key=self.api_key,
             session_id=f"skeleton_{uuid.uuid4()}",
             system_message="Extract flowchart skeleton. ONLY IDs and titles. NO descriptions."
-        ).with_model("openai", "gpt-5")
+        ).with_model("anthropic", "claude-4-sonnet-20250514")
         
         prompt = f"""EXTRACT FLOWCHART SKELETON - MINIMAL JSON ONLY
 
@@ -556,7 +556,7 @@ Keep descriptions SHORT. Valid JSON only."""
             api_key=self.api_key,
             session_id=f"enrich_{uuid.uuid4()}",
             system_message="Extract precise operational details. Be specific, not generic."
-        ).with_model("openai", "gpt-5")
+        ).with_model("anthropic", "claude-4-sonnet-20250514")
         
         # Use targeted excerpts to stay under token limit while maintaining quality
         prompt = f"""EXTRACT OPERATIONAL DETAILS
