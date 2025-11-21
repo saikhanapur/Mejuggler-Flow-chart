@@ -270,60 +270,54 @@ const DecisionNode = ({ data, selected }) => {
         }} 
       />
       
-      {/* Beautiful yellow gradient diamond - RESTORED */}
+      {/* Beautiful soft yellow gradient diamond */}
       <div className="relative w-32 h-32 flex items-center justify-center">
         <div 
           className={`absolute inset-0 transform rotate-45 shadow-lg ${
             selected ? 'ring-4 ring-blue-400' : ''
           }`}
           style={{
-            background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-            border: '3px solid #f59e0b'
+            background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+            border: '3px solid #fbbf24'
           }}
         />
-        <div className="relative z-10 text-center text-xs font-semibold text-white px-2 max-w-[80px]"
-          style={{ textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+        <div className="relative z-10 text-center text-xs font-semibold text-gray-800 px-2 max-w-[80px]">
           {data.title}
         </div>
       </div>
       
-      {/* Bottom handle for outgoing edges - better spacing */}
+      {/* Connection handles - HIDDEN but functional */}
       <Handle 
         type="source" 
         position={Position.Bottom} 
         style={{ 
-          background: '#f59e0b',
+          opacity: 0,
           width: 12,
           height: 12,
-          border: '2px solid white',
           bottom: -6
         }} 
       />
       
-      {/* Left handle for YES branch */}
       <Handle 
         type="source" 
         position={Position.Left}
         id="yes"
         style={{ 
-          background: '#10b981',
+          opacity: 0,
           width: 12,
           height: 12,
-          border: '2px solid white',
           left: 40
         }} 
       />
       
-      {/* Right handle for NO branch */}
       <Handle 
         type="source" 
         position={Position.Right}
         id="no"
         style={{ 
-          background: '#ef4444',
+          opacity: 0,
           width: 12,
           height: 12,
-          border: '2px solid white',
           right: 40
         }} 
       />
