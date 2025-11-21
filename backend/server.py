@@ -3166,10 +3166,11 @@ async def extract_document_intelligence(
             db_client=db_client
         )
         
-        # Parse processes to extract basic structure
-        result = await service.parse_process(
-            input_text=input_data.text,
-            input_type=input_data.inputType
+        # Generate flowchart structure (includes all extraction)
+        result = await service.generate_eroad_style_flowchart(
+            document_text=input_data.text,
+            input_type=input_data.inputType,
+            user_id=user_id or "guest"
         )
         
         # Take first process for extraction
@@ -3177,22 +3178,16 @@ async def extract_document_intelligence(
             raise HTTPException(status_code=500, detail="No processes detected in document")
         
         process_data = result['processes'][0]
-        
-        # Extract intelligence (contacts, timings, etc.)
-        enhanced = await service.generate_intelligent_quickReference(
-            document_text=input_data.text,
-            nodes=process_data.get('nodes', []),
-            document_name=f"Document_{user_id or 'guest'}"
-        )
+        quick_ref = process_data.get('quickReference', {})
         
         # Return extraction data
         return {
             "success": True,
             "extraction": {
-                "emergencyContacts": enhanced.get('emergencyContacts', {}),
-                "keyTimings": enhanced.get('keyTimings', []),
-                "criticalActions": enhanced.get('criticalActions', []),
-                "supportingReferences": enhanced.get('supportingReferences', []),
+                "emergencyContacts": quick_ref.get('emergencyContacts', {}),
+                "keyTimings": quick_ref.get('keyTimings', []),
+                "criticalActions": quick_ref.get('criticalActions', []),
+                "supportingReferences": quick_ref.get('supportingReferences', []),
                 "decisionPoints": [
                     {
                         "question": node.get('title'),
