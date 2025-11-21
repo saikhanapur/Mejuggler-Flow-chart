@@ -4749,9 +4749,12 @@ Contacts:
                 print(f"   • Has decisionOptions: {bool(decision_node.get('decisionOptions'))}")
                 
                 # Final validation
+                has_criteria = bool(decision_node.get('decisionCriteria') or 
+                                  decision_node.get('operationalDetails', {}).get('decisionCriteria'))
+                
                 if (decision_node.get('isDecisionPoint') == True and 
                     decision_node.get('type') != 'decision' and
-                    decision_node.get('decisionCriteria') and
+                    has_criteria and
                     decision_node.get('decisionOptions')):
                     
                     self.log_result("Decision Point Detection - Complete Validation", True, 
