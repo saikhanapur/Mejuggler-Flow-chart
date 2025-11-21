@@ -120,9 +120,8 @@ const FlowNode = ({ data, id, type, onClick, onUpdateNode, isSelected, selectedN
   const x = node.x || node.position?.x || 0;
   const y = node.y || node.position?.y || 0;
 
-  // Check node type - FIXED: Check originalNode for isDecisionPoint
-  const originalNode = node.data?.originalNode || node;
-  const isDecision = originalNode.isDecisionPoint || node.type === 'decision' || false;
+  // Check node type - FIXED: Check for isDecisionPoint or type='decision'
+  const isDecision = node.isDecisionPoint || type === 'decision' || false;
   const isMerge = originalNode.isMergePoint || false;
   const isCritical = originalNode.status === 'critical' || originalNode.status === 'trigger';
   const isLoop = originalNode.isLoop || false;
