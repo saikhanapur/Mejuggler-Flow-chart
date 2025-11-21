@@ -217,9 +217,6 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
         toast.error(`Failed to generate flowchart: ${error.message || 'Please try again.'}`);
         setProcessing(false);
       }
-    } else {
-      // For voice/chat, use existing flow
-      await processWithAI(input, inputType, null, null);
     }
   };
 
