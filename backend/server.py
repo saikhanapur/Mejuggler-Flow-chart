@@ -488,7 +488,7 @@ class AIService:
                 api_key=self.api_key,
                 session_id=f"analyze_{uuid.uuid4()}",
                 system_message="You are an expert at analyzing business process documents and identifying what contextual information would improve AI flowchart generation."
-            ).with_model("openai", "gpt-5")
+            ).with_model("anthropic", "claude-4-sonnet-20250514")
             
             analysis_prompt = f"""TASK: Analyze this document to understand what it is and what SPECIFIC questions would help create a perfect flowchart.
 
@@ -793,7 +793,7 @@ Return ONLY this JSON (no markdown, no explanations):
                 api_key=self.api_key,
                 session_id=f"detect_{uuid.uuid4()}",
                 system_message="You are an expert at identifying process workflows in documents. Analyze carefully and detect ALL distinct processes."
-            ).with_model("openai", "gpt-5")
+            ).with_model("anthropic", "claude-4-sonnet-20250514")
             
             detection_prompt = f"""CRITICAL TASK: Analyze this {input_type} to detect if it contains MULTIPLE DISTINCT PROCESS WORKFLOWS.
 
@@ -882,7 +882,7 @@ BE THOROUGH. The preprocessing hints should guide you."""
                 api_key=self.api_key,
                 session_id=f"structure_{uuid.uuid4()}",
                 system_message="You are an expert process architect. Extract HIGH-LEVEL strategic phases, not micro-steps. Think like a business consultant simplifying complexity."
-            ).with_model("openai", "gpt-5")
+            ).with_model("anthropic", "claude-4-sonnet-20250514")
             
             prompt = f"""SMART PROCESS EXTRACTION - Strategic Thinking Required
 
@@ -1083,7 +1083,7 @@ RETURN VALID JSON ONLY (no markdown, no explanation)"""
                 api_key=self.api_key,
                 session_id=f"enrich_{uuid.uuid4()}",
                 system_message="You are extracting EXECUTABLE details that ADD VALUE. Extract information that helps someone ACTUALLY DO the work, not just repeat what's in the node title."
-            ).with_model("openai", "gpt-5")
+            ).with_model("anthropic", "claude-4-sonnet-20250514")
             
             prompt = f"""EXTRACT VALUE-ADD OPERATIONAL DETAILS
 
@@ -1228,7 +1228,7 @@ RETURN VALID JSON ONLY"""
                         api_key=self.api_key,
                         session_id=f"parse_{uuid.uuid4()}",
                         system_message="Extract this single process with operational details. Return valid JSON only."
-                    ).with_model("openai", "gpt-5")
+                    ).with_model("anthropic", "claude-4-sonnet-20250514")
                     
                     prompt = f"""Extract ONLY this process: "{process_title}"
 
@@ -1383,7 +1383,7 @@ Use status values: "trigger", "current", "warning" for variety. Include gaps whe
                 api_key=self.api_key,
                 session_id=f"ideal_{uuid.uuid4()}",
                 system_message="You are SuperHumanly AI, an expert at process improvement."
-            ).with_model("openai", "gpt-5")
+            ).with_model("anthropic", "claude-4-sonnet-20250514")
             
             prompt = f"""Given this process with identified gaps:
 {json.dumps(process_data, indent=2)}
@@ -1472,7 +1472,7 @@ When you have enough information, say:
 "Perfect! I have everything I need. [Summary of what you captured]"
 
 Keep responses concise (2-3 sentences max)."""
-            ).with_model("openai", "gpt-5")
+            ).with_model("anthropic", "claude-4-sonnet-20250514")
             
             message = UserMessage(text=user_message)
             response = await chat.send_message(message)
@@ -1516,7 +1516,7 @@ Steps:
                 api_key=self.api_key,
                 session_id=f"intelligence_{uuid.uuid4()}",
                 system_message="You are an expert process analyst who helps companies identify inefficiencies and save money."
-            ).with_model("openai", "gpt-5")
+            ).with_model("anthropic", "claude-4-sonnet-20250514")
             
             intelligence_prompt = f"""You are an elite process intelligence analyst. Your goal: identify ACTIONABLE, QUANTIFIABLE opportunities for improvement.
 
