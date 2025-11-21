@@ -1,6 +1,7 @@
 """
 Vision-Enhanced Document Processor
 Handles both text-based and visual PDFs using hybrid approach
+Uses native Anthropic API for vision processing
 """
 
 import io
@@ -10,7 +11,7 @@ from typing import Dict, Tuple
 from PIL import Image
 import pypdf
 from pdf2image import convert_from_bytes
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+import anthropic
 
 logger = logging.getLogger(__name__)
 
