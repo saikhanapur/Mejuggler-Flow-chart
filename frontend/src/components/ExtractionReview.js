@@ -19,15 +19,18 @@ const ExtractionReview = ({ extractionData, onConfirm, onCancel, isProcessing })
     }));
   };
 
-  // Parse extracted data
+  // Parse extracted data - PRESERVE EVERYTHING
   const contacts = extractionData.emergencyContacts || {};
+  const messageTemplates = extractionData.messageTemplates || {};
   const timings = extractionData.keyTimings || [];
   const actions = extractionData.criticalActions || [];
+  const systemLinks = extractionData.systemLinks || [];
   const decisions = extractionData.decisionPoints || [];
   const swimLanes = extractionData.swimLanes || [];
   const references = extractionData.supportingReferences || [];
 
-  const totalItems = Object.keys(contacts).length + timings.length + actions.length + 
+  const totalItems = Object.keys(contacts).length + Object.keys(messageTemplates).length + 
+                     timings.length + actions.length + systemLinks.length +
                      decisions.length + swimLanes.length + references.length;
 
   const Section = ({ title, icon: Icon, count, items, sectionKey, renderItem }) => {
