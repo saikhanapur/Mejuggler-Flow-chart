@@ -45,7 +45,7 @@ Key principles:
 2. CATEGORIZE - Use visual types (Critical, Action, Communication, Monitoring, Decision)
 3. ENRICH - Each node has rich side panel details (not just duplication)
 4. MAKE IT BEAUTIFUL - Clean visual hierarchy, proper colors, clear flow"""
-        ).with_model("openai", "gpt-5")
+        ).with_model("anthropic", "claude-4-sonnet-20250514")
         
         prompt = f"""GENERATE COMPLETE FLOWCHART
 
