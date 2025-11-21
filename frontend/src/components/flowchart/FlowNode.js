@@ -192,7 +192,7 @@ const FlowNode = ({ data, id, type, onClick, onUpdateNode, isSelected, selectedN
     
     return (
       <div
-        data-testid={`flow-node-${node.id}`}
+        data-testid={`flow-node-${id}`}
         className="absolute"
         style={{
           left: `${x}px`,
@@ -258,7 +258,7 @@ const FlowNode = ({ data, id, type, onClick, onUpdateNode, isSelected, selectedN
   
   return (
     <div
-      data-testid={`flow-node-${node.id}`}
+      data-testid={`flow-node-${id}`}
       className={`group absolute transition-all duration-300 cursor-pointer ${
         isSelected ? 'ring-4 ring-blue-400 ring-offset-2' : ''
       } ${criticalPathStyle}`}
