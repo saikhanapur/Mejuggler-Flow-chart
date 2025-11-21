@@ -39,6 +39,15 @@ export const api = {
     return res.data;
   },
 
+  // 🎯 EXTRACTION ONLY: Get intelligence without flowchart generation
+  extractDocumentIntelligence: async (text, inputType) => {
+    const res = await axios.post(`${API}/process/extract-only`, { 
+      text, 
+      inputType
+    });
+    return res.data;
+  },
+
   parseProcess: async (text, inputType, additionalContext = null, contextAnswers = null) => {
     const res = await axios.post(`${API}/process/parse`, { 
       text, 
