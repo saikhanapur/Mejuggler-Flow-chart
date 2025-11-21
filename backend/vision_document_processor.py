@@ -265,8 +265,8 @@ Output as clear, structured text that preserves the process flow."""
             
             chat = LlmChat(
                 api_key=self.api_key,
-                system_message="You are an expert at analyzing flowcharts and process documents.",
-                model="claude-4-sonnet-20250514"
+                session_id="vision_image",
+                system_message="You are an expert at analyzing flowcharts and process documents."
             )
             
             prompt = """Extract all information from this process document/flowchart image.
