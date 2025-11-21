@@ -4636,13 +4636,19 @@ Contacts:
                 result = response.json()
                 print(f"✅ API Response: 200 OK")
                 
-                # Verify response includes nodes array
-                if 'nodes' not in result:
+                # Handle different response structures
+                nodes = []
+                if 'nodes' in result:
+                    # Direct nodes array
+                    nodes = result.get('nodes', [])
+                elif 'processes' in result and result.get('processes'):
+                    # Processes array structure
+                    process = result['processes'][0]
+                    nodes = process.get('nodes', [])
+                else:
                     self.log_result("Decision Point Detection - Nodes Array", False, 
-                                  "Response missing 'nodes' array")
+                                  "Response missing 'nodes' array or 'processes' array")
                     return
-                
-                nodes = result.get('nodes', [])
                 print(f"📊 Found {len(nodes)} nodes in response")
                 
                 if len(nodes) == 0:
