@@ -3565,7 +3565,7 @@ async def extract_summary(input_data: ProcessInput):
             api_key=os.environ.get("EMERGENT_LLM_KEY"),
             session_id=f"extract_{uuid.uuid4()}",
             system_message="You are an expert at extracting key operational elements from process documents."
-        ).with_model("openai", "gpt-5")
+        ).with_model("anthropic", "claude-4-sonnet-20250514")
         
         prompt = f"""Analyze this {input_data.inputType} and extract a summary of ALL key operational elements.
 
