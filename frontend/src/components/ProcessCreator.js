@@ -217,7 +217,6 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
         toast.error(`Failed to generate flowchart: ${error.message || 'Please try again.'}`);
         setProcessing(false);
       }
-    }
   };
 
   const handleAnalysisApproved = async ({ approvedSections, corrections }) => {
