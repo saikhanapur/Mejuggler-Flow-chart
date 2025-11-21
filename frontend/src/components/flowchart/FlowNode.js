@@ -279,14 +279,14 @@ const FlowNode = ({ data, id, type, onClick, onUpdateNode, isSelected, selectedN
       }}
       onMouseEnter={() => {
         // Apple micro-interaction: subtle lift on hover
-        const el = document.querySelector(`[data-testid="flow-node-${node.id}"]`);
+        const el = document.querySelector(`[data-testid="flow-node-${id}"]`);
         if (el) {
           el.style.transform = 'translateY(-4px)';
           el.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.15)';
         }
       }}
       onMouseLeave={() => {
-        const el = document.querySelector(`[data-testid="flow-node-${node.id}"]`);
+        const el = document.querySelector(`[data-testid="flow-node-${id}"]`);
         if (el) {
           el.style.transform = 'translateY(0)';
           el.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1)';
