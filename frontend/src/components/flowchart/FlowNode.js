@@ -145,9 +145,9 @@ const FlowNode = ({ data, id, type, onClick, onUpdateNode, isSelected, selectedN
   
   const handleTitleSave = async (e) => {
     e.stopPropagation();
-    if (editedTitle.trim() && editedTitle !== node.title) {
-      if (onUpdateNode) {
-        await onUpdateNode(node.id, 'title', editedTitle.trim());
+    if (editedTitle.trim() && editedTitle !== (data?.title || node.title)) {
+      try {
+        await onUpdateNode(id, 'title', editedTitle.trim());
       }
     }
     setIsEditingTitle(false);
