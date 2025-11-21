@@ -1083,6 +1083,31 @@ agent_communication:
       ✅ Context-Enriched Parsing: Successfully incorporates additional user context into AI processing
       
       🎉 RESULT: All core AI functionality is fully restored after EMERGENT_LLM_KEY fix. Claude API for document processing and OpenAI Whisper for transcription are both operational and producing high-quality results.
+  - agent: "testing"
+    message: |
+      🎯 DECISION POINT DETECTION & RENDERING DATA FLOW - TESTING COMPLETE
+      
+      PRIORITY TEST REQUESTED: Validate decision point detection and rendering data flow to confirm frontend fix necessity.
+      
+      ✅ TEST EXECUTION:
+      - Document: Emergency Response Procedure with clear decision "Is this critical? If YES, escalate. If NO, document."
+      - Endpoint: POST /api/process/eroad-style
+      - Response: 200 OK with processes array containing 8 nodes
+      
+      ✅ DECISION NODE VERIFICATION:
+      - Found 1 node with isDecisionPoint=true
+      - Node title: "Critical Incident Decision"
+      - Node type: "critical" (NOT "decision" as expected)
+      - Decision criteria: "If incident is critical, escalate to emergency team. If not critical, proceed with standard protocol."
+      - Decision options: {"yes": "emergency_escalation", "no": "standard_protocol"}
+      
+      ✅ FRONTEND FIX VALIDATION:
+      The test confirms that the backend correctly sets isDecisionPoint=true on decision nodes but uses type="critical"/"action" instead of type="decision". This validates that the frontend ReactFlowChart.jsx fix (checking for node.isDecisionPoint in addition to node.type === 'decision') is NECESSARY and CORRECT.
+      
+      ✅ COMPLETE DATA STRUCTURE:
+      Decision node contains all required fields: isDecisionPoint=true, decisionCriteria, decisionOptions, priority (P1/P0), position coordinates, subSteps, dependencies, and complete operationalDetails.
+      
+      🎉 RESULT: Backend decision point detection and rendering data flow is fully functional and validates the frontend implementation approach. The test confirms the necessity of the frontend fix.
   - agent: "main"
     message: |
       🔬 PRE-AUTHENTICATION COMPREHENSIVE TESTING - ENTERPRISE SCALE
