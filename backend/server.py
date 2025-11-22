@@ -3308,10 +3308,10 @@ async def lightning_generation(
         
         logger.info(f"⚡ Lightning generation for user {user_id}")
         
-        # Use lightning processor
-        from lightning_processor import LightningProcessor
+        # Use PARALLEL lightning processor (revolutionary!)
+        from parallel_lightning_processor import ParallelLightningProcessor
         
-        processor = LightningProcessor(
+        processor = ParallelLightningProcessor(
             api_key=os.environ.get("EMERGENT_LLM_KEY")
         )
         
