@@ -270,12 +270,17 @@ const ReferencesModal = ({ isOpen, onClose, quickReference, processName }) => {
                     </h3>
                     {procedure.steps && Array.isArray(procedure.steps) && (
                       <div className="space-y-2">
-                        {procedure.steps.map((step, stepIdx) => (
-                          <div key={stepIdx} className="flex items-start gap-2">
-                            <span className="text-blue-600 font-semibold">{stepIdx + 1}.</span>
-                            <p className="text-sm text-blue-800">{step}</p>
-                          </div>
-                        ))}
+                        {procedure.steps.map((step, stepIdx) => {
+                          const stepText = typeof step === 'object'
+                            ? (step.text || step.action || step.description || step.name || JSON.stringify(step))
+                            : String(step);
+                          return (
+                            <div key={stepIdx} className="flex items-start gap-2">
+                              <span className="text-blue-600 font-semibold">{stepIdx + 1}.</span>
+                              <p className="text-sm text-blue-800">{stepText}</p>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                     {procedure.description && !procedure.steps && (
