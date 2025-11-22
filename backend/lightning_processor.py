@@ -7,7 +7,7 @@ NO multi-stage bottlenecks, NO timeouts.
 import json
 import logging
 from typing import Dict, List, Any, Optional
-from emergentintegrations import llm
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 logger = logging.getLogger(__name__)
 
