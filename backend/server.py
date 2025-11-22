@@ -3672,11 +3672,41 @@ async def actionable_intelligence_generation(
         # Transform edges (keep as-is, they match the schema)
         transformed_edges = intelligence.get("edges", [])
         
+        # Build quickReference from extracted resources
+        resources = intelligence.get("resources", {})
+        resource_links = intelligence.get("resourceLinks", {})
+        
+        # Format contacts for the modal (with emergency contacts structured properly)
+        emergency_contacts = {}
+        for contact in resources.get("contacts", []):
+            contact_name = contact.get("name", "Unknown")
+            emergency_contacts[contact_name] = {
+                "main": contact.get("phone", ""),
+                "phone": contact.get("phone", ""),
+                "extension": contact.get("extension"),
+                "email": contact.get("email"),
+                "role": contact.get("role"),
+                "team": contact.get("team"),
+                "location": contact.get("location"),  # onshore/offshore
+                "timing": contact.get("timing"),
+                "availability": contact.get("availability"),
+                "options": []  # Can be populated if contact has menu options
+            }
+        
+        # Build quickReference structure
+        quick_reference = {
+            "emergencyContacts": emergency_contacts,
+            "resources": resources,  # Pass through full resources for modal to parse
+            "keyTimings": [],  # Can extract from nodes if needed
+            "supportingReferences": []
+        }
+        
         # Build transformed process
         transformed_intelligence = {
             **intelligence,
             "nodes": transformed_nodes,
             "edges": transformed_edges,
+            "quickReference": quick_reference
         }
         
         # Return in format expected by frontend
