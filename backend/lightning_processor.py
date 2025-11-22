@@ -37,7 +37,7 @@ class LightningProcessor:
         # Truncate if too long to prevent timeouts
         doc_text = document_text[:50000]
         
-        chat = LlmChat(
+        chat = llm.LlmChat(
             api_key=self.api_key,
             session_id="lightning_process",
             system_message="""You are an expert at analyzing business process documents and creating clear flowcharts.
