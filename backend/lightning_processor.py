@@ -173,7 +173,21 @@ CRITICAL RULES:
 
         try:
             message = UserMessage(text=prompt)
-            response = await chat.send_message(message)
+            
+            # Retry logic for API errors (502, timeouts)
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    response = await chat.send_message(message)
+                    break
+                except Exception as e:
+                    if "502" in str(e) or "timeout" in str(e).lower():
+                        if attempt < max_retries - 1:
+                            logger.warning(f"⚠️ API error (attempt {attempt+1}/{max_retries}): {e}. Retrying...")
+                            import asyncio
+                            await asyncio.sleep(2 ** attempt)  # Exponential backoff
+                            continue
+                    raise
             
             # Parse JSON response
             result = self._parse_json_response(response)
