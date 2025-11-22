@@ -1153,11 +1153,31 @@ Analyze now:"""
             from eroad_style_enhancer import EROADStyleEnhancer
             
             enhancer = EROADStyleEnhancer(self.api_key)
-            enhanced = await enhancer.enhance_for_visualization(
-                extracted, 
-                document_text,
-                detection  # NEW: Pass detected structure to enhancer
-            )
+            try:
+                enhanced = await enhancer.enhance_for_visualization(
+                    extracted, 
+                    document_text,
+                    detection  # NEW: Pass detected structure to enhancer
+                )
+            except Exception as enhance_error:
+                logger.error(f"⚠️ Enhancement failed: {enhance_error}. Using basic visualization...")
+                # Fallback: Use extracted data directly without enhancement
+                enhanced = {
+                    "processName": "Process Flowchart",
+                    "nodes": [
+                        {
+                            "id": f"node-{i}",
+                            "title": step.get("action", f"Step {i+1}"),
+                            "details": step.get("details", ""),
+                            "status": "operational",
+                            "connections": [f"node-{i+1}"] if i < len(extracted.get("steps", [])) - 1 else [],
+                            "x": 330,
+                            "y": i * 150
+                        }
+                        for i, step in enumerate(extracted.get("steps", [])[:20])  # Limit to 20 nodes
+                    ],
+                    "swimLanes": []
+                }
             
             # Map to expected format (existing code continues...)
             process = {
