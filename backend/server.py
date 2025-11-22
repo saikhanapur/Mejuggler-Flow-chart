@@ -3361,6 +3361,17 @@ async def lightning_generation(
             }
         }
         
+        # Clean node titles - remove YES/NO labels if they got mixed in
+        for node in process["nodes"]:
+            title = node.get("title", "")
+            # Remove YES/NO labels that might have been incorrectly included
+            if " YES" in title:
+                node["title"] = title.replace(" YES", "").strip()
+                logger.warning(f"⚠️ Removed 'YES' from node title: {title}")
+            if " NO" in title:
+                node["title"] = title.replace(" NO", "").replace("NO ", "").strip()
+                logger.warning(f"⚠️ Removed 'NO' from node title: {title}")
+        
         # Generate edges from connections
         for node in process["nodes"]:
             for target_id in node.get("connections", []):
@@ -3368,7 +3379,7 @@ async def lightning_generation(
                     "id": f"e-{node['id']}-{target_id}",
                     "source": node["id"],
                     "target": target_id,
-                    "label": None
+                    "label": ""  # Empty string, not None
                 }
                 
                 # Add YES/NO labels for decision points
@@ -3376,8 +3387,10 @@ async def lightning_generation(
                     opts = node["decisionOptions"]
                     if opts.get("yes") == target_id:
                         edge["label"] = "YES"
+                        logger.info(f"✅ Added YES label: {node.get('title')} → {target_id}")
                     elif opts.get("no") == target_id:
                         edge["label"] = "NO"
+                        logger.info(f"✅ Added NO label: {node.get('title')} → {target_id}")
                 
                 process["edges"].append(edge)
         
