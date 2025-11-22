@@ -40,8 +40,15 @@ const ReferencesModal = ({ isOpen, onClose, quickReference, processName }) => {
             </button>
           </div>
 
-          {/* Content */}
+          {/* Content - SIMPLIFIED for quick reference */}
           <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-slate-50">
+            
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+              <p className="text-sm text-blue-800">
+                <strong>💡 Quick References:</strong> Critical contact info and key points only. 
+                Full procedures and sub-steps are available in the flowchart nodes.
+              </p>
+            </div>
             
             {/* Compact Contact Lists in 2 columns */}
             {allContacts.length > 0 && (
