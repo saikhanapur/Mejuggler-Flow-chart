@@ -3340,28 +3340,19 @@ async def lightning_generation(
             document_name=input_data.inputType
         )
         
-        # Build quickReference from extracted data
+        # Build SIMPLIFIED quickReference (critical info only)
         emergency_contacts = {}
         for contact in result.get("contacts", []):
             name = contact.get("name", "Unknown")
             emergency_contacts[name] = {
-                "main": contact.get("phone", ""),
                 "phone": contact.get("phone", ""),
-                "extension": contact.get("extension"),
-                "email": contact.get("email"),
-                "role": contact.get("role"),
-                "location": contact.get("location"),
-                "timing": contact.get("timing")
+                "role": contact.get("role", "")
             }
         
         quick_reference = {
             "emergencyContacts": emergency_contacts,
-            "resources": {
-                "templates": result.get("templates", []),
-                "contacts": result.get("contacts", [])
-            },
-            "keyTimings": result.get("keyTimings", []),
-            "supportingReferences": []
+            "keyScripts": result.get("keyScripts", []),
+            "criticalTimings": result.get("criticalTimings", [])
         }
         
         # Create process response
