@@ -311,8 +311,11 @@ Return JSON:
       "name": "Full name",
       "role": "Job title/role",
       "phone": "+XX-XXX-XXXX",
+      "extension": "Extension number (if any)",
       "email": "email@domain.com",
       "team": "Department/team",
+      "location": "onshore|offshore|central (if mentioned)",
+      "timing": "Check-in frequency or availability (e.g., 'Check in every 30 minutes')",
       "availability": "24/7 or specific hours",
       "escalation_level": 1
     }}
