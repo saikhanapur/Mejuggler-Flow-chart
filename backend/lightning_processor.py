@@ -156,6 +156,9 @@ CRITICAL RULES:
 - Node IDs: "node-1", "node-2", etc.
 - DO NOT include "YES" or "NO" in node titles - these are edge labels only
 - Node titles should be clean action statements without branch labels
+- For decisions: Map YES to the affirmative outcome, NO to the negative outcome
+- Example: "User Contacted?" YES → "Emergency Confirmed?", NO → "Call Nominated Person"
+- VERIFY your decision paths match the document logic EXACTLY
 - Return ONLY valid JSON, no explanatory text"""
 
         try:
