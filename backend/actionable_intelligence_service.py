@@ -328,14 +328,15 @@ Return JSON:
       "name": "Template name (e.g., 'Modica Script - Council', 'Email Script - Monitoring Companies')",
       "type": "email|script|sms|modica|form|checklist|procedure",
       "content": {{
-        "outageNotification": "Text for outage notification (if script has this section)",
-        "restoration": "Text for restoration message (if script has this section)",
+        "outageNotification": "FULL TEXT of outage notification (word-for-word from document)",
+        "restoration": "FULL TEXT of restoration message (word-for-word from document)",
         "subject": "Email subject (if email template)",
         "body": "Full content (if single-part template)"
       }},
-      "items": ["item1", "item2"] // For checklists
-      "steps": ["step1", "step2"] // For procedures
-      "when_to_use": "Conditions for use"
+      "items": ["checklist item 1", "checklist item 2", "..."] // For checklists - extract ALL items
+      "steps": ["procedure step 1", "procedure step 2", "..."] // For procedures - extract ALL steps with full text
+      "when_to_use": "Conditions for use",
+      "description": "Brief summary"
     }}
   ],
   "systems": [
