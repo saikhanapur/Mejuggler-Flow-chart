@@ -440,7 +440,7 @@ For EACH step, provide:
 3. Timeline: How long should this take
 4. Urgency: critical|high|medium|low
 5. Owner: Who is responsible
-6. Success Criteria: How to know it's complete
+6. Success Criteria: How to know it is complete
 7. Decision Logic: IF this is a decision point, what are the criteria
 8. Troubleshooting: Common issues and solutions
 
