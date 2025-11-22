@@ -50,8 +50,8 @@ const ReferencesModal = ({ isOpen, onClose, quickReference, processName }) => {
               </p>
             </div>
             
-            {/* Compact Contact Lists in 2 columns */}
-            {allContacts.length > 0 && (
+            {/* Emergency Contacts - Simple List */}
+            {Object.keys(emergencyContacts).length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Split contacts by location if metadata exists */}
                 {(() => {
