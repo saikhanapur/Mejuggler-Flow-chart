@@ -142,9 +142,14 @@ const ReferencesModal = ({ isOpen, onClose, quickReference, processName }) => {
                     )}
                     {options.length > 0 && (
                       <div className="mt-2 space-y-1">
-                        {options.map((opt, idx) => (
-                          <p key={idx} className="text-sm text-yellow-700">• {opt}</p>
-                        ))}
+                        {options.map((opt, idx) => {
+                          const optText = typeof opt === 'object' 
+                            ? (opt.label || opt.name || opt.description || JSON.stringify(opt))
+                            : String(opt);
+                          return (
+                            <p key={idx} className="text-sm text-yellow-700">• {optText}</p>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
