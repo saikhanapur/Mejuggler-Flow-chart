@@ -167,6 +167,8 @@ CRITICAL RULES:
 - For decisions: Map YES to the affirmative outcome, NO to the negative outcome
 - Example: "User Contacted?" YES → "Emergency Confirmed?", NO → "Call Nominated Person"
 - VERIFY your decision paths match the document logic EXACTLY
+- **EXPANDABLE NODES**: EVERY node must have 3-5 specific sub-steps in subSteps array
+- Sub-steps are detailed actions within that step (e.g., "Call User" → ["Dial number", "Wait for answer", "Verify identity"])
 - Return ONLY valid JSON, no explanatory text"""
 
         try:
