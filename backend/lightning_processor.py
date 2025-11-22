@@ -151,6 +151,8 @@ CRITICAL RULES:
 - Decision nodes must have exactly 2 connections and valid decisionOptions
 - Extract FULL TEXT for scripts, not summaries
 - Node IDs: "node-1", "node-2", etc.
+- DO NOT include "YES" or "NO" in node titles - these are edge labels only
+- Node titles should be clean action statements without branch labels
 - Return ONLY valid JSON, no explanatory text"""
 
         try:
