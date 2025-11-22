@@ -367,9 +367,13 @@ Return JSON:
   ]
 }}
 
-CRITICAL RULES:
+CRITICAL EXTRACTION RULES:
 - Extract EVERYTHING - no information left behind
 - Preserve exact phone numbers, emails, URLs
+- For scripts/templates: Extract the COMPLETE TEXT word-for-word, not just summaries
+- For checklists: Extract EVERY single checklist item
+- For procedures: Extract EVERY single step with complete instructions
+- Do NOT summarize or paraphrase - copy the exact text from the document
 - Infer missing information logically (e.g., if email not stated, create placeholder)
 
 Document to analyze:
