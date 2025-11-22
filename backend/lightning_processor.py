@@ -61,6 +61,8 @@ Extract and structure ALL of the following:
    - Add brief descriptions
    - Classify status: critical|action|communication|operational|monitoring|verification|recovery
    - Identify connections (which step comes next)
+   - CRITICAL: Extract 3-5 detailed sub-steps/actions for EACH node (for expandable dropdown)
+   - Include timing/duration estimates if mentioned
    
 2. DECISION POINTS (CRITICAL - BE EXACT):
    - Identify ALL decision/branching points
