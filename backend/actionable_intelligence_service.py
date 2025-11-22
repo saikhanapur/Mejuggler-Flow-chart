@@ -276,11 +276,11 @@ Extract EVERY instance of:
    - Availability (24/7, business hours, etc)
    - Escalation levels
 
-2. EMAIL TEMPLATES:
-   - Subject lines
-   - Body content
-   - Recipients
-   - When to send
+2. SCRIPTS & TEMPLATES:
+   - Communication scripts (Modica, SMS, email, phone scripts)
+   - Email templates (subject, body, when to send)
+   - Message templates (outage notifications, restoration messages)
+   - For scripts with outage/restoration sections, extract BOTH parts separately
 
 3. SYSTEMS & TOOLS:
    - System names
