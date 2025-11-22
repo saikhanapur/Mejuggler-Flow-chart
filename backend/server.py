@@ -3308,7 +3308,26 @@ async def lightning_generation(
         
         logger.info(f"⚡ Lightning generation for user {user_id}")
         
-        # Use PARALLEL lightning processor (revolutionary!)
+        # STEP 1: Detect if document has multiple processes
+        from multi_process_detector import MultiProcessDetector
+        
+        detector = MultiProcessDetector(
+            api_key=os.environ.get("EMERGENT_LLM_KEY")
+        )
+        
+        detection = await detector.detect_processes(input_data.text)
+        
+        # If multiple processes detected, return for user selection
+        if detection.get("multipleProcesses") and detection.get("processCount", 1) > 1:
+            logger.info(f"✅ Detected {detection['processCount']} processes")
+            return {
+                "multipleProcesses": True,
+                "processes": detection.get("processes", []),
+                "detectedProcessCount": detection.get("processCount", 1),
+                "message": "Multiple processes detected. Please select which to generate."
+            }
+        
+        # STEP 2: Single process - use PARALLEL lightning processor
         from parallel_lightning_processor import ParallelLightningProcessor
         
         processor = ParallelLightningProcessor(
