@@ -236,8 +236,8 @@ Keep it CONCISE. These are QUICK references, not detailed instructions. Return O
             "nodes": structure.get("nodes", []),
             "swimLanes": structure.get("swimLanes", []),
             "contacts": references.get("contacts", []),
-            "templates": references.get("templates", []),
-            "keyTimings": references.get("keyTimings", [])
+            "keyScripts": references.get("keyScripts", []),
+            "criticalTimings": references.get("criticalTimings", [])
         }
         
         # Enhance nodes with detailed content
