@@ -276,11 +276,13 @@ Extract EVERY instance of:
    - Availability (24/7, business hours, etc)
    - Escalation levels
 
-2. SCRIPTS & TEMPLATES:
-   - Communication scripts (Modica, SMS, email, phone scripts)
-   - Email templates (subject, body, when to send)
-   - Message templates (outage notifications, restoration messages)
-   - For scripts with outage/restoration sections, extract BOTH parts separately
+2. SCRIPTS & TEMPLATES (EXTRACT FULL CONTENT):
+   - Communication scripts (Modica, SMS, email, phone scripts) - EXTRACT THE ENTIRE TEXT
+   - Email templates (subject, body, when to send) - EXTRACT THE ENTIRE MESSAGE
+   - Message templates (outage notifications, restoration messages) - EXTRACT COMPLETE TEXT
+   - For scripts with outage/restoration sections, extract BOTH parts with their FULL TEXT
+   - For checklists: Extract ALL checklist items as an array
+   - For procedures: Extract ALL steps as an array
 
 3. SYSTEMS & TOOLS:
    - System names
