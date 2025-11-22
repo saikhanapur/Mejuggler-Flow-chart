@@ -1248,6 +1248,34 @@ Analyze now:"""
                 elif node.get("status") in ["recovery"]:
                     recovery_nodes.append(node)
                 
+                # FIX DECISION OPTIONS: Auto-correct if they don't match actual connections
+                if node.get("isDecisionPoint"):
+                    connections = node.get("connections", [])
+                    decision_opts = node.get("decisionOptions", {})
+                    
+                    # Check if decisionOptions are valid node IDs
+                    yes_path = decision_opts.get("yes")
+                    no_path = decision_opts.get("no")
+                    
+                    # If decisionOptions don't match actual connections, auto-fix
+                    if connections and (yes_path not in connections or no_path not in connections):
+                        logger.warning(f"⚠️ Decision node '{node.get('title')}' has mismatched decisionOptions. Auto-fixing...")
+                        
+                        # If node has exactly 2 connections, assign them as YES and NO
+                        if len(connections) == 2:
+                            node["decisionOptions"] = {
+                                "yes": connections[0],
+                                "no": connections[1]
+                            }
+                            logger.info(f"✅ Fixed {node.get('title')}: YES → {connections[0]}, NO → {connections[1]}")
+                        elif len(connections) == 1:
+                            # Only one path exists - mark as YES
+                            node["decisionOptions"] = {
+                                "yes": connections[0],
+                                "no": None
+                            }
+                            logger.info(f"✅ Fixed {node.get('title')}: YES → {connections[0]}, NO → None")
+                
                 # Create edges
                 for target_id in node.get("connections", []):
                     edge = {
