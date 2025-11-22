@@ -4,33 +4,10 @@ import { X, Phone, FileText, Mail, CheckSquare, Wrench, Clock } from 'lucide-rea
 const ReferencesModal = ({ isOpen, onClose, quickReference, processName }) => {
   if (!isOpen) return null;
 
-  // Parse the data structure
+  // Parse the SIMPLIFIED data structure (quick references only)
   const emergencyContacts = quickReference?.emergencyContacts || {};
-  const keyTimings = quickReference?.keyTimings || [];
-  const resources = quickReference?.resources || {};
-  const supportingReferences = quickReference?.supportingReferences || [];
-  
-  // Extract different types of templates/scripts
-  const templates = resources?.templates || [];
-  const modicaScripts = templates.filter(t => 
-    t.name?.toLowerCase().includes('modica') || 
-    t.type?.toLowerCase().includes('modica')
-  );
-  const emailScripts = templates.filter(t => 
-    (t.name?.toLowerCase().includes('email') || t.type?.toLowerCase().includes('email')) &&
-    !t.name?.toLowerCase().includes('modica')
-  );
-  const checklists = templates.filter(t => 
-    t.name?.toLowerCase().includes('checklist') || 
-    t.name?.toLowerCase().includes('timeline') ||
-    t.type?.toLowerCase().includes('checklist')
-  );
-  const procedures = templates.filter(t => 
-    (t.name?.toLowerCase().includes('procedure') || 
-    t.name?.toLowerCase().includes('process') ||
-    t.name?.toLowerCase().includes('dispatch')) &&
-    !modicaScripts.includes(t) && !emailScripts.includes(t) && !checklists.includes(t)
-  );
+  const keyScripts = quickReference?.keyScripts || [];
+  const criticalTimings = quickReference?.criticalTimings || [];
 
   // Compact contact display - just name and phone in a list
   const allContacts = Object.entries(emergencyContacts);
