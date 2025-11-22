@@ -3321,9 +3321,6 @@ async def lightning_generation(
             document_name=input_data.inputType
         )
         
-        # Transform to expected format
-        from actionable_intelligence_service import ActionableIntelligenceService
-        
         # Build quickReference from extracted data
         emergency_contacts = {}
         for contact in result.get("contacts", []):
