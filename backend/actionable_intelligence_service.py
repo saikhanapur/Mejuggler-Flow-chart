@@ -320,10 +320,16 @@ Return JSON:
   "templates": [
     {{
       "id": "template-1",
-      "name": "Template name",
-      "type": "email|script|form",
-      "subject": "Email subject",
-      "body": "Template content",
+      "name": "Template name (e.g., 'Modica Script - Council', 'Email Script - Monitoring Companies')",
+      "type": "email|script|sms|modica|form|checklist|procedure",
+      "content": {{
+        "outageNotification": "Text for outage notification (if script has this section)",
+        "restoration": "Text for restoration message (if script has this section)",
+        "subject": "Email subject (if email template)",
+        "body": "Full content (if single-part template)"
+      }},
+      "items": ["item1", "item2"] // For checklists
+      "steps": ["step1", "step2"] // For procedures
       "when_to_use": "Conditions for use"
     }}
   ],
