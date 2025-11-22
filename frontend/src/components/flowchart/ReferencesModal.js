@@ -238,12 +238,17 @@ const ReferencesModal = ({ isOpen, onClose, quickReference, processName }) => {
                     </h3>
                     {checklist.items && Array.isArray(checklist.items) && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
-                        {checklist.items.map((item, itemIdx) => (
-                          <div key={itemIdx} className="flex items-start gap-2">
-                            <span className="text-gray-400 mt-0.5">□</span>
-                            <span className="text-sm text-gray-700">{item}</span>
-                          </div>
-                        ))}
+                        {checklist.items.map((item, itemIdx) => {
+                          const itemText = typeof item === 'object'
+                            ? (item.text || item.label || item.name || item.description || JSON.stringify(item))
+                            : String(item);
+                          return (
+                            <div key={itemIdx} className="flex items-start gap-2">
+                              <span className="text-gray-400 mt-0.5">□</span>
+                              <span className="text-sm text-gray-700">{itemText}</span>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                     {checklist.description && !checklist.items && (
