@@ -3289,29 +3289,22 @@ async def lightning_generation(
     Perfect for enterprise demos and production use.
     """
     try:
-        # Get user_id from request state (set by middleware)
-        user_id = getattr(request.state, 'user_id', None)
-        if not user_id:
-            # Fallback: Try to get from cookie/token
-            from auth_utils import get_current_user_from_request
-            user_data = await get_current_user_from_request(request)
-            user_id = user_data.get("id") if user_data else None
-        
-        if not user_id:
-            raise HTTPException(status_code=401, detail="User not authenticated")
+        # Get user_id from request state (set by middleware) - fallback to guest if not available
+        user_id = getattr(request.state, 'user_id', 'guest-user')
         
         logger.info(f"⚡ Lightning generation for user {user_id}")
         
-        # Budget check
-        from budget_monitor import BudgetMonitor
-        budget_monitor = BudgetMonitor()
-        budget_message = await budget_monitor.check_budget(user_id)
-        
-        if "exceeded" in budget_message.lower():
-            raise HTTPException(
-                status_code=402,
-                detail=budget_message
-            )
+        # Budget check (skip for guest users)
+        if user_id != 'guest-user':
+            from budget_monitor import BudgetMonitor
+            budget_monitor = BudgetMonitor()
+            budget_message = await budget_monitor.check_budget(user_id)
+            
+            if "exceeded" in budget_message.lower():
+                raise HTTPException(
+                    status_code=402,
+                    detail=budget_message
+                )
         
         logger.info(f"⚡ Lightning generation for user {user_id}")
         
