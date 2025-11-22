@@ -93,6 +93,7 @@ Return JSON:
   "nodes": [
     {{
       "id": "node-1",
+      "type": "process",
       "title": "Action Title (concise, 3-6 words)",
       "description": "What happens and why (1-2 sentences)",
       "status": "critical|action|communication|operational|monitoring|verification|recovery",
