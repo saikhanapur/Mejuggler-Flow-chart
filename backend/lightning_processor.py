@@ -217,6 +217,14 @@ CRITICAL RULES:
                 node["id"] = f"node-{i+1}"
             valid_node_ids.add(node["id"])
             
+            # Ensure type exists (required by schema)
+            if "type" not in node:
+                # Determine type based on isDecisionPoint
+                if node.get("isDecisionPoint"):
+                    node["type"] = "decision"
+                else:
+                    node["type"] = "process"
+            
             # Ensure connections is a list
             if "connections" not in node:
                 node["connections"] = []
