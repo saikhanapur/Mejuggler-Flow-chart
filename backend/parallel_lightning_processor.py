@@ -166,55 +166,54 @@ Extract 3-5 sub-steps for EVERY major action. Return ONLY JSON."""
     
     async def _extract_references(self, doc_text: str, doc_name: str) -> Dict:
         """
-        Call 3: Extract REFERENCES (contacts, scripts, templates)
+        Call 3: Extract CRITICAL REFERENCES ONLY (not full procedures)
         """
         logger.info("📚 [Call 3/3] Extracting references...")
         
         chat = LlmChat(
             api_key=self.api_key,
             session_id="parallel_references",
-            system_message="Extract reference information. Return valid JSON only."
-        ).with_model("anthropic", "claude-4-sonnet-20250514").with_params(max_tokens=8000)
+            system_message="Extract critical reference info only. Return valid JSON only."
+        ).with_model("anthropic", "claude-4-sonnet-20250514").with_params(max_tokens=6000)
         
-        prompt = f"""Extract REFERENCE INFORMATION from this document:
+        prompt = f"""Extract CRITICAL REFERENCE INFORMATION ONLY from this document:
 
 {doc_text[:30000]}
 
+IMPORTANT: Extract ONLY quick reference info, NOT full procedures.
+
 Extract:
-1. ALL contacts (with phone, email, role, location)
-2. ALL scripts/templates (with FULL TEXT)
-3. Checklists (with ALL items)
-4. Procedures (with ALL steps)
+1. Emergency contacts (name, phone, when to call)
+2. Key communication scripts (SUMMARY only, 1-2 sentences)
+3. Critical timings (e.g., "Wait 5 minutes", "Check every 30 min")
+
+DO NOT EXTRACT:
+- Full step-by-step procedures (these are in the flowchart)
+- Detailed checklists (these are in node sub-steps)
+- Long explanations
 
 Return JSON:
 {{
   "contacts": [
     {{
-      "name": "Full name",
+      "name": "Contact name",
       "phone": "Phone number",
-      "extension": "Ext",
-      "email": "email@domain.com",
-      "role": "Job title",
-      "location": "onshore|offshore",
-      "timing": "Availability"
+      "role": "When to call them"
     }}
   ],
-  "templates": [
+  "keyScripts": [
     {{
-      "name": "Template name",
-      "type": "modica|email|sms|checklist|procedure",
-      "content": {{
-        "outageNotification": "FULL TEXT",
-        "restoration": "FULL TEXT"
-      }},
-      "items": ["item1", "item2"],
-      "steps": ["step1", "step2"]
+      "name": "Script name",
+      "summary": "Brief 1-sentence summary of what to say"
     }}
   ],
-  "keyTimings": ["Timing info"]
+  "criticalTimings": [
+    "Wait 5 minutes before...",
+    "Check every 30 minutes"
+  ]
 }}
 
-Extract COMPLETE TEXT for scripts. Return ONLY JSON."""
+Keep it CONCISE. These are QUICK references, not detailed instructions. Return ONLY JSON."""
         
         message = UserMessage(text=prompt)
         response = await chat.send_message(message)
