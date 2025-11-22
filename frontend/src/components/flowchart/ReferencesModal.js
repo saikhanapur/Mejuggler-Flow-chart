@@ -299,11 +299,16 @@ const ReferencesModal = ({ isOpen, onClose, quickReference, processName }) => {
                   <h3 className="text-lg font-bold text-amber-900">Key Timings</h3>
                 </div>
                 <div className="space-y-2">
-                  {keyTimings.map((timing, idx) => (
-                    <p key={idx} className="text-sm text-amber-800">
-                      • {timing}
-                    </p>
-                  ))}
+                  {keyTimings.map((timing, idx) => {
+                    const timingText = typeof timing === 'object'
+                      ? (timing.text || timing.description || timing.timing || JSON.stringify(timing))
+                      : String(timing);
+                    return (
+                      <p key={idx} className="text-sm text-amber-800">
+                        • {timingText}
+                      </p>
+                    );
+                  })}
                 </div>
               </div>
             )}
