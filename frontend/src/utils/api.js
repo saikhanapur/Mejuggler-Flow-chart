@@ -323,7 +323,16 @@ export const api = {
     return res.data;
   },
 
-  // EROAD-Style Hybrid Generation
+  // ⚡ Lightning Mode - Fast & Reliable (PRIMARY METHOD)
+  generateLightningFlowchart: async (text, inputType) => {
+    const res = await axios.post(`${API}/process/lightning`, {
+      text,
+      inputType
+    });
+    return res.data;
+  },
+
+  // EROAD-Style Hybrid Generation (LEGACY - kept for fallback)
   generateEROADStyleFlowchart: async (text, inputType) => {
     const res = await axios.post(`${API}/process/eroad-style`, {
       text,
