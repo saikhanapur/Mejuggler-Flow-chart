@@ -109,7 +109,13 @@ Return JSON:
       "loopBackTo": "node-id (if loop)",
       "actors": ["Who does this"],
       "timing": "When/how long (if specified)",
-      "systems": ["Systems used"]
+      "systems": ["Systems used"],
+      "subSteps": ["Sub-action 1", "Sub-action 2", "Sub-action 3"],
+      "operationalDetails": {{
+        "specificActions": ["Detailed step 1", "Detailed step 2", "Detailed step 3"],
+        "estimatedDuration": "X minutes",
+        "gap": false
+      }}
     }}
   ],
   "swimLanes": [
