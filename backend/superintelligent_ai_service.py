@@ -1289,12 +1289,10 @@ Analyze now:"""
                             }
                             logger.info(f"✅ Fixed {node.get('title')}: YES → {connections[0]}, NO → {connections[1]}")
                         elif len(connections) == 1:
-                            # Only one path exists - mark as YES
-                            node["decisionOptions"] = {
-                                "yes": connections[0],
-                                "no": None
-                            }
-                            logger.info(f"✅ Fixed {node.get('title')}: YES → {connections[0]}, NO → None")
+                            # Only one path exists - just don't mark as decision point
+                            node["isDecisionPoint"] = False
+                            node["decisionOptions"] = {}
+                            logger.info(f"✅ Unmarked decision {node.get('title')}: Only 1 connection, not a real decision")
                 
                 # Create edges
                 for target_id in node.get("connections", []):
