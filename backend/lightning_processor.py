@@ -62,11 +62,14 @@ Extract and structure ALL of the following:
    - Classify status: critical|action|communication|operational|monitoring|verification|recovery
    - Identify connections (which step comes next)
    
-2. DECISION POINTS:
+2. DECISION POINTS (CRITICAL - BE EXACT):
    - Identify ALL decision/branching points
    - Mark with isDecisionPoint: true
-   - Provide clear decision criteria (the question)
-   - Map YES and NO paths to node IDs
+   - Provide clear decision criteria (the exact question from document)
+   - Map YES and NO paths to CORRECT node IDs based on document logic
+   - YES path: positive/affirmative outcome (true, yes, confirmed, good, success)
+   - NO path: negative outcome (false, no, denied, bad, failure)
+   - IMPORTANT: Follow the EXACT decision logic from the document
    
 3. SWIM LANES (if applicable):
    - Detect different roles/teams/systems
