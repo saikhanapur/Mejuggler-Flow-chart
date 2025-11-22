@@ -1,181 +1,192 @@
 <analysis>**original_problem_statement:**
-The user's primary goal is to create a world-class application that transforms complex Standard Operating Procedure (SOP) documents into accurate, interactive, AI-generated flowcharts. The project has pivoted from a simple design to a new, innovative vision focused on creating a new market category of AI Process Visualization. The core mission is to Make process documentation 100x faster. The user has recently specified that they are often uploading visual PDFs (flowcharts) and not just text-based documents, and the system must handle this input type correctly, extracting all information including text from annotations (e.g., yellow boxes). A critical feature is the correct rendering of decision points as diamond shapes.
+The user's primary goal is to create a world-class application that transforms complex Standard Operating Procedure (SOP) documents into accurate, interactive, AI-generated flowcharts. The project has pivoted from a simple design to a new, innovative vision focused on creating a new market category of AI Process Visualization. The core mission is to Make process documentation 100x faster. The user has specified that they often upload visual PDFs (flowcharts) and not just text-based documents, and the system must handle this input type correctly, extracting all information including text from annotations (e.g., yellow boxes). A critical feature is the correct rendering of decision points as diamond shapes and displaying all Actionable Intelligence (contacts, templates, scripts) in a well-organized manner.
 
 **PRODUCT REQUIREMENTS:**
-1.  **Actionable Intelligence (Core IP):** The application must perform a deep analysis of the source document, extracting not only the process steps but all supporting non-flowchart information (contacts, email templates, system links, troubleshooting guides). This data must be intelligently structured and linked to the relevant nodes in the flowchart.
-2.  **Complex Document Processing:** The system must reliably process large, real-world SOPs, including visual PDFs, without timing out, losing data (truncation), or producing inaccurate results.
-3.  **Innovative & Intuitive UI:** The UI must be clean, professional, and mobile-friendly. Key features include a vertical layout, animated live connections, and smart expandable nodes.
-4.  **Accuracy:** The AI must correctly identify all swim lanes, loops, parallel processes, and especially decision points, which must be rendered as diamond shapes for user familiarity.
+1.  **Actionable Intelligence (Core IP):** The application must perform a deep analysis of the source document, extracting not only the process steps but all supporting non-flowchart information (contacts, email templates, system links, troubleshooting guides, communication scripts). This data must be intelligently structured and linked to the relevant nodes in the flowchart.
+2.  **Complex Document Processing:** The system must reliably process large, real-world SOPs, including visual PDFs, without timing out, losing data, or producing inaccurate results.
+3.  **Innovative & Intuitive UI:** The UI must be clean, professional, and mobile-friendly. Key features include animated live connections, smart expandable nodes, and clear, user-approved color schemes.
+4.  **Accuracy:** The AI must correctly identify all swim lanes, loops, parallel processes, and especially decision points, which must be rendered as diamond shapes with clear, correctly placed YES and NO branches.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a full-stack solution with a React frontend and a FastAPI backend. The agent has successfully connected the frontend to a new, powerful  API endpoint. However, this introduced several cascading issues. The agent has spent significant time debugging infrastructure-level 500/502 gateway errors, which were traced to the prompt/document size being too large for the platform's API gateway. This forced a reduction in the document character limit. The agent also fixed a major bug where the new backend service was not intelligently grouping steps, leading to an excessive number of nodes. The backend now correctly detects decision points, but a frontend bug is preventing them from being rendered as diamonds.
+The application is a full-stack solution (React/FastAPI/MongoDB) that has recently undergone significant changes. A new hybrid vision processing pipeline has been implemented using the native Anthropic (Claude) SDK to handle visual PDFs, a key user requirement. This pipeline can now detect whether a PDF is text-based or visual and route it accordingly. On the frontend, a new two-step document processing flow has been introduced at the user's suggestion:
+1.  **Extraction Review:** After a document is uploaded, a modal appears showing the user all the Actionable Intelligence (contacts, critical actions, scripts) that the AI has extracted.
+2.  **Flowchart Generation:** The user can then proceed to generate the flowchart.
+
+The UI for decision nodes (diamonds), animated dotted lines, and color schemes has been refined based on user feedback. A Quick References modal is available to view extracted information after the flowchart is generated, but its design and content are a point of contention.
 
 **Last working item**:
-- **Last item agent was working:** The agent was performing a root cause analysis on why decision points are still not rendering as diamonds, even after a previous attempt to fix the issue in . The user uploaded a new Duress SOP document and confirmed the failure. The agent verified from backend logs that decision points *are* being correctly detected by the AI and marked in the data sent to the frontend. The bug is therefore confirmed to be in the frontend rendering logic.
-- **Status:** IN PROGRESS
+- **Last item agent was working:** The agent was addressing the user's frustration after multiple failed attempts to fix the UI and extraction logic. The last major action was fixing a React error in the Quick References modal where it was trying to render a data object directly. Before that, the agent was engaged in a deep architectural Q&A with the user, which has set the priorities for the next steps.
+- **Status:** USER VERIFICATION PENDING
 - **Agent Testing Done:** N
-- **Which testing method agent to use?** Frontend testing agent (to verify UI components) or the screenshot tool to visually confirm that nodes marked as  are rendered as diamonds.
-- **User Testing Done:** Y (User confirmed the last fix did not work).
+- **Which testing method agent to use?** Frontend testing agent and screenshot tool. The agent should upload a document with decision points and reference data, then open the Quick References modal to verify the fix and overall layout.
+- **User Testing Done:** Y (User reported the error that the agent just fixed).
 
 **All Pending/In progress Issue list**:
-- Issue 1: Decision points are not rendered as diamonds in the UI (P0)
-- Issue 2: Infrastructure instability with large documents (P0)
-- Issue 3: Processing visual PDFs (flowchart-to-flowchart) is flawed (P1)
-- Issue 4: UI does not display Actionable Intelligence data (P1)
+-   Issue 1: YES/NO labels on decision branches are jumbled/incorrect (P0)
+-   Issue 2: Quick References modal content and layout are incorrect (P0)
+-   Issue 3: Infrastructure instability:  dependency for vision processing is not persistent (P1)
+-   Issue 4: AI flowchart generation for visual PDFs is inaccurate (P1)
 
 **Issues Detail:**
-- **Issue 1: Decision points are not rendered as diamonds in the UI**
-    - **Attempted fixes:** The agent edited  to correctly read the  flag from . This fix failed user verification. The root cause is likely a remaining flaw in how the component's props are accessed or how the diamond shape is conditionally rendered.
-    - **Next debug checklist:**
-        1.  Examine the props received by the  component for a node that *should* be a decision point. Log the uid=0(root) gid=0(root) groups=0(root) and  props.
-        2.  Verify the logic that sets the  variable inside the component. Ensure  is correctly evaluated.
-        3.  Check the JSX that conditionally renders the diamond vs. the rectangle. Ensure the  flag is being used correctly there.
-        4.  Fix any incorrect prop access (e.g.,  vs ).
-    - **Why fix this issue and what will be achieved with the fix?** This is a critical UI/UX feature for user familiarity. Fixing it will make flowcharts much easier to understand at a glance.
-    - **Status:** IN PROGRESS
-    - **Is recurring issue?** Y
-    - **Should Test frontend/backend/both after fix?** Frontend.
-    - **Blocked on other issue:** None.
+-   **Issue 1: YES/NO labels on decision branches are jumbled/incorrect**
+    -   **Attempted fixes:** The agent added logic in  to parse  from the backend and assign labels to edges. Despite several attempts, the user reports the visual output is still wrong, with YES and NO labels being mixed up.
+    -   **Next debug checklist:**
+        1.  Upload a document with a simple, clear decision point.
+        2.  In , log the  and  data as soon as it's received.
+        3.  Specifically, log the  object from the decision node and the / IDs of the edges connected to it.
+        4.  Trace the edge mapping logic with this live data to understand why the labels are being assigned incorrectly.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a core feature for flowchart readability. Fixing it will make the generated diagrams accurate and usable.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** Frontend.
 
-- **Issue 2: Infrastructure instability with large documents**
-    - **Description:** Processing documents with large character counts (>20k) causes 502/500 gateway errors, even after switching between Claude and GPT-5 models. This is not a code bug but an infrastructure or API gateway limitation.
-    - **Attempted fixes:**
-        - Increased character limit from 15k to 80k (caused 502 errors).
-        - Reduced to 40k (still caused 502 errors).
-        - Reduced to 20k (seemed to work, but user may still hit limits).
-        - Switched AI models from Claude to GPT-5 and back to Claude.
-    - **Next debug checklist:**
-        1.  Confirm with the user if the 20k limit is acceptable for now.
-        2.  Discuss a long-term strategy like document chunking or using a summarization pre-processing step.
-        3.  Consider contacting platform support to understand the gateway limits.
-    - **Why fix this issue and what will be achieved with the fix?** This is a major blocker for the complex document processing requirement and severely limits the application's utility.
-    - **Status:** BLOCKED (on platform limits)
-    - **Is recurring issue?** Y
-    - **Should Test frontend/backend/both after fix?** Backend.
-    - **Blocked on other issue:** None.
+-   **Issue 2: Quick References modal content and layout are incorrect**
+    -   **Attempted fixes:** The agent created a new  with a card-based layout to match the user's example. They also updated the backend prompt to extract more fields like . However, the user is still not satisfied, indicating the final modal doesn't reflect the desired design or is missing information (like Modica script). The agent likely fixed the  component but not the final .
+    -   **Next debug checklist:**
+        1.  Confirm that  is importing and using .
+        2.  Log the  prop being passed to the modal.
+        3.  Review and overhaul the rendering logic inside  to perfectly match the user's uploaded screenshot examples (card layout, timing info on actions, separate section for message templates/scripts).
+        4.  Update the backend prompt in 's  function to explicitly look for Modica Script and other template types.
+    -   **Why fix this issue and what will be achieved with the fix?** To meet the user's explicit design requirements for the Actionable Intelligence feature.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** Both.
 
-- **Issue 3: Processing visual PDFs (flowchart-to-flowchart) is flawed**
-    - **Description:** The user has clarified they are uploading PDFs that are already visual flowcharts. The current system only extracts text, losing all visual context (shapes, colors, layout, yellow box annotations), which contains most of an SOP's critical information.
-    - **Attempted fixes:** None. The agent only recently understood this from user feedback.
-    - **Next debug checklist:**
-        1.  Discuss this fundamental mismatch with the user.
-        2.  Propose short-term (ask for text-based docs) and long-term solutions.
-        3.  For the long-term, investigate using a vision-capable model (like Claude with image input) to interpret the PDF visually.
-    - **Why fix this issue and what will be achieved with the fix?** This addresses a core failure to meet user needs. The app will be ableto process the user's actual documents correctly.
-    - **Status:** NOT STARTED
-    - **Is recurring issue?** N
-    - **Should Test frontend/backend/both after fix?** Both.
-    - **Blocked on other issue:** None.
+-   **Issue 3: Infrastructure instability:  dependency for vision processing is not persistent**
+    -   **Attempted fixes:** The agent installed  via apt 2.6.1 (arm64)
+Usage: apt-get [options] command
+       apt-get [options] install|remove pkg1 [pkg2 ...]
+       apt-get [options] source pkg1 [pkg2 ...]
 
-- **Issue 4: UI does not display Actionable Intelligence data**
-    - **Description:** The backend successfully extracts contacts and other resources into a  object in the process document. However, the user has reported this information is missing from the UI.
-    - **Attempted fixes:** The agent identified that a Show References button and a  component exist in the code but did not verify why they are not visible or working for the user.
-    - **Next debug checklist:**
-        1.  In , log the  object and the result of the  check.
-        2.  Verify if the Show References button is being rendered. If not, find out why the condition to show it is failing.
-        3.  If it is rendered, test its  functionality to ensure  is called.
-    - **Why fix this issue and what will be achieved with the fix?** This will implement a core part of the Actionable Intelligence IP, making non-flowchart data accessible.
-    - **Status:** NOT STARTED
-    - **Is recurring issue?** N
-    - **Should Test frontend/backend/both after fix?** Frontend.
-    - **Blocked on other issue:** None.
+apt-get is a command line interface for retrieval of packages
+and information about them from authenticated sources and
+for installation, upgrade and removal of packages together
+with their dependencies.
+
+Most used commands:
+  update - Retrieve new lists of packages
+  upgrade - Perform an upgrade
+  install - Install new packages (pkg is libc6 not libc6.deb)
+  reinstall - Reinstall packages (pkg is libc6 not libc6.deb)
+  remove - Remove packages
+  purge - Remove packages and config files
+  autoremove - Remove automatically all unused packages
+  dist-upgrade - Distribution upgrade, see apt-get(8)
+  dselect-upgrade - Follow dselect selections
+  build-dep - Configure build-dependencies for source packages
+  satisfy - Satisfy dependency strings
+  clean - Erase downloaded archive files
+  autoclean - Erase old downloaded archive files
+  check - Verify that there are no broken dependencies
+  source - Download source archives
+  download - Download the binary package into the current directory
+  changelog - Download and display the changelog for the given package
+
+See apt-get(8) for more information about the available commands.
+Configuration options and syntax is detailed in apt.conf(5).
+Information about how to configure sources can be found in sources.list(5).
+Package and version choices can be expressed via apt_preferences(5).
+Security details are available in apt-secure(8).
+                                        This APT has Super Cow Powers. multiple times. However, the installation does not persist between sessions or environment resets, causing the vision processing to fail and silently fall back to text extraction.
+    -   **Next debug checklist:**
+        1.  Investigate if there's a startup script or configuration file (e.g., Dockerfile) where this dependency can be permanently added.
+        2.  If not possible, add robust error handling in . Instead of silently falling back, it must raise a specific error that can be shown to the user (e.g., Vision processing failed due to a missing system dependency. Please contact support.).
+    -   **Why fix this issue and what will be achieved with the fix?** This will make the new vision processing feature reliable and prevent user confusion from silent failures.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** Backend.
+
+-   **Issue 4: AI flowchart generation for visual PDFs is inaccurate**
+    -   **Attempted fixes:** The agent implemented a native Anthropic vision pipeline. However, the user's test with the Wilsar Outage visual PDF produced a poorly organized flowchart. This indicates the AI prompt for vision is not effective enough.
+    -   **Next debug checklist:**
+        1.  Re-run the Wilsar Outage PDF.
+        2.  In , log the raw JSON output from the Claude Vision API call.
+        3.  Compare this raw output to the original PDF to see if the extraction itself is the problem (missing nodes, incorrect connections) or if the subsequent  is misinterpreting the data.
+        4.  Refine the vision prompt to be more explicit about identifying layout, swimlanes, connections, and all text annotations.
+    -   **Why fix this issue and what will be achieved with the fix?** This is essential for delivering on the core promise of accurately processing the user's visual documents.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** Backend.
 
 **In progress Task List**:
-- **Task 1: Implement Actionable Intelligence System**
-    - **Description:** The overarching task to build the application's core IP.
-    - **Where to resume:** Focus on fixing the frontend display issues: rendering decision diamonds (Issue #1) and displaying the  data (Issue #4).
-    - **What will be achieved with this?** The application will start to deliver on its core value proposition of showing a complete, intelligent view of a process.
-    - **Status:** IN PROGRESS
-    - **Should Test frontend/backend/both after fix?** Frontend.
-    - **Blocked on something:** Blocked on resolving pending UI issues.
+-   **Task 1: Stabilize the Two-Step Extraction Review Flow**
+    -   **Where to resume:** The feature is implemented but has been unstable due to recurring backend failures and frontend syntax errors in the fragile  file.
+    -   **What will be achieved with this?** A stable implementation of the user-requested quality gate, providing transparency into the AI's extraction process.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** Both.
+    -   **Blocked on something:** The pending backend issues (poppler, AI accuracy).
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
-    - **P0:** Devise a strategy for handling visual PDF documents (Issue #3).
-    - **P1:** Implement functional Share and Export (PDF, HTML, Image) buttons.
-    - **P2:** Implement the Context Gathering Feature where the AI asks clarifying questions after upload.
+    - **P0:** Implement support for 3-5 option decisions, extending the  data model beyond the current yes/no limit.
+    - **P0:** Increase document size limits by implementing a chunking strategy in the backend.
+    - **P1:** Add AI-generated confidence scores to all extracted elements and flag low-confidence items for user review in the UI.
+    - **P1:** Implement a separate AI validation agent that runs after generation to check for logical errors (e.g., unreachable nodes, infinite loops).
 - **Future Tasks:**
-    - Implement a learning loop from user corrections.
-    - Develop domain-specific AI models.
-    - Add configurable detail levels for flowcharts (Executive vs. Operator view).
-    - Implement full mobile touch optimizations.
+    - **Enterprise Readiness:** Multi-tenancy, BPMN XML export, SAML/SSO integration, and Role-Based Access Control (RBAC).
+    - **AI & Intelligence:** Implement a learning loop where user corrections are used to improve prompts over time.
+    - **UX & Product:** Allow users to select the LLM model (for cost/quality trade-offs) and implement version control with rollback.
 
 **Completed work in this session**
-- **Fixed Critical Backend Bugs:** Resolved multiple issues in  (,  arguments, response parsing,  initialization) to get the new endpoint working.
-- **Wired Frontend to New API:** Correctly connected  to call the  endpoint.
-- **Fixed Data Schema Mismatch:** Added a transformation layer in the backend to correctly map AI-generated node data to the Pydantic/database schema, preventing nodes from being stripped on save.
-- **Fixed Node Grouping Logic:** Identified and fixed a major design flaw where the new service was not grouping steps, leading to an excessive number of nodes. Switched back to using the old service's proven grouping logic.
-- **Diagnosed and Mitigated Infrastructure Timeouts:** Identified that 500/502 errors were due to large prompt sizes. Switched between Claude and GPT-5, and ultimately reduced the document character limit to a more stable  as a temporary workaround.
-- **Switched back to Claude:** After API instability with both OpenAI and Anthropic, confirmed Claude API was working again and switched all backend services back to use .
-- **Increased Frontend Layout Timeout:** Increased the ELK.js layout timeout in  from 15 to 60 seconds to handle more complex graphs.
-
-**Earlier issues found/mentioned but not fixed**
-- **Issue 1: Misalignment on input document type**
-    - **Debug checklist:** This is not a bug to fix but a strategic issue to discuss with the user. The agent needs to confirm if the user can provide text-based SOPs or if the application must be redesigned to handle visual PDFs (e.g., using a vision model).
-    - **Why to solve this issue and what will be achieved with this?** It will align the product's capabilities with the user's actual workflow, preventing inaccurate data extraction and user frustration.
-    - **Should Test frontend/backend/both after fix:** N/A (Strategic decision)
-    - **Is recurring issue?** Y
-
-**Known issue recurrence from previous fork**
-- **Issue recurrence in previous fork:** AI accuracy issues, especially around swim lanes and decision points. Infrastructure instability (timeouts).
-- **Recurrence count:** High (these themes have persisted across multiple forks).
-- **Status:** IN PROGRESS
+- **Hybrid Vision Processing Pipeline:** Implemented a new backend service () that uses the native Anthropic SDK to process visual PDFs with Claude Vision, a major step forward. Fixed numerous bugs related to its integration, including dependency issues (), API key handling, and incorrect SDK usage.
+- **Two-Step Extraction Review Flow:** Fully implemented the user's idea of a two-step process where users first review extracted data before generating the flowchart. This involved creating a new lightweight backend endpoint () and a new frontend modal ().
+- **UI Refinements:**
+    - Fixed the rendering of decision nodes to be user-approved yellow diamonds and hid the distracting connection handles.
+    - Added a Show References button to the main flowchart view.
+    - Replaced the old list-based  with a new card-based  (though the content/layout still needs work).
+    - Fixed multiple critical and recurring Javascript syntax errors in  that were breaking the frontend.
+- **Architectural Strategy:** Answered a comprehensive list of architectural and product questions from the user, establishing a clear, prioritized roadmap for future development.
 
 **Code Architecture**
-
+extractDocumentIntelligence
 
 **Key Technical Concepts**
-- **Frontend:** React, ReactFlow, TailwindCSS, ELK.js (for layout)
+- **Frontend:** React, ReactFlow, TailwindCSS
 - **Backend:** FastAPI, Pydantic
 - **Database:** MongoDB
-- **AI:** Claude-4-Sonnet via  library and Emergent LLM Key. GPT-5 was tested but rolled back.
-- **Infrastructure:** API Gateway with request size/timeout limits that are causing 500/502 errors.
-
-**key DB schema**
-- **processes**: 
-- **ProcessNode**: 
-
-**changes in tech stack**
-- The agent has switched all AI model calls back to  after experiencing overload errors with both Claude and .
+- **AI:** Native Anthropic (Claude) SDK for vision and text processing, using .
+- **Infrastructure:** The  system library is a critical, and currently unstable, dependency for  in the vision pipeline.
 
 **All files**
-- **Significantly Updated:**
-    - : Fixed multiple bugs, added/removed logic. Now contains a character limit of 20k.
-    - : Character limit updated to 20k. Model switched to GPT-5 and back to Claude.
-    - : Character limit updated to 20k. Model switched and reverted.
-    - : Model switched and reverted across multiple endpoints.
-    - : Edited multiple times to fix diamond rendering, but the fix is still not working.
-    - : Increased layout timeout to 60s.
+-   **Created:**
+    -   : Implements the new hybrid vision/text processing logic.
+    -   : The new UI for the pre-generation data review step.
+    -   : The new card-based layout for displaying references.
+-   **Significantly Updated:**
+    -   : Integrated the new vision processor and added the  endpoint.
+    -   : Majorly refactored to support the two-step review flow. This file proved to be fragile and was the source of multiple syntax errors.
+    -   : Updated to handle diamond rendering and edge labeling for decision nodes.
+    -   : Added the Show References button and its corresponding state management.
 
 **Critical Info for New Agent**
-- **The 500/502 errors are an INFRASTRUCTURE issue**, not a code bug. They are caused by the API Gateway timing out on large prompts. The current  character limit is a temporary fix. Do not increase it without a plan (e.g., chunking).
-- **The system is designed for TEXT documents**. The user is providing VISUAL PDFs. This is a fundamental mismatch. The next agent must discuss this with the user. Propose that for best results, the user should provide text-based documents.
-- **The backend IS detecting decision points correctly**. The problem is 100% in the frontend rendering logic inside .
-- The application is currently using the **OLD service ()** because it has the correct intelligent grouping logic. The actionable intelligence features (contacts, templates) are extracted but not displayed.
+-   **The user is highly visual and detail-oriented.** Always refer to their uploaded screenshots as the definitive source for UI/UX requirements. Minor deviations in color, layout, or content will be rejected.
+-   **The  dependency is a recurring infrastructure problem.** If any visual PDF processing fails, the first step is to check if  is installed and in the system's PATH ( and ). The vision pipeline fails silently without it.
+-   ** is extremely fragile.** It has been the source of multiple, hard-to-debug syntax errors due to its complexity. Edits to this file must be done with extreme care and followed by thorough testing.
+-   **Do not lose any information.** The user has been very clear that the AI should organize, not summarize or discard, information from source documents. All extracted details (like Modica script) must be preserved and displayed.
+-   The user has approved a detailed architectural roadmap. Refer to the **Upcoming and Future Tasks** section for the agreed-upon priorities before starting new work.
 
 **Last 5 User Messages and any pending user messages**
-1.  **User**: Reports that after uploading a Word document, it failed with a 500 error on the  endpoint. (COMPLETED - Diagnosed as API overload)
-2.  **User**: Asks to switch the AI model to emergent llm to solve the overload. (COMPLETED - Agent explained it's already in use and switched to GPT-5).
-3.  **User**: Agrees to switch to GPT-5. (COMPLETED - Agent performed the switch).
-4.  **User**: Reports another 500 error even with GPT-5. (COMPLETED - Diagnosed as gateway timeout).
-5.  **User**: Reports the generated flowchart is missing contextual information like contacts and templates and that decision points are not clear. Uploads new artifacts for the Duress SOP. (IN PROGRESS - Agent is debugging the decision point rendering).
-6.  **User**: Reports the agent's fix for decision points didn't work. Asks for a root cause analysis on why it's so difficult. (IN PROGRESS - Agent is performing the RCA).
+1.  **User:** Asks a long list of detailed architectural questions to define the future roadmap. (COMPLETED - Agent provided answers and a priority matrix).
+2.  **User:** Expresses frustration with the generated flowchart's layout and the Process references section, providing better examples. (IN PROGRESS)
+3.  **User:** Agrees to the plan to fix the references but emphasizes that *no information should be lost*, only organized better. (IN PROGRESS)
+4.  **User:** Reports that after the agent's fix, there is still no change in the Process references section and the design is wrong. (IN PROGRESS)
+5.  **User:** Reports a runtime error when clicking on Quick References (an object being rendered as a React child). (COMPLETED - The agent fixed this specific crash, but the underlying layout/content issues remain).
 
 **Project Health Check:**
-- **Broken:**
-    - Decision point rendering (shows rectangles instead of diamonds).
-    - Large document processing (>20k characters) due to gateway timeouts.
-    - Display of extracted resources ( data like contacts/templates).
-- **Mocked:** N/A
+-   **Broken:**
+    -   YES/NO edge labeling on decision nodes.
+    -   The layout and content of the Quick References modal.
+    -   The reliability of the vision processing pipeline due to the unstable  dependency.
+-   **Mocked:** N/A
 
 **Testing status**
-- **Testing agent used after significant changes:** NO
-- **Troubleshoot agent used after agent stuck in loop:** YES, to diagnose the gateway timeout issue.
-- **Test files created:** None persistent.
-- **Known regressions:** None. The current issues are long-standing or were introduced with new features.
+-   **Testing agent used after significant changes:** NO
+-   **Troubleshoot agent used after agent stuck in loop:** YES, to diagnose syntax and backend errors.
+-   **Test files created:** None.
+-   **Known regressions:** The animated, flowing dotted lines for connections were temporarily broken and then restored. The core UI elements are sensitive to change.
 
 **What agent forgot to execute**
-- The agent has not fully investigated why the  data (contacts, templates) is not being displayed on the frontend, even though it's being extracted correctly by the backend and stored in the database.
-- The agent did not perform a visual verification (e.g., screenshot) of its fix for the decision point rendering before asking the user to test, which led to a failed verification loop.</analysis>
+- The agent updated the  component with the user's new design ideas but failed to apply the same critical changes to the final  component, leading to a mismatch and user frustration.
+- The agent did not perform a full end-to-end test of the two-step flow with a visual PDF immediately after implementation, which would have surfaced the chain of backend dependency and API call issues much earlier.</analysis>

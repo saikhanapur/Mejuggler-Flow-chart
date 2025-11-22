@@ -9,7 +9,7 @@ import json
 import uuid
 import time
 
-BASE_URL = "https://sopchart.preview.emergentagent.com/api"
+BASE_URL = "https://process-genius-7.preview.emergentagent.com/api"
 TIMEOUT = 120
 
 def test_semantic_search():
