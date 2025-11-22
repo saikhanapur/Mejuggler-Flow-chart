@@ -155,7 +155,7 @@ CRITICAL RULES:
 - Return ONLY valid JSON, no explanatory text"""
 
         try:
-            message = UserMessage(text=prompt)
+            message = llm.UserMessage(text=prompt)
             response = await chat.send_message(message)
             
             # Parse JSON response
