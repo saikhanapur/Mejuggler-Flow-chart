@@ -124,7 +124,8 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
     
     try {
       // Using proven EROAD service with intelligent 10-15 node grouping
-      const result = await api.generateEROADStyleFlowchart(input, inputType);
+      // ⚡ Use Lightning Mode for fast, reliable generation
+      const result = await api.generateLightningFlowchart(input, inputType);
         
         console.log('=== GENERATION RESULT ===');
         console.log('Full result:', JSON.stringify(result, null, 2));
