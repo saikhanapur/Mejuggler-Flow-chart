@@ -42,10 +42,11 @@ class LightningProcessor:
             session_id="lightning_process",
             system_message="""You are an expert at analyzing business process documents and creating clear flowcharts.
 
-Your task: Extract ALL information and structure it for visualization in ONE PASS.
-
-Be comprehensive but efficient. Extract everything needed for a complete flowchart."""
-        ).with_model("anthropic", "claude-4-sonnet-20250514").with_params(max_tokens=16000)
+Extract information efficiently and return valid JSON only."""
+        ).with_model("anthropic", "claude-4-sonnet-20250514").with_params(
+            max_tokens=12000,
+            timeout=90  # 90 second timeout to prevent hanging
+        )
         
         prompt = f"""Analyze this document and extract COMPLETE flowchart data:
 
