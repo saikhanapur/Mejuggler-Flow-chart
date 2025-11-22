@@ -377,20 +377,8 @@ CRITICAL EXTRACTION RULES:
 - Infer missing information logically (e.g., if email not stated, create placeholder)
 
 EXAMPLE - How to extract a script correctly:
-If document says:
-"Modica Script - Council
-Outage Notification: Wilsar is currently out of service affecting jobs dispatched to your Rapid app. While IT is working to resolve the issue, our Council team will dispatch your jobs via SMS. Please acknowledge with RECEIVED. SMS back onsite/offsite times and resolutions. Contact 0800 347 787 option 2 for assistance.
-Restoration: Services restored. Restart your Rapid app. If not receiving jobs, contact 0800 347 787 option 2."
-
-YOU MUST EXTRACT:
-{{
-  "name": "Modica Script - Council",
-  "type": "modica",
-  "content": {{
-    "outageNotification": "Wilsar is currently out of service affecting jobs dispatched to your Rapid app. While IT is working to resolve the issue, our Council team will dispatch your jobs via SMS. Please acknowledge with RECEIVED. SMS back onsite/offsite times and resolutions. Contact 0800 347 787 option 2 for assistance.",
-    "restoration": "Services restored. Restart your Rapid app. If not receiving jobs, contact 0800 347 787 option 2."
-  }}
-}}
+For a Modica script with outage and restoration sections, extract BOTH parts with complete text.
+Do NOT summarize - copy word-for-word from the document.
 
 Document to analyze:
 {document_text}
