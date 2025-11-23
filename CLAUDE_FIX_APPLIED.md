@@ -124,7 +124,7 @@ When you upload a document now, you should see:
 ## How to Test
 
 1. **Upload RingCentral Document:**
-   - Go to: https://process-genius-7.preview.emergentagent.com
+   - Go to: https://sopviz-1.preview.emergentagent.com
    - Upload: BCP_RingCentral Outage All_v1.3.pdf
    - Wait for generation
 

@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime, timezone
 
 # Configuration
-BASE_URL = "https://process-genius-7.preview.emergentagent.com/api"
+BASE_URL = "https://sopviz-1.preview.emergentagent.com/api"
 TIMEOUT = 120
 
 def test_intelligent_critical_actions_extraction():
