@@ -302,24 +302,44 @@ Return ONLY JSON."""
             system_message="Extract detailed content accurately. No hallucination."
         ).with_model("anthropic", "claude-4-sonnet-20250514").with_params(max_tokens=8000)
         
-        prompt = f"""Extract DETAILED CONTENT from this document:
+        prompt = f"""Extract ACTIONABLE, DIFFERENTIATED CONTENT from this document for interactive flowchart nodes:
 
 {doc_text[:20000]}
 
-For each major step/action mentioned, extract:
-- 2-5 specific sub-steps (actual details from document, not invented)
+CRITICAL: For each major step, provide DIFFERENT types of information:
+1. subSteps: Concrete action items someone would DO (not just restating the step name)
+2. operationalDetails: Specific how-to information, checklists, timing, tools
+
+EXAMPLES OF GOOD vs BAD:
+
+❌ BAD (Duplication):
+  Step: "Call First Contact"
+  subSteps: ["Call the first contact person"]  <-- Just repeating the title!
+
+✅ GOOD (Actionable):
+  Step: "Call First Contact" 
+  subSteps: [
+    "Locate contact phone number in escalation list",
+    "Prepare incident summary before calling",
+    "Make call and document response time"
+  ]
+
+For each major step/action, extract:
+- 2-5 SPECIFIC sub-actions (what to actually DO, not just restate the step)
 - Timing/duration if mentioned
-- Systems/tools used if mentioned
+- Systems/tools/documents to use
+- Any checklists or verification steps
 
 Return JSON:
 {{
   "contentByStep": {{
     "step-name-1": {{
-      "subSteps": ["Actual sub-action 1", "Actual sub-action 2"],
+      "subSteps": ["Specific action 1", "Specific action 2", "Specific action 3"],
       "operationalDetails": {{
-        "specificActions": ["Detail 1", "Detail 2"],
+        "specificActions": ["How-to detail 1", "Checklist item 2"],
         "estimatedDuration": "X minutes if mentioned",
-        "gap": false
+        "gap": false,
+        "toolsRequired": ["System names", "Documents needed"]
       }},
       "timing": "When/how long if mentioned",
       "systems": ["System names if mentioned"]
@@ -327,8 +347,8 @@ Return JSON:
   }}
 }}
 
-Extract ONLY what's actually in the document. Do not invent details.
-Return ONLY JSON."""
+Extract ONLY what's in the document. If document lacks detail, generate logical sub-steps based on context.
+Return ONLY JSON.
         
         message = UserMessage(text=prompt)
         response = await chat.send_message(message)
