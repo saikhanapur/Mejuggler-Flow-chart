@@ -480,26 +480,39 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
 
   // Smart layout adjustment when node expands/collapses - handles MULTIPLE expanded nodes!
   const handleNodeExpand = useCallback((nodeId, isExpanded, expandedHeight) => {
-    if (layoutDirection !== 'DOWN') return; // Only for vertical layout
-
-    // Update the expanded nodes registry
+    // CRITICAL FIX: Disable automatic repositioning on expand
+    // This prevents nodes from jumping back to original positions when user clicks dropdown
+    // The node component handles its own height expansion via CSS
+    
+    // Just record the expansion state for reference
     if (isExpanded) {
       expandedNodesRef.current[nodeId] = expandedHeight;
     } else {
       delete expandedNodesRef.current[nodeId];
     }
-
-    setExpandedNodeId(isExpanded ? nodeId : null);
-
-    // CRITICAL FIX: Don't re-layout nodes on expand if user has manually positioned them
-    // This preserves user's manual adjustments and prevents nodes from jumping back
-    // The expand animation is handled by the node component itself via height change
     
-    // Simply record the expansion state without re-positioning nodes
-    // The node itself handles its own height expansion via CSS
-    // No need to shift other nodes - React Flow will handle overlap naturally
-          },
-          style: {
+    setExpandedNodeId(isExpanded ? nodeId : null);
+    // Do NOT call setNodes here - that's what was causing the displacement bug
+  }, []);
+
+  // Rest of the layout code continues below
+  const applyLayout = async () => {
+    if (initialNodes.length > 0) {
+      console.log('🚀 Starting layout calculation...');
+      setIsLayouting(true);
+      
+      try {
+        console.log('⏱️ Calling getLayoutedElements with timeout...');
+        // Add timeout to prevent infinite hanging
+        const layoutPromise = getLayoutedElements(
+          initialNodes,
+          initialEdges,
+          layoutDirection
+        );
+        
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => {
+            console.error('⏱️ Layout TIMEOUT after 60 seconds');
             ...node.style,
             transition: 'all 0.3s ease-in-out',
           },
