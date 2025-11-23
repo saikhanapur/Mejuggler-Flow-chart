@@ -466,6 +466,9 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
         },
         labelBgPadding: [12, 8],
         labelBgBorderRadius: 6,
+        // Add offset to position label away from nodes
+        labelShowBg: true,
+        interactionWidth: 20,  // Wider interaction area for better UX
       };
     });
     
