@@ -485,7 +485,46 @@ Keep CONCISE. Return ONLY JSON."""
                     "gap": False
                 }
         
-        logger.info(f"✅ Merged: {len(result['nodes'])} nodes")
+        # POST-PROCESSING: Deduplicate content
+        for node in result["nodes"]:
+            title = node.get("title", "").lower()
+            desc = node.get("description", "").lower()
+            substeps = node.get("subSteps", [])
+            
+            # If substeps just repeat the description, make them more actionable
+            if substeps and len(substeps) == 1:
+                substep_lower = substeps[0].lower()
+                # Check if substep is essentially the same as description
+                if desc and (substep_lower == desc or (len(desc) > 20 and substep_lower in desc)):
+                    # Replace with more actionable steps
+                    logger.info(f"⚠️ Deduplicating substeps for: {node.get('title')}")
+                    if "call" in title or "contact" in title:
+                        node["subSteps"] = [
+                            "Retrieve contact information from escalation list",
+                            "Place call and document attempt time",
+                            "Record outcome (answered/no answer)"
+                        ]
+                    elif "review" in title or "evaluate" in title or "check" in title:
+                        node["subSteps"] = [
+                            "Access relevant information or system",
+                            "Examine key indicators or details",
+                            "Document findings and next steps"
+                        ]
+                    elif "record" in title or "log" in title or "document" in title:
+                        node["subSteps"] = [
+                            "Gather all relevant information",
+                            "Enter data into system",
+                            "Verify entry accuracy"
+                        ]
+                    else:
+                        # Keep the original but add context
+                        node["subSteps"] = [
+                            substeps[0],
+                            "Document completion",
+                            "Proceed to next step"
+                        ]
+        
+        logger.info(f"✅ Merged and deduplicated: {len(result['nodes'])} nodes")
         return result
     
     def _parse_json(self, response: str) -> Dict:
