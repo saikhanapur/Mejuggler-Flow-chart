@@ -132,18 +132,34 @@ DOCUMENT:
 
 TASK: Extract the EXACT flowchart structure described in this document.
 
-RULES:
-1. This document likely describes around {estimated_nodes} nodes. Extract EXACTLY what's described - no more, no less.
+RULES (CRITICAL - THIS IS EMERGENCY SERVICES):
+1. This document describes approximately {estimated_nodes} nodes. Extract EXACTLY what's described.
 2. DO NOT add steps that aren't explicitly mentioned.
-3. DO NOT remove or skip any steps that ARE mentioned.
-4. DO NOT "improve" or "reorganize" the flow - preserve it EXACTLY.
-5. Look for explicit node descriptions like "Step 1:", "Decision:", "If yes then", "connects to", etc.
+3. DO NOT skip any steps that ARE mentioned.
+4. DO NOT "improve" or "reorganize" - preserve EXACTLY.
+5. Look for explicit node descriptions like "Step 1:", "Decision Node:", "Action Node:", diamond shapes, rectangle shapes, etc.
 
-For EACH node mentioned in the document, extract:
-- The EXACT title/name given
-- Whether it's a decision point or action step
-- What it connects to (follow the arrows/flow described)
-- Any actors/roles mentioned
+DECISION NODE IDENTIFICATION:
+- Any node with "?" in the title is a DECISION (e.g., "User Contacted?")
+- Any node labeled "Decision Node" or "Diamond shape" is a DECISION
+- Any node with YES/NO branches is a DECISION
+- Set isDecisionPoint: true and provide decisionOptions
+
+ACTION NODE IDENTIFICATION:
+- Nodes labeled "Action Node", "Process Node", or "Rectangle shape" are ACTIONS
+- Nodes with imperative verbs ("Call", "Dispatch", "Contact") are ACTIONS
+- Start and End nodes (Ovals) are ACTIONS
+- Set isDecisionPoint: false
+
+NODE CONSOLIDATION:
+- If "Start" and first action are essentially the same (e.g., "Panic Triggered" → "Call User"), keep them separate only if both are explicitly described as distinct nodes
+- Do NOT create intermediate nodes between clearly connected steps
+
+For EACH node mentioned, extract:
+- The EXACT title/name given in the document
+- Correct type based on shape or context (decision vs action)
+- Exact connections as described
+- Roles if mentioned
 
 Return JSON:
 {{
@@ -153,23 +169,23 @@ Return JSON:
       "id": "node-1",
       "type": "process" | "decision",
       "title": "EXACT title from document",
-      "description": "Brief description",
+      "description": "Brief description if provided",
       "status": "critical|action|operational|communication",
-      "swimLane": "Role name if mentioned",
+      "swimLane": "Role if mentioned, otherwise 'Operations'",
       "connections": ["node-2"],
       "isDecisionPoint": true/false,
-      "decisionCriteria": "Question if decision node",
+      "decisionCriteria": "Question for decision nodes",
       "decisionOptions": {{"yes": "node-id", "no": "node-id"}},
       "actors": ["Role"]
     }}
   ],
   "swimLanes": [
-    {{"id": "lane-1", "name": "Lane Name", "color": "#3B82F6"}}
+    {{"id": "lane-1", "name": "Operations", "color": "#3B82F6"}}
   ]
 }}
 
-Expect approximately {estimated_nodes} nodes based on analysis.
-DO NOT hallucinate additional steps. PERFECT FIDELITY required.
+Target: EXACTLY {estimated_nodes} nodes (±1 acceptable).
+PERFECT FIDELITY to source. NO hallucinations.
 Return ONLY JSON."""
     
     def _build_generate_prompt(self, doc_text: str, estimated_nodes: int) -> str:
