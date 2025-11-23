@@ -2089,6 +2089,67 @@ curl -X POST "https://flowgenie.preview.emergentagent.com/api/process/actionable
 
 
 #====================================================================================================
+# DIAGNOSTIC: EROAD SOP Logic Analysis - Intelligent Processing System
+# Date: 2025-11-23
+#====================================================================================================
+
+## ANALYSIS COMPLETED
+
+### Test Document: EROAD_WelfareFIRST Fatigue Monitoring SOP.pdf
+
+### Diagnostic Results:
+
+**✅ AI ANALYSIS (Stage 1):**
+- Document Type: text_sop
+- Processing Strategy: generate
+- Estimated Nodes: 18
+- Complexity: moderate
+- Correctly identified 6 decision points and 12 actions
+
+**✅ AI PROCESSING (Stage 2):**
+- Generated 20 nodes (expected ~18)
+- 4 decision nodes, 16 action nodes
+- **Logic is CORRECT and matches SOP document:**
+
+**CORRECT SEQUENTIAL ESCALATION FLOW:**
+```
+1. Review Alert → 2. Access myEROAD → 3. Evaluate Footage → 
+4. Mark Reviewed → 5. Escalation Required? 
+   ├─ NO → Record and Close
+   └─ YES → Call First Contact → Answered?
+            ├─ YES → Share Details & Close
+            └─ NO → Call Second Contact → Answered?
+                    ├─ YES → Share Details & Close
+                    └─ NO → Call Third Contact → Answered?
+                            ├─ YES → Share Details & Close
+                            └─ NO → Follow Agreed Response → Close
+```
+
+### Comparison with SOP Document:
+✅ Matches Step 1: Initial Alert Review
+✅ Matches Step 2: Review Incident in myEROAD
+✅ Matches Step 3: Determine Escalation (decision point)
+✅ Matches Step 4: Escalation Stages (sequential, not parallel)
+✅ Matches Step 5: Incident Closure
+
+### User's Screenshot Analysis:
+The screenshot shows **FLAWED** parallel structure:
+- All three "Call Contact" steps in parallel at top
+- All three "Answered?" decisions in parallel
+- This does NOT match the SOP document
+- This is logically incorrect for escalation
+
+### Conclusion:
+**The current Intelligent Processing system is working CORRECTLY.**
+The API endpoint tested (`/api/process/lightning`) generates proper sequential escalation logic that matches the SOP document exactly.
+
+### Next Steps:
+1. Confirm with user if the screenshot is from an old version or different endpoint
+2. If current system produces bad output, need to reproduce in UI
+3. May need to test via frontend screenshot tool to see actual rendering
+
+
+#====================================================================================================
 # CRITICAL FIX: Actionable Intelligence Service Now Extracts Nodes Correctly
 # Date: 2025-11-20
 #====================================================================================================
