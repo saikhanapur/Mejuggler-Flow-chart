@@ -2089,6 +2089,61 @@ curl -X POST "https://flowgenie.preview.emergentagent.com/api/process/actionable
 
 
 #====================================================================================================
+# FIX IMPLEMENTED: Content Duplication & YES/NO Label Overlapping
+# Date: 2025-11-23
+#====================================================================================================
+
+## Issues Fixed:
+
+### Issue 1: Content Duplication (P0) ✅ FIXED
+**Problem:** Node dropdowns and side panel showed identical information
+- Title: "Call First Contact"
+- Description: "Call the first escalation contact"
+- Sub-steps: ["Call the first escalation contact"]  <-- DUPLICATE!
+
+**Solution Implemented:**
+1. **Enhanced AI Prompt**: Updated `_extract_content()` prompt to generate ACTIONABLE, DIFFERENTIATED content
+2. **Smart Fallback Logic**: Added intelligent fallback generation for common patterns (call, review, escalate)
+3. **Post-Processing Deduplication**: Added automatic detection and replacement of duplicate content
+
+**Results:**
+- Node Title: "Call Second Contact"
+- Description: "Attempt to reach secondary escalation contact to share incident details"
+- Sub-steps: 
+  1. "Locate contact information"
+  2. "Make the call and document the attempt"  
+  3. "Record response or no-answer status"
+✅ Content is now differentiated and actionable!
+
+### Issue 2: YES/NO Label Overlapping (P0) ✅ IMPROVED
+**Problem:** YES/NO labels overlapped with nodes and connection lines, causing visual confusion
+
+**Solution Implemented:**
+1. **Enhanced ELK Layout Configuration**:
+   - Increased node spacing: 80 → 100
+   - Increased layer spacing: 100 → 120
+   - Added edge-node spacing: 50
+   - Changed placement strategy: SIMPLE → NETWORK_SIMPLEX
+   - Added ORTHOGONAL edge routing for clearer paths
+   - Minimized unnecessary bendpoints
+
+2. **Improved Edge Rendering**:
+   - Added `labelShowBg: true` for better visibility
+   - Increased interaction width
+   - Labels have white background with opacity
+
+**Expected Results:**
+- Better node spacing reduces overlaps
+- Orthogonal routing makes paths clearer
+- Labels should be more readable with better positioning
+
+## Testing Required:
+- Frontend screenshot test to verify visual improvements
+- User testing with EROAD SOP to confirm no overlaps
+- Verify expandable dropdowns show useful, differentiated content
+
+
+#====================================================================================================
 # DIAGNOSTIC: EROAD SOP Logic Analysis - Intelligent Processing System
 # Date: 2025-11-23
 #====================================================================================================
