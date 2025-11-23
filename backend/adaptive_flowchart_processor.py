@@ -209,10 +209,15 @@ RULES:
 7. DO NOT create artificial complexity
 
 For EACH logical step:
-- Create a clear, concise title (3-6 words)
+- Create a clear, concise title (3-6 words) - Action verb format
+- Write a brief description (1 sentence explaining WHY or WHAT this step achieves)
 - Determine if it's a decision or action
 - Identify what connects to what
 - Note which role/actor is responsible
+
+IMPORTANT: Title and Description must be DIFFERENT:
+  ❌ BAD: title: "Call First Contact", description: "Call the first escalation contact"
+  ✅ GOOD: title: "Call First Contact", description: "Attempt to reach primary escalation contact to share incident details"
 
 Return JSON:
 {{
