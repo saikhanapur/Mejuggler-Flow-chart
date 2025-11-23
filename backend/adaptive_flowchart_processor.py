@@ -449,10 +449,38 @@ Keep CONCISE. Return ONLY JSON."""
                 if "systems" in matching_content:
                     node["systems"] = matching_content["systems"]
             else:
-                # Fallback: basic sub-steps
-                node["subSteps"] = [node.get("description", "Execute step")]
+                # Fallback: Generate meaningful sub-steps from title
+                title_lower = title.lower()
+                desc = node.get("description", "")
+                
+                # Create actionable sub-steps based on common patterns
+                if "call" in title_lower or "contact" in title_lower:
+                    node["subSteps"] = [
+                        f"Locate contact information",
+                        f"Make the call and document the attempt",
+                        f"Record response or no-answer status"
+                    ]
+                elif "review" in title_lower or "check" in title_lower:
+                    node["subSteps"] = [
+                        f"Access the relevant system or document",
+                        f"Verify key details and indicators",
+                        f"Document findings"
+                    ]
+                elif "escalate" in title_lower or "notify" in title_lower:
+                    node["subSteps"] = [
+                        f"Prepare incident summary",
+                        f"Contact appropriate party",
+                        f"Confirm handover"
+                    ]
+                elif desc and len(desc) > 10:
+                    # Use description as single substep if it's meaningful
+                    node["subSteps"] = [desc]
+                else:
+                    # Generic fallback
+                    node["subSteps"] = [f"Complete {title.lower()} as documented"]
+                
                 node["operationalDetails"] = {
-                    "specificActions": [node.get("description", "")],
+                    "specificActions": node["subSteps"][:],
                     "estimatedDuration": "",
                     "gap": False
                 }
