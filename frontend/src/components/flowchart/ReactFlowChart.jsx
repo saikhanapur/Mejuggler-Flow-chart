@@ -36,9 +36,13 @@ const getLayoutedElements = async (nodes, edges, direction = 'DOWN') => {
       layoutOptions: {
         'elk.algorithm': 'layered',
         'elk.direction': direction,
-        'elk.spacing.nodeNode': '80',  // Increased for better spacing around diamonds
-        'elk.layered.spacing.nodeNodeBetweenLayers': '100',  // More vertical space
-        'elk.layered.nodePlacement.strategy': 'SIMPLE',
+        'elk.spacing.nodeNode': '100',  // Increased spacing to reduce overlaps
+        'elk.layered.spacing.nodeNodeBetweenLayers': '120',  // More vertical space between layers
+        'elk.layered.spacing.edgeNodeBetweenLayers': '50',  // Space between edges and nodes
+        'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',  // Better placement algorithm
+        'elk.edgeRouting': 'ORTHOGONAL',  // Route edges at right angles for clarity
+        'elk.layered.unnecessaryBendpoints': 'false',  // Minimize unnecessary bends
+        'elk.layered.considerModelOrder.strategy': 'PREFER_EDGES',  // Optimize for edge clarity
       },
       children: nodes.map((node) => ({
         id: node.id,
