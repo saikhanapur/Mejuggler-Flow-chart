@@ -353,7 +353,7 @@ Return JSON:
 }}
 
 Extract ONLY what's in the document. If document lacks detail, generate logical sub-steps based on context.
-Return ONLY JSON.
+Return ONLY JSON."""
         
         message = UserMessage(text=prompt)
         response = await chat.send_message(message)
