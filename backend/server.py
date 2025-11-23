@@ -5222,6 +5222,62 @@ async def generate_ideal_state(process_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@api_router.post("/flowchart/optimize-layout")
+async def optimize_flowchart_layout(request: Request):
+    """
+    🎨 AUTO-ORGANIZE: AI-powered layout optimization
+    
+    Analyzes current flowchart layout and automatically reorganizes nodes
+    for optimal readability and visual clarity.
+    
+    Request body:
+    {
+        "nodes": [...],  // Current nodes with positions
+        "edges": [...]   // Current edges
+    }
+    
+    Returns:
+    {
+        "optimized_nodes": [...],  // Nodes with new positions
+        "changes_made": ["improvement 1", "improvement 2"],
+        "layout_score": 85  // Quality score 0-100
+    }
+    """
+    try:
+        data = await request.json()
+        nodes = data.get("nodes", [])
+        edges = data.get("edges", [])
+        
+        if not nodes:
+            raise HTTPException(status_code=400, detail="No nodes provided")
+        
+        logger.info(f"🎨 Auto-organize requested for {len(nodes)} nodes")
+        
+        # Import and use the intelligent layout optimizer
+        from intelligent_layout_optimizer import IntelligentLayoutOptimizer
+        
+        api_key = os.environ.get("EMERGENT_LLM_KEY")
+        optimizer = IntelligentLayoutOptimizer(api_key=api_key)
+        
+        result = await optimizer.optimize_layout(nodes, edges)
+        
+        logger.info(f"✅ Layout optimized: score {result.get('original_score')} → {result.get('layout_score')}")
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Layout optimization failed: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        raise HTTPException(
+            status_code=500,
+            detail=f"Layout optimization failed: {str(e)}"
+        )
+
+
 @api_router.post("/chat")
 async def chat(data: Dict[str, Any]):
     """Handle chat messages"""
