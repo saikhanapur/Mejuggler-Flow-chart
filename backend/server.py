@@ -3327,16 +3327,27 @@ async def lightning_generation(
                 "message": "Multiple processes detected. Please select which to generate."
             }
         
-        # STEP 2: Single process - use PARALLEL lightning processor
-        from parallel_lightning_processor import ParallelLightningProcessor
+        # STEP 2: INTELLIGENT PROCESSING PIPELINE
+        # First: Analyze the document to understand its structure
+        from intelligent_document_analyzer import DocumentAnalyzer
+        from adaptive_flowchart_processor import AdaptiveFlowchartProcessor
         
-        processor = ParallelLightningProcessor(
-            api_key=os.environ.get("EMERGENT_LLM_KEY")
+        api_key = os.environ.get("EMERGENT_LLM_KEY")
+        
+        # Stage 1: Deep document analysis
+        analyzer = DocumentAnalyzer(api_key=api_key)
+        analysis = await analyzer.analyze(
+            document_text=input_data.text,
+            document_name=input_data.inputType
         )
         
-        # Single-pass extraction
+        logger.info(f"📊 Analysis: {analysis.get('processingStrategy')} mode, ~{analysis.get('existingStructure', {}).get('estimatedNodes')} nodes")
+        
+        # Stage 2: Adaptive processing based on analysis
+        processor = AdaptiveFlowchartProcessor(api_key=api_key)
         result = await processor.process_document(
             document_text=input_data.text,
+            analysis=analysis,
             document_name=input_data.inputType
         )
         
