@@ -2,7 +2,7 @@ import requests
 import json
 import time
 
-BACKEND_URL = "https://sopviz-1.preview.emergentagent.com"
+BACKEND_URL = "https://flowgenie.preview.emergentagent.com"
 
 BCP_TEXT = open('/app/test_full_bcp_document.py').read().split('FULL_BCP_TEXT = """')[1].split('"""')[0]
 

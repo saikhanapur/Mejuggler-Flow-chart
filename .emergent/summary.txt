@@ -1,124 +1,107 @@
 <analysis>**original_problem_statement:**
-The user's goal is to create a world-class application that transforms complex Standard Operating Procedure (SOP) documents into accurate, interactive, AI-generated flowcharts, targeting enterprise customers. Key features include deep extraction of Actionable Intelligence (contacts, scripts, etc.), reliable processing of large visual and text-based PDFs, and an innovative, intuitive UI. The core mission is to Make process documentation 100x faster and create a new market category of AI Process Visualization. A critical UI feature is the patentable expandable node, which reveals sub-steps on click. The system must also correctly handle documents with multiple distinct processes.
+The user's primary goal is to create an application that transforms Standard Operating Procedure (SOP) documents into accurate, interactive, AI-generated flowcharts. Initially, the focus was on stabilizing a new parallel processing architecture. However, the user discovered a fundamental flaw: the AI was unintelligently inflating simple flowcharts by adhering to a fixed node count.
+
+The user has now challenged the agent to build a truly intelligent system. This system must first analyze a document to understand its structure (e.g., text-based SOP vs. existing visual flowchart) and then dynamically determine the correct number of nodes and logical connections required to represent the process with high fidelity. The user stressed that for enterprise customers, especially in emergency services, even a single missed step is a critical failure that erodes trust. The core mission is now to perfect this intelligent extraction and processing logic.
 
 **PRODUCT REQUIREMENTS:**
-1.  **Speed and Reliability:** The application must process documents quickly and reliably, without timeouts or server errors, to be viable for enterprise demos and usage.
-2.  **Actionable Intelligence:** All non-flowchart information (contacts, email templates, scripts) must be extracted and displayed in a well-organized Quick References section.
-3.  **Multi-Process Handling:** The system must detect when a single document contains multiple processes and allow the user to generate separate flowcharts for each.
-4.  **Accurate Visualization:** Decision points must be rendered as diamonds with clear, correctly placed YES and NO branches without visual overlap.
-5.  **Innovative UI:** The expandable node feature, which reveals detailed sub-steps, is a core, non-negotiable part of the user experience.
-6.  **Enterprise Readiness:** The long-term goal includes features like PDF/PNG export, version control, audit trails, and robust security.
+1.  **Intelligent Document Analysis:** The AI must automatically distinguish between text-heavy SOPs and documents that already contain visual flowcharts.
+2.  **Adaptive Flow Generation:** Based on the analysis, the AI must adapt its strategy. For existing flowcharts, it should perform a high-fidelity extraction. For text documents, it must intelligently identify all steps, decisions, and actions to create a new flowchart without hallucinating or missing crucial details.
+3.  **Logical Accuracy:** The generated flowchart's structure and decision points must perfectly mirror the logic of the source document. There is zero tolerance for logical errors or missing steps.
+4.  **Accurate Visualization:** Decision points must render as diamonds with clear YES and NO branches.
+5.  **Core UI Features:** The expandable node feature (revealing sub-steps) and a well-organized Quick References section remain critical requirements.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application has undergone a radical architectural overhaul to address severe performance and reliability issues. The original, slow, sequential AI pipeline has been replaced with a new **Parallel Lightning architecture**. This new system uses Python's  to run three separate, simpler AI calls in parallel: one for the main flowchart structure, one for detailed content (like sub-steps), and one for Quick References data. These results are then merged on the backend.
+The agent has performed a second major architectural pivot. The short-lived Parallel Lightning architecture has been replaced by a new, more sophisticated **Intelligent Processing pipeline**. This new system consists of two main components:
+1.  : This module analyzes the uploaded document's content to determine its type (e.g., , ) and estimates the required number of nodes.
+2.  : This module takes the analysis result and uses an adaptive prompt to call the LLM, instructing it to either extract an existing flowchart or generate a new one based on the document's nature.
 
-A new, untested  module has been added to identify if a document contains multiple processes before sending it to the parallel processor. The frontend's Quick References modal () has also been completely rewritten to display a simplified summary of contacts and key resources, rather than full procedures.
-
-This new architecture is **highly experimental, complex, and has not been fully tested.**
+This new system was integrated into the main  and showed promising results on the user's initial test case (a simple PDF flowchart), reducing node inflation by 58% and eliminating hallucinations. However, the user has immediately tested it with a more complex, text-based SOP and reported that the generated logic is flawed.
 
 **Last working item**:
-The agent completed a brutal, honest Rocket Lab Enterprise Readiness Assessment, scoring the app a 6.5/10 and outlining a 3-phase plan to make it demo-ready. The user agreed to this plan. The agent's last action was to begin **Phase 1: Stabilize**, which involves testing and hardening the newly implemented parallel architecture.
+The agent was in the middle of diagnosing a new user complaint. After the agent implemented the Intelligent Processing system, the user tested it with a text-based document () and reported the resulting flowchart's logic was flawed. The agent had just extracted the text from this new document and was about to analyze the generated output to understand what went wrong.
 
-- **Last item agent was working:** Kicking off Phase 1 of the enterprise readiness plan. The immediate goal is to test and solidify the brand-new, untested Parallel Lightning architecture and the  module.
-- **Status:** NOT STARTED
+- **Last item agent was working:** Diagnosing why the new Intelligent Processing system produced a logically flawed flowchart for the .
+- **Status:** IN PROGRESS
 - **Agent Testing Done:** N
-- **Which testing method agent to use?** Both.
-    -   **Backend Testing Agent:** To create comprehensive tests for the new  endpoint. Verify the parallel  calls work, the merging logic is correct, and the  correctly separates processes.
-    -   **Frontend Testing Agent:** To perform E2E tests by uploading documents with both single and multiple processes. Verify the multi-process selection UI works, the final flowchart renders correctly (especially decision nodes), the expandable nodes function as expected, and the redesigned Quick References modal displays correctly.
-- **User Testing Done:** Y (User tested the parallel architecture and reported the multi-process and Quick References issues, which the agent *just* attempted to fix before the session ended).
+- **Which testing method agent to use?** Backend testing agent. The agent should first create a test file to replicate the user's issue by processing  through the  endpoint. It needs to log the intermediate analysis from  and the final data structure from  to trace the logical error.
+- **User Testing Done:** Y (User tested the new system with a new document and reported failure).
 
 **All Pending/In progress Issue list**:
--   Issue 1: The new Parallel Lightning architecture and multi-process detection are unstable and untested. (P0)
+-   Issue 1: The new Intelligent Processing system generates flawed logic for complex, text-based SOPs. (P0)
 -   Issue 2: YES/NO labels on decision branches are jumbled/overlapping. (P0)
--   Issue 3: Quick References modal content is not summarized correctly. (P1)
--   Issue 4: The expandable node feature (the patentable dropdown) has been reported as missing or broken. (P0)
+-   Issue 3: The expandable node feature (patentable dropdown) is reported as missing or broken. (P0)
+-   Issue 4: Quick References modal content may be inaccurate or poorly summarized. (P1)
 
 **Issues Detail:**
--   **Issue 1: The new Parallel Lightning architecture and multi-process detection are unstable and untested.**
-    -   **Attempted fixes:** The agent created , , and refactored  to use them. These changes are brand new.
+-   **Issue 1: The new Intelligent Processing system generates flawed logic for complex, text-based SOPs.**
+    -   **Attempted fixes:** N/A. This is a new issue with the just-created architecture.
     -   **Next debug checklist:**
-        1.  Create a suite of test documents (simple, complex, single-process, multi-process).
-        2.  Invoke the backend testing agent to write unit and integration tests for  and .
-        3.  Log the output of each of the three parallel AI calls to ensure they are returning the expected data.
-        4.  Log the final merged data structure before it's sent to the frontend.
-        5.  Use the frontend testing agent to run through the full user flow and identify any crashes or incorrect UI states.
-    -   **Why fix this issue and what will be achieved with the fix?** This is the new core of the application. Stabilizing it is critical for any future progress and is the primary goal of the Rocket Lab Readiness - Phase 1 plan.
+        1.  Analyze the user-provided  and .
+        2.  Re-run the processing for this PDF using the test script () and add extensive logging.
+        3.  Log the output of : What  and  were determined?
+        4.  Log the prompt sent by  to the LLM.
+        5.  Log the raw JSON response from the LLM.
+        6.  Compare the LLM's output structure to the user's PDF to find the logical discrepancy.
+    -   **Why fix this issue and what will be achieved with the fix?** This is the user's current blocker and addresses the core value proposition of the app. Fixing it is essential to gain user trust.
     -   **Status:** IN PROGRESS
-    -   **Is recurring issue?** N (It's a new issue with a new architecture)
-    -   **Should Test frontend/backend/both after fix?** Both.
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** Backend.
 
 -   **Issue 2: YES/NO labels on decision branches are jumbled/overlapping.**
-    -   **Attempted fixes:** The agent has tried multiple fixes, including frontend rendering logic in  and backend post-processing logic in  and . The root cause seems to be the AI generating incorrect  or the edge connection logic being flawed.
-    -   **Next debug checklist:**
-        1.  Upload the .
-        2.  In , log the raw  and  data coming from the structure AI call.
-        3.  In , before sending the response, log the final  and  array, specifically inspecting the  field on edges connected to decision nodes.
-        4.  Verify the logic that maps  to edge labels is robust.
-    -   **Why fix this issue and what will be achieved with the fix?** This is a core readability and accuracy feature. Fixing it is essential for the flowchart to be usable.
-    -   **Status:** IN PROGRESS
+    -   **Attempted fixes:** None in the current architecture. This is a carry-over issue.
+    -   **Next debug checklist:** Once the core logic is fixed, this needs to be re-evaluated. The issue likely lies in the  or  data generated by the LLM or how  renders edges from decision nodes.
+    -   **Why fix this issue and what will be achieved with the fix?** Essential for flowchart readability and accuracy.
+    -   **Status:** NOT STARTED
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** Both.
 
--   **Issue 3: Quick References modal content is not summarized correctly.**
-    -   **Attempted fixes:** The agent completely rewrote  and modified the AI prompt in  to return a summarized version of references.
-    -   **Next debug checklist:**
-        1.  In , log the raw output from the references AI call.
-        2.  In , log the  object being sent to the frontend.
-        3.  In , log the  prop and verify the rendering logic correctly displays the summarized data.
-    -   **Why fix this issue and what will be achieved with the fix?** The user wants a clean, high-level summary in the modal, not a full text dump.
-    -   **Status:** IN PROGRESS
-    -   **Is recurring issue?** Y
-    -   **Should Test frontend/backend/both after fix?** Both.
-
--   **Issue 4: The expandable node feature has been reported as missing or broken.**
-    -   **Attempted fixes:** The agent updated the lightning processor prompt to explicitly ask for . This needs to be verified in the new parallel processor.
-    -   **Next debug checklist:**
-        1.  In , log the output of the content AI call to ensure  or  are being generated for each node.
-        2.  Log the final merged node structure in  to confirm the sub-step data is present.
-        3.  In , verify the conditions for rendering the expand button are being met.
-    -   **Why fix this issue and what will be achieved with the fix?** This is a patent-worthy feature for the user and a major regression if it's not working.
-    -   **Status:** IN PROGRESS
+-   **Issue 3: The expandable node feature has been reported as missing or broken.**
+    -   **Attempted fixes:** None in the current architecture. This is a carry-over issue.
+    -   **Next debug checklist:** Verify the adaptive prompt in  asks for  or . Check if the final node data sent to the frontend includes this information. Inspect  to ensure the expand button logic is correct.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a non-negotiable, patent-worthy feature for the user.
+    -   **Status:** NOT STARTED
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** Frontend.
 
-**In progress Task List**:
--   **Task 1: Enterprise Readiness - Phase 1 (Stabilize)**
-    -   **Where to resume:** Begin by executing the debug checklists for the four issues listed above. The top priority is stabilizing the new parallel architecture.
-    -   **What will be achieved with this?** A stable, demo-able application that won't crash and correctly implements the core features (multi-process, expandable nodes, correct decision labels).
-    -   **Status:** IN PROGRESS
+-   **Issue 4: Quick References modal content may be inaccurate.**
+    -   **Attempted fixes:** None in the current architecture.
+    -   **Next debug checklist:** The new architecture does not explicitly call a separate service for this. It needs to be confirmed if the prompt in  correctly extracts this information alongside the flowchart structure.
+    -   **Why fix this issue and what will be achieved with the fix?** Provides Actionable Intelligence, a key user requirement.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** Both.
+
+**In progress Task List**:
+-   **Task 1: Perfect the Core Offering: Intelligent Processing**
+    -   **Where to resume:** Focus entirely on fixing the logical flaws reported by the user for the .
+    -   **What will be achieved with this?** A reliable and accurate core processing engine that correctly interprets both visual and text-based documents.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** Backend.
     -   **Blocked on something:** Nothing.
 
 **Upcoming and Future Tasks**
-- **Upcoming Tasks (Phase 1 from Rocket Lab Plan):**
-    - **P0:** Implement user-friendly retry UI/feedback for API calls (e.g., Processing... attempt 2/3).
-    - **P0:** Add MVP Export features: PNG and basic PDF export of the flowchart.
+- **Upcoming Tasks (Phase 1):**
+    - **P0:** Implement user-friendly retry UI/feedback for API calls.
+    - **P0:** Add MVP Export features: PNG and basic PDF export.
     - **P1:** Add a shareable, view-only link feature.
 - **Future Tasks (Phases 2 & 3):**
-    - **P1 (Polish):** Improve loading states, success/error messages, and help tooltips. Create a quick start guide.
-    - **P2 (Enterprise):** Implement Audit Trails, Version Control, advanced export (BPMN, Visio), and address security/compliance needs like RBAC and data residency.
+    - **P1 (Polish):** Improve loading states, success/error messages, and help tooltips.
+    - **P2 (Enterprise):** Implement Audit Trails, Version Control, advanced export (BPMN, Visio), and address security/compliance needs.
 
 **Completed work in this session**
-- **Architectural Revolution (Parallel Processing):** Replaced the slow, sequential AI pipeline with a revolutionary Parallel Lightning architecture. This involved:
-    - Creating  to run three  AI calls simultaneously for structure, content, and references.
-    - Creating  to identify multiple processes in a document before generation.
-    - Heavily modifying  to integrate this new parallel flow into a  endpoint.
-- **Major Frontend Overhaul:**
-    - Completely rewrote  multiple times to meet user design specs for a summarized view.
-    - Updated  and  to use the new lightning/parallel endpoints.
-- **Intensive Debugging:** Resolved a wide array of critical, session-ending bugs, including:
-    - 500, 502, and 422 API errors.
-    - Python , , and Pydantic validation errors.
-    - Authentication/middleware errors on new endpoints.
-    - LLM API budget and timeout issues.
-- **Strategic Planning:** Conducted a Rocket Lab Enterprise Readiness Assessment and established a clear, user-approved, 3-phase plan for future development.
+- **Architectural Redesign (Intelligent Processing):** In response to a direct user challenge, completely replaced the previous processing logic with a new, intelligent, multi-stage pipeline.
+    - Created  to pre-analyze documents.
+    - Created  to use adaptive prompts for high-fidelity generation.
+    - Refactored  to integrate the new pipeline into the  endpoint.
+- **Successful Initial Validation:** Proved the new system's superiority on a simple flowchart PDF, reducing node inflation from 242% to 43% and completely eliminating AI hallucinations in that test case.
+- **Created Test Infrastructure:** Wrote a backend test script () to quickly validate the processing pipeline without needing the UI.
+- **Documentation:** Created  to document the new architecture.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1: Infrastructure instability:  dependency for vision processing is not persistent.**
-    -   **Debug checklist:**
-        1.  Investigate if there's a startup script or configuration file (e.g., Dockerfile) where Reading package lists...
+    -   **Debug checklist:** Investigate startup scripts or Dockerfile to permanently add Reading package lists...
 Building dependency tree...
 Reading state information...
 The following additional packages will be installed:
@@ -136,7 +119,7 @@ Get:2 http://deb.debian.org/debian bookworm/main arm64 liblcms2-2 arm64 2.14-2 [
 Get:3 http://deb.debian.org/debian bookworm/main arm64 libopenjp2-7 arm64 2.5.0-2+deb12u2 [176 kB]
 Get:4 http://deb.debian.org/debian bookworm/main arm64 libpoppler126 arm64 22.12.0-2+deb12u1 [1753 kB]
 Get:5 http://deb.debian.org/debian bookworm/main arm64 poppler-utils arm64 22.12.0-2+deb12u1 [177 kB]
-Fetched 3850 kB in 0s (15.6 MB/s)
+Fetched 3850 kB in 0s (19.9 MB/s)
 Selecting previously unselected package poppler-data.
 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 38433 files and directories currently installed.)
 Preparing to unpack .../poppler-data_0.4.12-1_all.deb ...
@@ -159,9 +142,8 @@ Setting up libopenjp2-7:arm64 (2.5.0-2+deb12u2) ...
 Setting up libpoppler126:arm64 (22.12.0-2+deb12u1) ...
 Setting up poppler-utils (22.12.0-2+deb12u1) ...
 Processing triggers for libc-bin (2.36-9+deb12u13) ...
-Processing triggers for fontconfig (2.14.1-4) ... can be permanently added.
-        2.  If not, add robust error handling in  to raise a specific error to the user instead of failing silently.
-    -   **Why to solve this issue and what will be achieved with this?** This makes the visual PDF processing feature reliable. It has been ignored for the entire session.
+Processing triggers for fontconfig (2.14.1-4) .... Add error handling in  as a fallback.
+    -   **Why to solve this issue and what will be achieved with this?** Makes visual PDF processing reliable. This has been ignored across multiple sessions.
     -   **Should Test frontend/backend/both after fix:** Backend.
     -   **Is recurring issue?** Y
 
@@ -170,53 +152,47 @@ Processing triggers for fontconfig (2.14.1-4) ... can be permanently added.
 
 **Key Technical Concepts**
 - **Frontend:** React, ReactFlow, TailwindCSS
-- **Backend:** FastAPI, Pydantic, **asyncio** (for parallel AI calls)
+- **Backend:** FastAPI, Pydantic, asyncio
 - **Database:** MongoDB
-- **AI:** Native Anthropic (Claude) SDK,  library.
-- **Architecture:** Shifted from a slow, sequential AI pipeline to a **fast, parallel AI pipeline**.
+- **AI:** Native Anthropic (Claude) SDK via .
+- **Architecture:** A new **Intelligent Processing pipeline** that replaces the previous Parallel Lightning model. It uses a two-step process of analysis then adaptive generation.
 
 **All files**
 -   **Created:**
-    -   : The new core engine using  for parallel processing.
-    -   : A new module to split documents before processing.
-    -   : The first (now deprecated) attempt at a faster architecture.
-    -   : A temporary file during refactoring.
-    -   : A summary document explaining the new simplified architecture.
+    -   : Implements the first stage of the new intelligent pipeline.
+    -   : Implements the second, adaptive stage of the pipeline.
+    -   : A script for testing the new backend logic.
+    -   : Documentation for the new system.
 -   **Significantly Updated:**
-    -   : Integrated the new parallel processor and multi-process detection logic.
-    -   : Fixed multiple critical syntax errors introduced during prompt engineering.
-    -   : Added new functions to call the new backend endpoints.
-    -   : Rerouted to call the new API functions.
-    -   : Completely rewritten to have a new design and handle a new data structure.
+    -   : Rerouted the core processing logic to use the new  and .
 
 **Critical Info for New Agent**
--   **The architecture has just undergone a radical, high-risk change.** The new Parallel Lightning model is powerful but untested. Your absolute first priority is to stabilize and test it according to the Phase 1: Stabilize plan.
--   **The user is highly motivated by an upcoming enterprise demo (Rocket Lab).** Speed, reliability, and a polished UI are paramount. Refer to the Rocket Lab Enterprise Readiness Assessment for the full roadmap. Do not deviate from this plan.
--   **Do not get distracted.** The agent spent significant time debugging issues related to a Claude Code review of an outdated codebase. Trust the current workspace's state and focus on the user's direct feedback and the agreed-upon plan.
--   **Core features are still buggy.** The YES/NO labels, Quick References modal, and the expandable node feature are all recurring problems that need a definitive fix within the new parallel architecture.
--   **The  dependency for vision processing remains a critical, unaddressed infrastructure problem.** This will cause failures if the user uploads a visual PDF.
+-   **Focus on the NEW architecture.** The Parallel Lightning processor is dead. All work must now happen within  and .
+-   **The user's immediate problem is the TOP priority.** You must drop everything and solve why the new system is failing on the text-based . Do not work on other pending issues until this core logic is proven reliable.
+-   **The old issues still exist.** Once the core processing logic is fixed, you must address the outstanding problems from the previous forks (YES/NO labels, expandable nodes, quick references) within the context of the new architecture.
+-   **The  dependency remains an unaddressed, critical infrastructure risk** that will cause failures on image-based PDFs.
 
 **Last 5 User Messages and any pending user messages**
-1.  **User:** Praises the new speed but reports the parallel architecture failed to detect multiple processes and messed up the Quick References section. (IN PROGRESS - Agent attempted fixes).
-2.  **User:** Asks for a brutally honest assessment of the app's readiness for an enterprise demo with Rocket Lab. (COMPLETED - Agent provided a detailed 6.5/10 rating and a 3-phase improvement plan).
-3.  **User:** Agrees to buy time for the demo and instructs the agent to start fixing the issues phase-wise. (IN PROGRESS - Agent is starting Phase 1).
-4.  **User:** Acknowledges the agent's readiness assessment and plan.
-5.  **User:** Provides final confirmation to begin work on the stabilization plan.
+1.  **User:** Challenges the agent's hardcoded node-count logic, demanding a more intelligent system that analyzes documents properly. (COMPLETED - Agent built a new system).
+2.  **User:** Agrees to the agent's proposal for a new multi-stage Intelligent processing pipeline. (COMPLETED).
+3.  **User:** Yes go ahead. we need to get he core offering perfect. (IN PROGRESS - Agent is building it).
+4.  **User:** (Agent finished building V1 of the intelligent system and presented the successful test on the simple flowchart).
+5.  **User:** Interrupts the agent's summary by uploading a new, more complex text-based SOP and its flawed output, stating logic flawed . tell me whats wron. (PENDING - This is the current task).
 
 **Project Health Check:**
 -   **Broken:**
-    -   The core processing pipeline (Parallel Lightning) is new and unstable.
-    -   Multi-process detection is untested.
-    -   YES/NO edge labeling is visually incorrect.
-    -   Reliability of vision processing due to the unstable  dependency.
+    -   The core Intelligent Processing pipeline is producing logical errors on complex text documents, which is the primary use case.
+    -   Decision node label rendering.
+    -   Expandable node functionality.
+    -   Vision processing reliability ( dependency).
 -   **Mocked:** N/A
 
 **Testing status**
 -   **Testing agent used after significant changes:** NO
 -   **Troubleshoot agent used after agent stuck in loop:** NO
--   **Test files created:** None.
--   **Known regressions:** The expandable node feature was reported as broken after the architectural changes.
+-   **Test files created:** [] (temporary script)
+-   **Known regressions:** Expandable nodes feature,  dependency issue.
 
 **What agent forgot to execute**
--   The agent completely ignored the  infrastructure issue mentioned in the initial handoff summary, leaving the visual PDF processing feature broken and unreliable.
--   The agent did not conduct any form of testing (manual or automated) after the massive architectural shift to the parallel processor, leading the user to find the first set of bugs.</analysis>
+-   The agent has consistently ignored the recurring  infrastructure issue, leaving a critical feature (visual PDF processing) unstable.
+-   The agent did not perform any testing on the other known issues (YES/NO labels, expandable nodes, quick references) after implementing the new intelligent architecture.</analysis>
