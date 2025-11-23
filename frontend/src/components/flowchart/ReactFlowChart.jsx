@@ -495,32 +495,6 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
     // Do NOT call setNodes here - that's what was causing the displacement bug
   }, []);
 
-  // Rest of the layout code continues below
-  const applyLayout = async () => {
-    if (initialNodes.length > 0) {
-      console.log('🚀 Starting layout calculation...');
-      setIsLayouting(true);
-      
-      try {
-        console.log('⏱️ Calling getLayoutedElements with timeout...');
-        // Add timeout to prevent infinite hanging
-        const layoutPromise = getLayoutedElements(
-          initialNodes,
-          initialEdges,
-          layoutDirection
-        );
-        
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => {
-            console.error('⏱️ Layout TIMEOUT after 60 seconds');
-            ...node.style,
-            transition: 'all 0.3s ease-in-out',
-          },
-        };
-      });
-    });
-  }, [layoutDirection, setNodes]);
-
   // Apply automatic layout - respects direction
   useEffect(() => {
     console.log('🔧 Layout effect triggered', {
