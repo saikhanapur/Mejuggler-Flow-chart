@@ -468,6 +468,23 @@ Keep CONCISE. Return ONLY JSON."""
                 node["id"] = f"node-{i+1}"
             valid_node_ids.add(node["id"])
             
+            # Smart decision point detection
+            title = node.get("title", "")
+            conns = node.get("connections", [])
+            
+            # Auto-detect decision nodes by title pattern or connection count
+            if not node.get("isDecisionPoint"):
+                # Questions ending with "?" are decisions
+                if "?" in title:
+                    logger.info(f"🔍 Auto-detected decision node: {title}")
+                    node["isDecisionPoint"] = True
+                    node["type"] = "decision"
+                # Nodes with exactly 2 connections are likely decisions
+                elif len(conns) == 2 and "decision" in title.lower():
+                    logger.info(f"🔍 Auto-detected decision node: {title}")
+                    node["isDecisionPoint"] = True
+                    node["type"] = "decision"
+            
             if "type" not in node:
                 node["type"] = "decision" if node.get("isDecisionPoint") else "process"
             
@@ -483,8 +500,10 @@ Keep CONCISE. Return ONLY JSON."""
                     if not opts or opts.get("yes") not in conns:
                         node["decisionOptions"] = {"yes": conns[0], "no": conns[1]}
                 elif len(conns) != 2:
+                    # Not a valid decision if it doesn't have exactly 2 connections
                     node["isDecisionPoint"] = False
                     node["decisionOptions"] = {}
+                    node["type"] = "process"
             
             # Ensure sub-steps exist
             if "subSteps" not in node or not node["subSteps"]:
