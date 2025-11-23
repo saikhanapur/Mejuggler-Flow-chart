@@ -491,33 +491,13 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
 
     setExpandedNodeId(isExpanded ? nodeId : null);
 
-    setNodes((currentNodes) => {
-      // Sort base positions by Y coordinate to process top-to-bottom
-      const sortedBasePositions = [...baseNodePositionsRef.current].sort((a, b) => 
-        a.position.y - b.position.y
-      );
-
-      // Calculate cumulative offset for each node
-      return currentNodes.map((node) => {
-        const nodeBasePos = baseNodePositionsRef.current.find(bp => bp.id === node.id);
-        if (!nodeBasePos) return node;
-
-        // Calculate total offset from all expanded nodes above this one
-        let cumulativeOffset = 0;
-        for (const [expandedId, height] of Object.entries(expandedNodesRef.current)) {
-          const expandedBasePos = baseNodePositionsRef.current.find(bp => bp.id === expandedId);
-          if (expandedBasePos && expandedBasePos.position.y < nodeBasePos.position.y) {
-            cumulativeOffset += height;
-          }
-        }
-
-        // Apply the cumulative offset
-        return {
-          ...node,
-          position: {
-            ...node.position,
-            x: nodeBasePos.position.x,
-            y: nodeBasePos.position.y + cumulativeOffset,
+    // CRITICAL FIX: Don't re-layout nodes on expand if user has manually positioned them
+    // This preserves user's manual adjustments and prevents nodes from jumping back
+    // The expand animation is handled by the node component itself via height change
+    
+    // Simply record the expansion state without re-positioning nodes
+    // The node itself handles its own height expansion via CSS
+    // No need to shift other nodes - React Flow will handle overlap naturally
           },
           style: {
             ...node.style,
