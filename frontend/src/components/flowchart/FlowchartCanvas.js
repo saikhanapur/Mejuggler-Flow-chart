@@ -61,11 +61,13 @@ const FlowchartCanvas = ({ processData }) => {
             };
           }
           return node;
-        })
+        }),
+        updatedAt: new Date().toISOString(),
+        version: (process.version || 0) + 1
       };
       
-      // Save to backend
-      await api.updateProcess(id, { nodes: updatedProcess.nodes });
+      // Save FULL process object to backend (backend expects complete Process model)
+      await api.updateProcess(id, updatedProcess);
       
       // Update local state
       setProcess(updatedProcess);
@@ -73,6 +75,7 @@ const FlowchartCanvas = ({ processData }) => {
       console.log('✅ Layout saved to database');
     } catch (error) {
       console.error('❌ Failed to save layout:', error);
+      console.error('Error details:', error.response?.data || error.message);
       throw error;
     }
   };
