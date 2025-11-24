@@ -1028,11 +1028,16 @@ ANALYZE FOR ALL PATTERNS:
     - Complex (20+ steps, multiple branches/phases)
     - Very Complex (30+ steps, nested processes, tables)
 
+CRITICAL OUTPUT REQUIREMENT:
+- If multipleProcesses: true → processTitles MUST have exact titles for each process
+- If multipleProcesses: false → processTitles should be empty array []
+- processTitles is MANDATORY when multipleProcesses is true
+
 RETURN JSON (VALID JSON ONLY, NO MARKDOWN):
 {{
   "multipleProcesses": true or false,
   "processCount": 1,
-  "processTitles": ["Process 1 title"],
+  "processTitles": ["Exact Process 1 Title", "Exact Process 2 Title"],  // REQUIRED if multipleProcesses=true
   
   "swimLanes": [
     {{"id": "identify", "title": "IDENTIFY", "team": "Dispatch"}},
