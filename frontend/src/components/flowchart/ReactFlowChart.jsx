@@ -945,8 +945,9 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
             </div>
           </div>
 
-          {/* Auto-Organize Button */}
-          <div className="mt-3 pt-3 border-t border-gray-200">
+          {/* Auto-Organize & Save Buttons */}
+          <div className="mt-3 pt-3 border-t border-gray-200 space-y-2">
+            {/* Auto-Organize Button */}
             <button
               onClick={handleAutoOrganize}
               disabled={isOptimizing}
@@ -970,11 +971,50 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
                 </span>
               )}
             </button>
+            
+            {/* Save Layout Button */}
+            <button
+              onClick={handleSaveLayout}
+              disabled={isSaving || !hasUnsavedChanges}
+              className={`w-full px-3 py-2 text-xs rounded font-medium transition-all ${
+                isSaving
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : hasUnsavedChanges
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 shadow-sm hover:shadow-md'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              {isSaving ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                  </svg>
+                  Saving...
+                </span>
+              ) : hasUnsavedChanges ? (
+                <span className="flex items-center justify-center gap-2">
+                  💾 Save Layout
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  ✓ Saved
+                </span>
+              )}
+            </button>
+            
+            {/* Results & Status */}
             {optimizeResult && (
               <div className="mt-2 text-xs text-center">
                 <span className="text-green-600 font-medium">
                   Score: {optimizeResult.original_score} → {optimizeResult.layout_score}
                 </span>
+              </div>
+            )}
+            
+            {hasUnsavedChanges && (
+              <div className="mt-2 px-2 py-1 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800 text-center">
+                ⚠️ Unsaved changes
               </div>
             )}
           </div>
