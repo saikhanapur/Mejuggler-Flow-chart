@@ -348,7 +348,7 @@ const nodeTypes = {
   decision: DecisionNode,
 };
 
-export const ReactFlowChart = ({ processData, onNodeClick }) => {
+export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => {
   const [isLayouting, setIsLayouting] = useState(true);
   const [layoutDirection, setLayoutDirection] = useState('DOWN');
   const [expandedNodeId, setExpandedNodeId] = useState(null);
