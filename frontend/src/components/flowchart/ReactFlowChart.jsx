@@ -578,12 +578,18 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
       
       const result = await response.json();
       console.log('✅ Optimization complete:', result);
+      console.log('🔍 Checking optimizer output - sample nodes:');
+      console.log('  Optimizer node 0:', result.optimized_nodes[0]?.id, result.optimized_nodes[0]?.position);
+      console.log('  Optimizer node 1:', result.optimized_nodes[1]?.id, result.optimized_nodes[1]?.position);
       
       // Apply optimized positions with smooth animation
       setNodes((currentNodes) => {
-        return currentNodes.map((node) => {
+        console.log('📐 Current node 0 before update:', currentNodes[0]?.id, currentNodes[0]?.position);
+        
+        const updated = currentNodes.map((node) => {
           const optimizedNode = result.optimized_nodes.find(n => n.id === node.id);
           if (optimizedNode) {
+            console.log(`🔄 Applying optimization to ${node.id}: ${JSON.stringify(node.position)} → ${JSON.stringify(optimizedNode.position)}`);
             return {
               ...node,
               position: optimizedNode.position,
@@ -591,6 +597,9 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
           }
           return node;
         });
+        
+        console.log('📐 Updated node 0 after map:', updated[0]?.id, updated[0]?.position);
+        return updated;
       });
       
       // Update base positions
