@@ -942,13 +942,34 @@ Your job: Identify ALL structural patterns in the document."""
 DOCUMENT (first 5,000 chars):
 {document_text[:5000]}
 
+CRITICAL RULES FOR MULTI-PROCESS DETECTION:
+⚠️ BE CONSERVATIVE! Only detect multi-process if ABSOLUTELY CLEAR.
+
+✅ MULTIPLE PROCESSES = SEPARATE, INDEPENDENT workflows:
+   - Each process has different trigger/start condition
+   - Each process has different steps and actions
+   - Each process has different outcome/end state
+   - Processes can run independently of each other
+   - Example: HR Handbook with "Hiring", "Performance Review", "Termination"
+
+❌ NOT MULTIPLE PROCESSES:
+   - Single workflow with phases/stages (e.g., "Phase 1, Phase 2")
+   - Single workflow with escalation steps (e.g., "Contact 1, Contact 2, Contact 3")
+   - Single workflow with parallel tasks (e.g., "Onshore Actions", "Offshore Actions")
+   - Single workflow with swim lanes (different teams, same process)
+   - Single workflow with decision branches (if/then paths)
+
+🎯 WHEN IN DOUBT → DEFAULT TO SINGLE PROCESS
+
 ANALYZE FOR ALL PATTERNS:
 
 1. MULTIPLE PROCESSES:
-   - Are there 2+ distinct processes in this document?
-   - Look for: Numbered sections (Process 1, 2, 3), Separate workflows
+   - Are there 2+ COMPLETELY INDEPENDENT processes in this document?
+   - Each must have: different trigger, different steps, different outcome
+   - Look for: Explicitly numbered sections (Process 1, 2, 3), Separate workflows
    - Example: "Recruitment Process Maps" with 9 separate processes
    - If found, list each process title
+   - IF UNSURE → Set multipleProcesses: false
 
 2. SWIM LANES / ROLE SECTIONS:
    - Are there parallel columns/sections by role or team?
