@@ -637,6 +637,7 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
       // CRITICAL: If layout is locked, don't re-calculate
       if (isLayoutLocked) {
         console.log('🔒 Layout locked - skipping automatic re-layout');
+        setIsLayouting(false);  // Clear loading state
         return;
       }
       
