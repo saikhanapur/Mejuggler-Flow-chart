@@ -36,13 +36,26 @@ const getLayoutedElements = async (nodes, edges, direction = 'DOWN') => {
       layoutOptions: {
         'elk.algorithm': 'layered',
         'elk.direction': direction,
-        'elk.spacing.nodeNode': '100',  // Increased spacing to reduce overlaps
-        'elk.layered.spacing.nodeNodeBetweenLayers': '120',  // More vertical space between layers
-        'elk.layered.spacing.edgeNodeBetweenLayers': '50',  // Space between edges and nodes
-        'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',  // Better placement algorithm
-        'elk.edgeRouting': 'ORTHOGONAL',  // Route edges at right angles for clarity
-        'elk.layered.unnecessaryBendpoints': 'false',  // Minimize unnecessary bends
+        // Spacing configuration for clean, uncluttered layouts
+        'elk.spacing.nodeNode': '120',  // Horizontal spacing between nodes
+        'elk.layered.spacing.nodeNodeBetweenLayers': '150',  // Vertical spacing between layers
+        'elk.layered.spacing.edgeNodeBetweenLayers': '60',  // Space between edges and nodes
+        'elk.spacing.edgeNode': '40',  // Additional edge-to-node spacing
+        'elk.spacing.edgeEdge': '20',  // Space between parallel edges
+        
+        // Placement and routing for optimal clarity
+        'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',  // Best placement algorithm
+        'elk.layered.nodePlacement.bk.fixedAlignment': 'BALANCED',  // Balanced alignment
+        'elk.edgeRouting': 'ORTHOGONAL',  // Clean right-angle routing
+        'elk.layered.unnecessaryBendpoints': 'false',  // Minimize bends
         'elk.layered.considerModelOrder.strategy': 'PREFER_EDGES',  // Optimize for edge clarity
+        
+        // Decision node handling
+        'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',  // Reduce edge crossings
+        'elk.layered.cycleBreaking.strategy': 'GREEDY',  // Handle cycles efficiently
+        
+        // Improve label placement
+        'elk.edgeLabels.inline': 'true',  // Keep labels inline with edges
       },
       children: nodes.map((node) => ({
         id: node.id,
