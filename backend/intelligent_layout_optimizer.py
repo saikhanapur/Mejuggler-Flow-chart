@@ -258,8 +258,9 @@ Focus on VISUAL CLARITY and READABILITY."""
                     for yes_node in branches["YES"]:
                         x_pos = decision_pos["x"] - decision_branch_spacing
                         positions[yes_node] = {"x": x_pos, "y": y_pos}
+                        original_node = node_map[yes_node]
                         optimized_nodes.append({
-                            **node_map[yes_node],
+                            **original_node,  # Preserve ALL original fields
                             "position": {"x": x_pos, "y": y_pos}
                         })
                     
@@ -267,8 +268,9 @@ Focus on VISUAL CLARITY and READABILITY."""
                     for no_node in branches["NO"]:
                         x_pos = decision_pos["x"] + decision_branch_spacing
                         positions[no_node] = {"x": x_pos, "y": y_pos}
+                        original_node = node_map[no_node]
                         optimized_nodes.append({
-                            **node_map[no_node],
+                            **original_node,  # Preserve ALL original fields
                             "position": {"x": x_pos, "y": y_pos}
                         })
             else:
