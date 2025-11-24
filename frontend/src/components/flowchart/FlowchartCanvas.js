@@ -74,11 +74,16 @@ const FlowchartCanvas = ({ processData }) => {
       };
       
       console.log('📝 Updated process created with', updatedNodes.length, 'nodes');
+      console.log('📤 Sample node being saved:', {
+        id: updatedNodes[0].id,
+        position: updatedNodes[0].position,
+        title: updatedNodes[0].title
+      });
       
-      // DO NOT update local state here - it causes re-render that resets positions
-      // Just save to backend and let the save succeed
-      await api.updateProcess(id, updatedProcess);
+      // Save to backend
+      const saveResponse = await api.updateProcess(id, updatedProcess);
       console.log('✅ Layout saved to database successfully');
+      console.log('📥 Server response:', saveResponse);
       
       // ONLY update state after successful save
       setProcess(updatedProcess);
