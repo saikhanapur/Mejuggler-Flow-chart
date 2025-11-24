@@ -646,10 +646,16 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
     });
     
     const applyLayout = async () => {
-      // CRITICAL: If layout is locked, don't re-calculate
+      // CRITICAL: If layout is locked, use positions from database directly
       if (isLayoutLocked) {
-        console.log('🔒 Layout locked - skipping automatic re-layout');
-        setIsLayouting(false);  // Clear loading state
+        console.log('🔒 Layout locked - using saved positions from database');
+        
+        // Use positions directly from processData (already has saved positions)
+        setNodes(initialNodes);
+        setEdges(initialEdges);
+        setIsLayouting(false);
+        
+        console.log('✅ Applied saved positions without recalculation');
         return;
       }
       
