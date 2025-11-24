@@ -137,14 +137,27 @@ Focus on VISUAL CLARITY and READABILITY."""
         analysis: Dict
     ) -> List[Dict]:
         """
-        Generate optimal node positions using layout algorithm.
-        Uses a simple but effective vertical layering approach.
-        """
-        logger.info("📐 Generating optimal layout...")
+        Generate optimal node positions with DECISION-AWARE spacing.
         
-        # Build adjacency map
+        KEY RULES:
+        1. Decision nodes (diamonds) get WIDE horizontal separation for YES/NO branches
+        2. YES branches go LEFT, NO branches go RIGHT
+        3. Minimum 500px horizontal spacing between decision branches
+        4. Vertical alignment for sequential nodes
+        """
+        logger.info("📐 Generating DECISION-AWARE layout...")
+        
+        # Build node map and identify decision nodes
+        node_map = {n["id"]: n for n in nodes}
+        decision_nodes = {n["id"] for n in nodes if n.get("data", {}).get("isDecisionPoint", False)}
+        
+        logger.info(f"🔶 Found {len(decision_nodes)} decision nodes")
+        
+        # Build adjacency and edge label map
         adjacency = {}
+        edge_labels = {}  # Maps (source, target) -> label (YES/NO)
         in_degree = {}
+        
         for node in nodes:
             node_id = node["id"]
             adjacency[node_id] = []
@@ -153,12 +166,15 @@ Focus on VISUAL CLARITY and READABILITY."""
         for edge in edges:
             source = edge["source"]
             target = edge["target"]
+            label = edge.get("label", "").upper()
+            
             if source in adjacency:
                 adjacency[source].append(target)
+                edge_labels[(source, target)] = label
             if target in in_degree:
                 in_degree[target] += 1
         
-        # Topological layering
+        # Topological layering with decision awareness
         layers = []
         current_layer = [nid for nid, deg in in_degree.items() if deg == 0]
         visited = set(current_layer)
@@ -169,7 +185,6 @@ Focus on VISUAL CLARITY and READABILITY."""
             for node_id in current_layer:
                 for neighbor in adjacency.get(node_id, []):
                     if neighbor not in visited:
-                        # Check if all predecessors have been visited
                         all_pred_visited = True
                         for edge in edges:
                             if edge["target"] == neighbor and edge["source"] not in visited:
@@ -180,42 +195,89 @@ Focus on VISUAL CLARITY and READABILITY."""
                             visited.add(neighbor)
             current_layer = next_layer
         
-        # Assign positions based on layers
+        # DECISION-AWARE POSITIONING
         optimized_nodes = []
-        layer_spacing = 180  # Vertical space between layers
-        node_spacing = 300   # Horizontal space between nodes in same layer
+        layer_spacing = 200  # Vertical space between layers
+        base_node_spacing = 400  # Base horizontal spacing
+        decision_branch_spacing = 600  # WIDE spacing for decision branches
+        
+        positions = {}  # Track all positions
         
         for layer_idx, layer in enumerate(layers):
-            layer_width = len(layer) * node_spacing
-            start_x = -layer_width / 2 + node_spacing / 2  # Center the layer
+            y_pos = layer_idx * layer_spacing
             
-            for node_idx, node_id in enumerate(layer):
-                # Find original node
-                original_node = next((n for n in nodes if n["id"] == node_id), None)
-                if not original_node:
-                    continue
+            # Check if this layer has decision branches (children of decision nodes)
+            is_decision_branch_layer = any(
+                any(parent in decision_nodes for parent in self._get_parents(node_id, edges))
+                for node_id in layer
+            )
+            
+            if is_decision_branch_layer:
+                # SPECIAL HANDLING: Decision branches need WIDE separation
+                logger.info(f"🔶 Layer {layer_idx} has decision branches - applying WIDE spacing")
                 
-                # Calculate new position
-                new_x = start_x + (node_idx * node_spacing)
-                new_y = layer_idx * layer_spacing
+                # Group nodes by their parent decision
+                decision_groups = {}
+                for node_id in layer:
+                    parents = self._get_parents(node_id, edges)
+                    for parent in parents:
+                        if parent in decision_nodes:
+                            edge_label = edge_labels.get((parent, node_id), "")
+                            if parent not in decision_groups:
+                                decision_groups[parent] = {"YES": [], "NO": []}
+                            
+                            if "YES" in edge_label or "✓" in edge_label:
+                                decision_groups[parent]["YES"].append(node_id)
+                            elif "NO" in edge_label or "×" in edge_label:
+                                decision_groups[parent]["NO"].append(node_id)
                 
-                # Create optimized node
-                optimized_node = {
-                    **original_node,
-                    "position": {
-                        "x": new_x,
-                        "y": new_y
-                    }
-                }
-                optimized_nodes.append(optimized_node)
+                # Position decision branches with WIDE separation
+                x_offset = 0
+                for decision_id, branches in decision_groups.items():
+                    # Get decision node position (from previous layer)
+                    decision_pos = positions.get(decision_id, {"x": 0, "y": 0})
+                    
+                    # Position YES branch (LEFT of decision)
+                    for yes_node in branches["YES"]:
+                        x_pos = decision_pos["x"] - decision_branch_spacing
+                        positions[yes_node] = {"x": x_pos, "y": y_pos}
+                        optimized_nodes.append({
+                            **node_map[yes_node],
+                            "position": {"x": x_pos, "y": y_pos}
+                        })
+                    
+                    # Position NO branch (RIGHT of decision)
+                    for no_node in branches["NO"]:
+                        x_pos = decision_pos["x"] + decision_branch_spacing
+                        positions[no_node] = {"x": x_pos, "y": y_pos}
+                        optimized_nodes.append({
+                            **node_map[no_node],
+                            "position": {"x": x_pos, "y": y_pos}
+                        })
+            else:
+                # NORMAL LAYER: Center nodes
+                layer_width = len(layer) * base_node_spacing
+                start_x = -layer_width / 2 + base_node_spacing / 2
+                
+                for node_idx, node_id in enumerate(layer):
+                    x_pos = start_x + (node_idx * base_node_spacing)
+                    positions[node_id] = {"x": x_pos, "y": y_pos}
+                    optimized_nodes.append({
+                        **node_map[node_id],
+                        "position": {"x": x_pos, "y": y_pos}
+                    })
         
-        # Handle any nodes not in layers (shouldn't happen, but safety)
+        # Handle unvisited nodes
         for node in nodes:
             if node["id"] not in visited:
                 optimized_nodes.append(node)
         
-        logger.info(f"✅ Generated {len(optimized_nodes)} optimized positions across {len(layers)} layers")
+        logger.info(f"✅ Generated {len(optimized_nodes)} positions with decision-aware spacing")
         return optimized_nodes
+    
+    def _get_parents(self, node_id: str, edges: List[Dict]) -> List[str]:
+        """Get all parent nodes for a given node."""
+        return [e["source"] for e in edges if e["target"] == node_id]
     
     def _parse_json(self, response: str) -> Dict:
         """Parse AI response to JSON."""
