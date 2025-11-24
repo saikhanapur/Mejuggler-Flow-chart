@@ -270,15 +270,16 @@ Return JSON:
     {{
       "id": "node-1",
       "type": "process" | "decision",
-      "title": "Clear action or question (3-6 words)",
-      "description": "Brief description",
+      "title": "High-level phase name (3-5 words)",
+      "description": "What this phase achieves",
       "status": "critical|action|operational|communication",
       "swimLane": "Role/Team",
       "connections": ["node-2"],
       "isDecisionPoint": true/false,
       "decisionCriteria": "Question if decision",
       "decisionOptions": {{"yes": "node-id", "no": "node-id"}},
-      "actors": ["Role"]
+      "actors": ["Role"],
+      "subSteps": ["Detailed action 1", "Detailed action 2", "Detailed action 3"]
     }}
   ],
   "swimLanes": [
@@ -286,8 +287,9 @@ Return JSON:
   ]
 }}
 
-Expected range: {max(3, estimated_nodes-5)} to {estimated_nodes+5} nodes based on content.
-Create EXACTLY what the document requires - no more, no less.
+🎯 TARGET: Create {target_nodes}-{target_nodes+3} nodes MAXIMUM through intelligent grouping.
+DO NOT exceed this target. Group aggressively but preserve all information in sub-steps.
+Remember: Fewer, meaningful nodes > Many granular nodes.
 Return ONLY JSON."""
     
     def _build_hybrid_prompt(self, doc_text: str, estimated_nodes: int) -> str:
