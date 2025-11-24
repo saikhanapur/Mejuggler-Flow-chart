@@ -236,6 +236,7 @@ const FlowchartCanvas = ({ processData }) => {
           <ReactFlowChart 
             processData={process} 
             onNodeClick={handleNodeClick}
+            onLayoutChange={handleLayoutChange}
           />
         </div>
 
