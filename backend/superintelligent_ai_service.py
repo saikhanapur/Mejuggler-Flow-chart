@@ -898,22 +898,28 @@ Return valid JSON only."""
         except Exception as e:
             logger.warning(f"Could not update patterns: {e}")
     
-    async def detect_multiple_processes_and_structure(self, document_text: str) -> Dict[str, Any]:
+    async def detect_multiple_processes_and_structure(self, document_text: str, industry: str = None) -> Dict[str, Any]:
         """
-        STAGE 0.5: Comprehensive Document Analysis
+        COMPREHENSIVE STRUCTURE DETECTION with learning-based intelligence
         
-        Detects:
-        1. Multiple processes (like Recruitment: 9 processes)
-        2. Swim lanes/role sections (like BCPs: Onshore/Offshore)
-        3. Phased structures (like DR SOP: 7 phases)
-        4. Decision points (if/then branches)
-        5. Monitoring loops (every X minutes)
-        6. Parallel activities (simultaneous actions)
-        7. RACI tables (role matrices)
+        This is STEP 0 of EROAD-style processing.
+        Detects: multi-process, swim lanes, phases, decisions, loops, parallel activities, etc.
         
-        Returns comprehensive structure for AI to use
+        NEW: Uses training examples for few-shot learning!
         """
-        logger.info("🔍 Comprehensive document structure detection...")
+        logger.info("🔍 STAGE 0: Comprehensive Structure Detection (Learning-Enhanced)")
+        
+        # Get relevant training examples for few-shot learning
+        from learning_system import LearningSystem
+        learning_system = LearningSystem(self.db)
+        
+        training_examples = await learning_system.get_relevant_examples(
+            industry=industry or "Physical Security Services",
+            limit=3
+        )
+        
+        examples_text = learning_system.format_training_examples_for_prompt(training_examples)
+        logger.info(f"📚 Using {len(training_examples)} training examples for guidance")
         
         try:
             chat = LlmChat(
