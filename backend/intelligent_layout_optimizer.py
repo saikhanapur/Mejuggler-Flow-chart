@@ -281,8 +281,9 @@ Focus on VISUAL CLARITY and READABILITY."""
                 for node_idx, node_id in enumerate(layer):
                     x_pos = start_x + (node_idx * base_node_spacing)
                     positions[node_id] = {"x": x_pos, "y": y_pos}
+                    original_node = node_map[node_id]
                     optimized_nodes.append({
-                        **node_map[node_id],
+                        **original_node,  # Preserve ALL original fields including type, data, etc.
                         "position": {"x": x_pos, "y": y_pos}
                     })
         
