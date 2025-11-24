@@ -46,6 +46,37 @@ const FlowchartCanvas = ({ processData }) => {
     setSelectedNode(node);
   };
 
+  const handleLayoutChange = async (optimizedNodes) => {
+    // Save optimized node positions to database
+    try {
+      // Update process with new node positions
+      const updatedProcess = {
+        ...process,
+        nodes: process.nodes.map(node => {
+          const optimizedNode = optimizedNodes.find(n => n.id === node.id);
+          if (optimizedNode) {
+            return {
+              ...node,
+              position: optimizedNode.position
+            };
+          }
+          return node;
+        })
+      };
+      
+      // Save to backend
+      await api.updateProcess(id, { nodes: updatedProcess.nodes });
+      
+      // Update local state
+      setProcess(updatedProcess);
+      
+      console.log('✅ Layout saved to database');
+    } catch (error) {
+      console.error('❌ Failed to save layout:', error);
+      throw error;
+    }
+  };
+
   const handleUpdateNode = async (nodeId, field, value) => {
     try {
       // Call API to update node
