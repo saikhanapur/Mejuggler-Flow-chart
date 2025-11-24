@@ -352,6 +352,8 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
   const [isLayouting, setIsLayouting] = useState(true);
   const [layoutDirection, setLayoutDirection] = useState('DOWN');
   const [expandedNodeId, setExpandedNodeId] = useState(null);
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [optimizeResult, setOptimizeResult] = useState(null);
   const baseNodePositionsRef = useRef([]);
   const expandedNodesRef = useRef({}); // Track ALL expanded nodes: { nodeId: expandedHeight }
 
