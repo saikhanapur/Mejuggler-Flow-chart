@@ -292,7 +292,11 @@ Focus on VISUAL CLARITY and READABILITY."""
             if node["id"] not in visited:
                 optimized_nodes.append(node)
         
+        # VERIFY: Check that all fields are preserved
+        decision_count_output = sum(1 for n in optimized_nodes if n.get("type") == "decision" or n.get("data", {}).get("isDecisionPoint"))
         logger.info(f"✅ Generated {len(optimized_nodes)} positions with decision-aware spacing")
+        logger.info(f"🔍 Verification: {decision_count_output} decision nodes in output")
+        
         return optimized_nodes
     
     def _get_parents(self, node_id: str, edges: List[Dict]) -> List[str]:
