@@ -1083,6 +1083,15 @@ Analyze now:"""
             # Parse response
             detection = self._parse_json_response(response)
             
+            # SAFETY NET: Validate multi-process detection
+            if detection.get("multipleProcesses"):
+                process_titles = detection.get("processTitles", [])
+                if not process_titles or len(process_titles) == 0:
+                    logger.warning("⚠️ Multi-process flag set but no process titles found - downgrading to single process")
+                    detection["multipleProcesses"] = False
+                    detection["processCount"] = 1
+                    detection["processTitles"] = []
+            
             # Auto-decide based on detection
             if detection.get("multipleProcesses") and detection.get("processCount", 0) >= 2:
                 # AUTO-DECIDE: Multiple processes → Create separately
