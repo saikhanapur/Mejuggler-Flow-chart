@@ -1,103 +1,77 @@
 <analysis>**original_problem_statement:**
-The user's primary goal is to create an application that transforms Standard Operating Procedure (SOP) documents into accurate, interactive, AI-generated flowcharts. Initially, the focus was on stabilizing a new parallel processing architecture. However, the user discovered a fundamental flaw: the AI was unintelligently inflating simple flowcharts by adhering to a fixed node count.
-
-The user has now challenged the agent to build a truly intelligent system. This system must first analyze a document to understand its structure (e.g., text-based SOP vs. existing visual flowchart) and then dynamically determine the correct number of nodes and logical connections required to represent the process with high fidelity. The user stressed that for enterprise customers, especially in emergency services, even a single missed step is a critical failure that erodes trust. The core mission is now to perfect this intelligent extraction and processing logic.
+The user's primary goal is to create an application that transforms Standard Operating Procedure (SOP) documents into accurate, interactive, AI-generated flowcharts. The project has evolved through several pivots based on user feedback. The current core requirements are:
 
 **PRODUCT REQUIREMENTS:**
-1.  **Intelligent Document Analysis:** The AI must automatically distinguish between text-heavy SOPs and documents that already contain visual flowcharts.
-2.  **Adaptive Flow Generation:** Based on the analysis, the AI must adapt its strategy. For existing flowcharts, it should perform a high-fidelity extraction. For text documents, it must intelligently identify all steps, decisions, and actions to create a new flowchart without hallucinating or missing crucial details.
-3.  **Logical Accuracy:** The generated flowchart's structure and decision points must perfectly mirror the logic of the source document. There is zero tolerance for logical errors or missing steps.
-4.  **Accurate Visualization:** Decision points must render as diamonds with clear YES and NO branches.
-5.  **Core UI Features:** The expandable node feature (revealing sub-steps) and a well-organized Quick References section remain critical requirements.
+1.  **Intelligent Multi-Process Detection:** The AI must accurately identify if a document contains single or multiple distinct processes (e.g., Panic Alert, Silent Alert, Missed Check-in in one SOP).
+2.  **AI Learning Model:** The system must incorporate a learning mechanism. It should learn from user feedback and a set of provided example documents to improve its classification and structuring of flowcharts over time. The user wants to train the AI.
+3.  **Flawless Layout & Persistence:**
+    *   The application must provide a feature to automatically organize messy flowchart layouts into a clean, readable format (Auto-Organize).
+    *   Crucially, any manual or automatic layout adjustments **must be saved reliably**. Refreshing the page or navigating away should not cause the layout to revert to its original state.
+4.  **Accurate & Readable Visualization:** Decision points must be clear, with non-overlapping YES and NO branches. The overall flowchart must be easy to follow.
+5.  **Intelligent Node Grouping:** The AI should group granular, related steps into single, higher-level nodes to avoid cluttered flowcharts, while preserving details in an expandable view.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The agent has performed a second major architectural pivot. The short-lived Parallel Lightning architecture has been replaced by a new, more sophisticated **Intelligent Processing pipeline**. This new system consists of two main components:
-1.  : This module analyzes the uploaded document's content to determine its type (e.g., , ) and estimates the required number of nodes.
-2.  : This module takes the analysis result and uses an adaptive prompt to call the LLM, instructing it to either extract an existing flowchart or generate a new one based on the document's nature.
+The application is a full-stack React/FastAPI app. The backend features an Intelligent Processing pipeline that now incorporates a foundational AI Learning System. This system uses few-shot learning from user-provided documents to improve its ability to detect multiple processes within a single document.
 
-This new system was integrated into the main  and showed promising results on the user's initial test case (a simple PDF flowchart), reducing node inflation by 58% and eliminating hallucinations. However, the user has immediately tested it with a more complex, text-based SOP and reported that the generated logic is flawed.
+The frontend features a flowchart canvas using ReactFlow. Based on user requests, an Auto-Organize button and an explicit 💾 Save Layout button have been added. However, the save functionality is critically broken. The agent has made numerous attempts to fix a state management/race condition issue in the frontend, but each fix has either failed or introduced new problems (like a blank screen). The last attempt involved overcomplicating the layout logic, leading to user frustration.
 
 **Last working item**:
-The agent was in the middle of diagnosing a new user complaint. After the agent implemented the Intelligent Processing system, the user tested it with a text-based document () and reported the resulting flowchart's logic was flawed. The agent had just extracted the text from this new document and was about to analyze the generated output to understand what went wrong.
+The agent was attempting to fix a critical and recurring bug where the flowchart layout, after being optimized with Auto-Organize and manually saved, would not persist after a page refresh. The layout would always revert to a default, un-optimized state. The agent's repeated failed attempts to fix this by fighting React's state lifecycle have broken the feature completely and frustrated the user. The agent's final action was to give up and decide to call the  for a fresh perspective.
 
-- **Last item agent was working:** Diagnosing why the new Intelligent Processing system produced a logically flawed flowchart for the .
-- **Status:** IN PROGRESS
+- **Last item agent was working:** Debugging the complete failure of the Save Layout feature.
+- **Status:** BLOCKED
 - **Agent Testing Done:** N
-- **Which testing method agent to use?** Backend testing agent. The agent should first create a test file to replicate the user's issue by processing  through the  endpoint. It needs to log the intermediate analysis from  and the final data structure from  to trace the logical error.
-- **User Testing Done:** Y (User tested the new system with a new document and reported failure).
+- **Which testing method agent to use?** Troubleshoot agent was invoked. The next agent must follow the troubleshooter's guidance. If the troubleshooter is unavailable, the agent must simplify the frontend logic from scratch. NO AUTOMATED TESTING. The user will do all manual testing.
+- **User Testing Done:** Y (User has repeatedly tested and confirmed the save feature is broken in multiple ways).
 
 **All Pending/In progress Issue list**:
--   Issue 1: The new Intelligent Processing system generates flawed logic for complex, text-based SOPs. (P0)
--   Issue 2: YES/NO labels on decision branches are jumbled/overlapping. (P0)
--   Issue 3: The expandable node feature (patentable dropdown) is reported as missing or broken. (P0)
--   Issue 4: Quick References modal content may be inaccurate or poorly summarized. (P1)
+-   Issue 1: Layout does not persist after being saved and refreshing the page. (P0 - CRITICAL BLOCKER)
+-   Issue 2: The expandable node feature causes the expanded content to overlap with nodes below it, rather than pushing them down. (P1)
+-   Issue 3: YES/NO labels on decision branches are still sometimes jumbled or overlapping, especially after auto-organization. (P2)
+-   Issue 4: The  dependency for vision processing is not persistent, making visual PDF processing unreliable. (P2)
+-   Issue 5: Quick References modal content may be inaccurate or poorly summarized. (P3)
 
 **Issues Detail:**
--   **Issue 1: The new Intelligent Processing system generates flawed logic for complex, text-based SOPs.**
-    -   **Attempted fixes:** N/A. This is a new issue with the just-created architecture.
+-   **Issue 1: Layout does not persist after being saved and refreshing the page.**
+    -   **Attempted fixes:** The agent has tried numerous complex solutions involving optimistic UI updates, adding a layout lock state, and using AbortControllers. These have all failed, leading to race conditions, blank screens, and timeout errors. The core problem is fighting React's  lifecycle. On page load, the layout algorithm re-runs and overwrites the saved positions from the database.
     -   **Next debug checklist:**
-        1.  Analyze the user-provided  and .
-        2.  Re-run the processing for this PDF using the test script () and add extensive logging.
-        3.  Log the output of : What  and  were determined?
-        4.  Log the prompt sent by  to the LLM.
-        5.  Log the raw JSON response from the LLM.
-        6.  Compare the LLM's output structure to the user's PDF to find the logical discrepancy.
-    -   **Why fix this issue and what will be achieved with the fix?** This is the user's current blocker and addresses the core value proposition of the app. Fixing it is essential to gain user trust.
+        1.  Heed the advice of the .
+        2.  If no troubleshooter is available, **radically simplify**.
+        3.  Remove the complex layout lock and  logic that re-calculates the layout.
+        4.  On initial load, simply fetch the process data and use the node positions as they are stored in the database. Do not run any layout algorithm.
+        5.  The layout algorithm (ELK) should only run when the user explicitly clicks a button (like Auto-Organize) or perhaps on initial generation if no positions exist.
+    -   **Why fix this issue and what will be achieved with the fix?** This is the user's primary source of frustration and makes the Auto-Organize feature useless. Fixing it is essential for the application to be usable.
     -   **Status:** IN PROGRESS
-    -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** Backend.
-
--   **Issue 2: YES/NO labels on decision branches are jumbled/overlapping.**
-    -   **Attempted fixes:** None in the current architecture. This is a carry-over issue.
-    -   **Next debug checklist:** Once the core logic is fixed, this needs to be re-evaluated. The issue likely lies in the  or  data generated by the LLM or how  renders edges from decision nodes.
-    -   **Why fix this issue and what will be achieved with the fix?** Essential for flowchart readability and accuracy.
-    -   **Status:** NOT STARTED
-    -   **Is recurring issue?** Y
-    -   **Should Test frontend/backend/both after fix?** Both.
-
--   **Issue 3: The expandable node feature has been reported as missing or broken.**
-    -   **Attempted fixes:** None in the current architecture. This is a carry-over issue.
-    -   **Next debug checklist:** Verify the adaptive prompt in  asks for  or . Check if the final node data sent to the frontend includes this information. Inspect  to ensure the expand button logic is correct.
-    -   **Why fix this issue and what will be achieved with the fix?** This is a non-negotiable, patent-worthy feature for the user.
-    -   **Status:** NOT STARTED
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** Frontend.
-
--   **Issue 4: Quick References modal content may be inaccurate.**
-    -   **Attempted fixes:** None in the current architecture.
-    -   **Next debug checklist:** The new architecture does not explicitly call a separate service for this. It needs to be confirmed if the prompt in  correctly extracts this information alongside the flowchart structure.
-    -   **Why fix this issue and what will be achieved with the fix?** Provides Actionable Intelligence, a key user requirement.
-    -   **Status:** NOT STARTED
-    -   **Is recurring issue?** Y
-    -   **Should Test frontend/backend/both after fix?** Both.
+    -   **Blocked on other issue:** None. This is the main blocker.
 
 **In progress Task List**:
--   **Task 1: Perfect the Core Offering: Intelligent Processing**
-    -   **Where to resume:** Focus entirely on fixing the logical flaws reported by the user for the .
-    -   **What will be achieved with this?** A reliable and accurate core processing engine that correctly interprets both visual and text-based documents.
+-   **Task 1: Stabilize the core save/load layout functionality.**
+    -   **Where to resume:** .
+    -   **What will be achieved with this?** A stable, enterprise-grade user experience where all layout changes are reliably saved and restored.
     -   **Status:** IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?** Backend.
-    -   **Blocked on something:** Nothing.
+    -   **Should Test frontend/backend/both after fix?** Frontend.
+    -   **Blocked on something:** The agent's own over-complicated approach. Awaiting .
 
 **Upcoming and Future Tasks**
-- **Upcoming Tasks (Phase 1):**
-    - **P0:** Implement user-friendly retry UI/feedback for API calls.
-    - **P0:** Add MVP Export features: PNG and basic PDF export.
-    - **P1:** Add a shareable, view-only link feature.
-- **Future Tasks (Phases 2 & 3):**
-    - **P1 (Polish):** Improve loading states, success/error messages, and help tooltips.
-    - **P2 (Enterprise):** Implement Audit Trails, Version Control, advanced export (BPMN, Visio), and address security/compliance needs.
+- **Upcoming Tasks:**
+    - **P0:** Implement the user's idea for a Multi-Process View, which displays multiple flowcharts (e.g., Panic, Silent, Missed Check-in) side-by-side on a single screen. A placeholder component  was created but is not integrated.
+    - **P1:** Fix the expandable node overlap issue (Issue #2).
+    - **P2:** Further refine the AI Learning Model (build a dedicated training UI, improve retrieval logic).
+- **Future Tasks:**
+    - Add MVP Export features: PNG and basic PDF export.
+    - Add a shareable, view-only link feature.
+    - Polish UI/UX (loading states, success/error messages, help tooltips).
+    - Implement Enterprise features: Audit Trails, Version Control.
 
 **Completed work in this session**
-- **Architectural Redesign (Intelligent Processing):** In response to a direct user challenge, completely replaced the previous processing logic with a new, intelligent, multi-stage pipeline.
-    - Created  to pre-analyze documents.
-    - Created  to use adaptive prompts for high-fidelity generation.
-    - Refactored  to integrate the new pipeline into the  endpoint.
-- **Successful Initial Validation:** Proved the new system's superiority on a simple flowchart PDF, reducing node inflation from 242% to 43% and completely eliminating AI hallucinations in that test case.
-- **Created Test Infrastructure:** Wrote a backend test script () to quickly validate the processing pipeline without needing the UI.
-- **Documentation:** Created  to document the new architecture.
+- **AI Learning System (Phase 1):** Implemented a foundational few-shot learning system. The AI now uses user-provided documents as examples to improve its accuracy, especially for multi-process detection.
+- **Multi-Process Detection Fix:** Resolved a critical bug where the system failed to correctly identify and handle documents with multiple processes. The app can now generate separate flowcharts for each detected process.
+- **Auto-Organize & Save UI:** Added an Auto-Organize button and an explicit Save Layout button to the UI, following enterprise UX patterns suggested by the user. The backend for Auto-Organize is complete.
+- **Intelligent Grouping (Phase 1):** Improved backend prompts in  to intelligently group granular steps, resulting in cleaner, less cluttered flowcharts.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1: Infrastructure instability:  dependency for vision processing is not persistent.**
@@ -119,7 +93,7 @@ Get:2 http://deb.debian.org/debian bookworm/main arm64 liblcms2-2 arm64 2.14-2 [
 Get:3 http://deb.debian.org/debian bookworm/main arm64 libopenjp2-7 arm64 2.5.0-2+deb12u2 [176 kB]
 Get:4 http://deb.debian.org/debian bookworm/main arm64 libpoppler126 arm64 22.12.0-2+deb12u1 [1753 kB]
 Get:5 http://deb.debian.org/debian bookworm/main arm64 poppler-utils arm64 22.12.0-2+deb12u1 [177 kB]
-Fetched 3850 kB in 0s (19.9 MB/s)
+Fetched 3850 kB in 0s (18.4 MB/s)
 Selecting previously unselected package poppler-data.
 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 38433 files and directories currently installed.)
 Preparing to unpack .../poppler-data_0.4.12-1_all.deb ...
@@ -142,57 +116,73 @@ Setting up libopenjp2-7:arm64 (2.5.0-2+deb12u2) ...
 Setting up libpoppler126:arm64 (22.12.0-2+deb12u1) ...
 Setting up poppler-utils (22.12.0-2+deb12u1) ...
 Processing triggers for libc-bin (2.36-9+deb12u13) ...
-Processing triggers for fontconfig (2.14.1-4) .... Add error handling in  as a fallback.
+Processing triggers for fontconfig (2.14.1-4) ....
     -   **Why to solve this issue and what will be achieved with this?** Makes visual PDF processing reliable. This has been ignored across multiple sessions.
     -   **Should Test frontend/backend/both after fix:** Backend.
     -   **Is recurring issue?** Y
+
+**Known issue recurrence from previous fork**
+- **YES/NO label overlapping:** This UI glitch persists despite initial attempts to fix it with layout algorithms.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Frontend:** React, ReactFlow, TailwindCSS
-- **Backend:** FastAPI, Pydantic, asyncio
+- **Frontend:** React, ReactFlow, TailwindCSS, **React State/Lifecycle Bugs**
+- **Backend:** FastAPI, Pydantic
 - **Database:** MongoDB
-- **AI:** Native Anthropic (Claude) SDK via .
-- **Architecture:** A new **Intelligent Processing pipeline** that replaces the previous Parallel Lightning model. It uses a two-step process of analysis then adaptive generation.
+- **AI:** **Few-Shot Learning**, Prompt Engineering, LLM for JSON generation
+- **Architecture:** Intelligent Processing pipeline, AI Learning Model
+
+**key DB schema**
+-   **training_examples:** 
 
 **All files**
 -   **Created:**
-    -   : Implements the first stage of the new intelligent pipeline.
-    -   : Implements the second, adaptive stage of the pipeline.
-    -   : A script for testing the new backend logic.
-    -   : Documentation for the new system.
+    -   : Handles the logic for the Auto-Organize feature.
+    -   : Manages loading and providing training examples for the AI.
+    -   : A one-off script to populate the database with initial training documents.
+    -   : A placeholder component for the future multi-flowchart view.
 -   **Significantly Updated:**
-    -   : Rerouted the core processing logic to use the new  and .
+    -   : The epicenter of the current bug. Contains all the broken logic for layout saving, loading, and locking.
+    -   : Modified to handle passing state and callbacks for the save functionality.
+    -   : Added new endpoints and integrated the new learning and optimization services.
+    -   : Modified to incorporate the few-shot learning examples into its prompts.
 
 **Critical Info for New Agent**
--   **Focus on the NEW architecture.** The Parallel Lightning processor is dead. All work must now happen within  and .
--   **The user's immediate problem is the TOP priority.** You must drop everything and solve why the new system is failing on the text-based . Do not work on other pending issues until this core logic is proven reliable.
--   **The old issues still exist.** Once the core processing logic is fixed, you must address the outstanding problems from the previous forks (YES/NO labels, expandable nodes, quick references) within the context of the new architecture.
--   **The  dependency remains an unaddressed, critical infrastructure risk** that will cause failures on image-based PDFs.
+-   **STOP THE COMPLEXITY.** The previous agent failed by over-engineering a solution to a state synchronization problem in React. The user is frustrated. Your first priority is to **simplify** the logic in .
+-   **Follow the Troubleshooter:** The last action was to call the . Prioritize its advice above all else.
+-   **The core bug:** When the page reloads, a  hook in  is re-running the ELK layout algorithm, which overwrites the correct node positions that were loaded from the database. The fix is to prevent this automatic re-layout on load.
+-   **User's Explicit Instruction:** NO AUTOMATED TESTING. The user will handle all manual testing.
+
+**documents created in this job**
+- /app/backend/initialize_training_data.py
+- /app/backend/learning_system.py
+- /app/backend/intelligent_layout_optimizer.py
+- /app/frontend/src/components/flowchart/MultiProcessView.jsx
 
 **Last 5 User Messages and any pending user messages**
-1.  **User:** Challenges the agent's hardcoded node-count logic, demanding a more intelligent system that analyzes documents properly. (COMPLETED - Agent built a new system).
-2.  **User:** Agrees to the agent's proposal for a new multi-stage Intelligent processing pipeline. (COMPLETED).
-3.  **User:** Yes go ahead. we need to get he core offering perfect. (IN PROGRESS - Agent is building it).
-4.  **User:** (Agent finished building V1 of the intelligent system and presented the successful test on the simple flowchart).
-5.  **User:** Interrupts the agent's summary by uploading a new, more complex text-based SOP and its flawed output, stating logic flawed . tell me whats wron. (PENDING - This is the current task).
+1.  **User:** Reports the save button isn't working; the layout reverts after clicking save.
+2.  **User:** Provides F12 logs. Suggests trying a Lock Layout toggle if the current fix doesn't work. (COMPLETED - Agent tried this, it led to more issues).
+3.  **User:** Reports the Lock Layout fix results in a timeout error. (COMPLETED - Agent tried to fix the timeout).
+4.  **User:** Reports that even after the timeout fix, the layout is *still* not saved when navigating away and coming back. (IN PROGRESS).
+5.  **User:** Expresses extreme frustration that the core save functionality is broken after so many attempts, stating The flow charts scrwed up...Why is this so hard? You need to up your game. Now think like the best engineer and solve this. (PENDING - This led to the agent calling the troubleshooter).
 
 **Project Health Check:**
 -   **Broken:**
-    -   The core Intelligent Processing pipeline is producing logical errors on complex text documents, which is the primary use case.
-    -   Decision node label rendering.
-    -   Expandable node functionality.
-    -   Vision processing reliability ( dependency).
+    -   The entire layout persistence feature (Save Layout). This is the number one critical issue.
+    -   The usability of the Auto-Organize feature is nullified by the broken save.
 -   **Mocked:** N/A
 
 **Testing status**
 -   **Testing agent used after significant changes:** NO
--   **Troubleshoot agent used after agent stuck in loop:** NO
--   **Test files created:** [] (temporary script)
--   **Known regressions:** Expandable nodes feature,  dependency issue.
+-   **Troubleshoot agent used after agent stuck in loop:** YES (as the last action)
+-   **Test files created:** []
+-   **Known regressions:** The save functionality is now more broken than it was initially.
+
+**Credentials to test flow:**
+Not applicable.
 
 **What agent forgot to execute**
--   The agent has consistently ignored the recurring  infrastructure issue, leaving a critical feature (visual PDF processing) unstable.
--   The agent did not perform any testing on the other known issues (YES/NO labels, expandable nodes, quick references) after implementing the new intelligent architecture.</analysis>
+-   The agent has not addressed the user's report that expanded nodes overlap with nodes below them.
+-   The recurring  infrastructure issue remains unfixed.</analysis>
