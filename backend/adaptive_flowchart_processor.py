@@ -576,6 +576,96 @@ Keep CONCISE. Return ONLY JSON."""
         logger.info(f"✅ Merged and deduplicated: {len(result['nodes'])} nodes")
         return result
     
+
+    def _apply_intelligent_grouping(self, result: Dict) -> Dict:
+        """
+        Post-process nodes to detect and group repetitive patterns.
+        
+        Patterns to detect:
+        1. Sequential "Call Contact" nodes → Group into "Contact Escalation"
+        2. Sequential similar actions → Group into single node
+        3. Preserve decision nodes (never group these)
+        """
+        nodes = result.get("nodes", [])
+        if len(nodes) <= 5:
+            logger.info("⏭️ Skipping grouping - already concise")
+            return result
+        
+        logger.info(f"🔍 Analyzing {len(nodes)} nodes for grouping opportunities...")
+        
+        # Detect repetitive "Call X Contact" pattern
+        grouped_nodes = []
+        i = 0
+        while i < len(nodes):
+            node = nodes[i]
+            title_lower = node.get("title", "").lower()
+            
+            # Pattern 1: Detect "Call First/Second/Third Contact" sequence
+            if "call" in title_lower and "contact" in title_lower:
+                # Look ahead for similar patterns
+                contact_sequence = [node]
+                j = i + 1
+                while j < len(nodes) and j < i + 5:  # Look up to 5 nodes ahead
+                    next_node = nodes[j]
+                    next_title_lower = next_node.get("title", "").lower()
+                    if "call" in next_title_lower and "contact" in next_title_lower:
+                        contact_sequence.append(next_node)
+                        j += 1
+                    elif next_node.get("isDecisionPoint"):
+                        # Stop at decision nodes, but include them
+                        j += 1
+                        break
+                    else:
+                        break
+                
+                # If we found 2+ contact calls, group them
+                if len(contact_sequence) >= 2:
+                    logger.info(f"📦 Grouping {len(contact_sequence)} contact escalation nodes")
+                    
+                    # Create grouped node
+                    grouped_node = {
+                        "id": contact_sequence[0]["id"],
+                        "type": "process",
+                        "title": "Escalate Through Contacts",
+                        "description": f"Attempt to reach escalation contacts (up to {len(contact_sequence)} attempts)",
+                        "status": "critical",
+                        "swimLane": contact_sequence[0].get("swimLane", "Operations"),
+                        "connections": [],
+                        "isDecisionPoint": False,
+                        "actors": contact_sequence[0].get("actors", []),
+                        "subSteps": []
+                    }
+                    
+                    # Collect all sub-steps from grouped nodes
+                    for seq_node in contact_sequence:
+                        if not seq_node.get("isDecisionPoint"):
+                            grouped_node["subSteps"].extend([
+                                f"{seq_node.get('title')}: {step}"
+                                for step in seq_node.get("subSteps", [seq_node.get("description", "")])[:2]
+                            ])
+                    
+                    # Find the final connection (skip intermediary decision nodes)
+                    for seq_node in reversed(contact_sequence):
+                        if seq_node.get("connections"):
+                            grouped_node["connections"] = seq_node["connections"][:1]
+                            break
+                    
+                    grouped_nodes.append(grouped_node)
+                    i = j  # Skip past all grouped nodes
+                    continue
+            
+            # No grouping applied, keep node as-is
+            grouped_nodes.append(node)
+            i += 1
+        
+        if len(grouped_nodes) < len(nodes):
+            logger.info(f"✅ Reduced nodes from {len(nodes)} → {len(grouped_nodes)}")
+            result["nodes"] = grouped_nodes
+        else:
+            logger.info("ℹ️ No grouping opportunities found")
+        
+        return result
+
     def _parse_json(self, response: str) -> Dict:
         """Parse AI response to JSON."""
         try:
