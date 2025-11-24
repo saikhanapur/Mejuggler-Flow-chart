@@ -49,37 +49,44 @@ const FlowchartCanvas = ({ processData }) => {
   const handleLayoutChange = async (optimizedNodes) => {
     // Save optimized node positions to database
     try {
-      console.log('💾 Saving layout with optimized nodes:', optimizedNodes.length);
+      console.log('💾 Starting save with optimized nodes:', optimizedNodes.length);
+      console.log('📊 First optimized node position:', optimizedNodes[0]?.position);
+      console.log('📊 Current process nodes count:', process.nodes.length);
       
-      // CRITICAL: Update local state FIRST to prevent re-render conflicts
+      // Map optimized positions to existing nodes
+      const updatedNodes = process.nodes.map(node => {
+        const optimizedNode = optimizedNodes.find(n => n.id === node.id);
+        if (optimizedNode) {
+          console.log(`✏️ Updating node ${node.id}: ${JSON.stringify(node.position)} → ${JSON.stringify(optimizedNode.position)}`);
+          return {
+            ...node,
+            position: optimizedNode.position
+          };
+        }
+        return node;
+      });
+      
       const updatedProcess = {
         ...process,
-        nodes: process.nodes.map(node => {
-          const optimizedNode = optimizedNodes.find(n => n.id === node.id);
-          if (optimizedNode) {
-            return {
-              ...node,
-              position: optimizedNode.position
-            };
-          }
-          return node;
-        }),
+        nodes: updatedNodes,
         updatedAt: new Date().toISOString(),
         version: (process.version || 0) + 1
       };
       
-      // Update local state immediately (prevents re-render from resetting positions)
-      setProcess(updatedProcess);
-      console.log('📝 Local state updated with new positions');
+      console.log('📝 Updated process created with', updatedNodes.length, 'nodes');
       
-      // Then save to backend asynchronously
+      // DO NOT update local state here - it causes re-render that resets positions
+      // Just save to backend and let the save succeed
       await api.updateProcess(id, updatedProcess);
-      console.log('✅ Layout saved to database');
+      console.log('✅ Layout saved to database successfully');
+      
+      // ONLY update state after successful save
+      setProcess(updatedProcess);
+      console.log('📝 Local state updated after successful save');
       
     } catch (error) {
       console.error('❌ Failed to save layout:', error);
       console.error('Error details:', error.response?.data || error.message);
-      // Revert local state on error
       throw error;
     }
   };
