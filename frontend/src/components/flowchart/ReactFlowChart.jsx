@@ -725,6 +725,15 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
     };
 
     applyLayout();
+    
+    // Cleanup function to cancel pending operations
+    return () => {
+      isCancelled = true;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        console.log('🧹 Layout timeout cleared on cleanup');
+      }
+    };
   }, [initialNodes, initialEdges, layoutDirection, handleNodeExpand, isLayoutLocked]); // Include lock state
 
   const handleNodeClick = useCallback((event, node) => {
