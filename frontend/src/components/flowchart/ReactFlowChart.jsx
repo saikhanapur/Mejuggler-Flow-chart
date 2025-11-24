@@ -627,6 +627,9 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
 
   // Apply automatic layout - respects direction and lock
   useEffect(() => {
+    let timeoutId = null;
+    let isCancelled = false;
+    
     console.log('🔧 Layout effect triggered', {
       initialNodesCount: initialNodes.length,
       initialEdgesCount: initialEdges.length,
@@ -647,24 +650,33 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
         
         try {
           console.log('⏱️ Calling getLayoutedElements with timeout...');
-          // Add timeout to prevent infinite hanging
+          
+          // Create cancellable timeout
           const layoutPromise = getLayoutedElements(
             initialNodes,
             initialEdges,
             layoutDirection
           );
           
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => {
-              console.error('⏱️ Layout TIMEOUT after 60 seconds!');
-              reject(new Error('Layout timeout'));
-            }, 60000)
-          );
+          const timeoutPromise = new Promise((_, reject) => {
+            timeoutId = setTimeout(() => {
+              if (!isCancelled) {
+                console.error('⏱️ Layout TIMEOUT after 60 seconds!');
+                reject(new Error('Layout timeout'));
+              }
+            }, 60000);
+          });
           
           const { nodes: layoutedNodes, edges: layoutedEdges } = await Promise.race([
             layoutPromise,
             timeoutPromise
           ]);
+          
+          // Check if cancelled during calculation
+          if (isCancelled) {
+            console.log('🚫 Layout calculation cancelled');
+            return;
+          }
           
           console.log('✅ Layout calculation complete!', {
             nodesCount: layoutedNodes.length,
