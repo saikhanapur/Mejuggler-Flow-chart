@@ -191,33 +191,77 @@ Return ONLY JSON."""
     def _build_generate_prompt(self, doc_text: str, estimated_nodes: int) -> str:
         """
         Build prompt for GENERATION mode (text SOP needs flowchart).
+        WITH INTELLIGENT GROUPING to reduce node clutter.
         """
-        return f"""TASK: Create a flowchart structure from this text-based SOP document.
+        # Target 40-50% fewer nodes through smart grouping
+        target_nodes = max(5, int(estimated_nodes * 0.6))
+        
+        return f"""TASK: Create a CONCISE, INTELLIGENT flowchart from this SOP document.
 
 DOCUMENT:
 {doc_text[:20000]}
 
-TASK: Analyze the document and create an intelligent flowchart structure.
+🎯 CRITICAL OBJECTIVE: Create a CLEAR, UNCLUTTERED flowchart with {target_nodes}-{target_nodes+3} nodes maximum.
+Current estimate suggests {estimated_nodes} nodes, but we want FEWER through INTELLIGENT GROUPING.
 
-RULES:
-1. Identify ALL decision points (questions, if/then statements, conditional logic)
-2. Identify ALL action steps (things that must be done)
-3. Determine the logical flow and connections
-4. Based on analysis, this document likely needs around {estimated_nodes} nodes
-5. Create EXACTLY the number of nodes needed - no arbitrary padding
-6. Group related sub-actions into single nodes (they'll become expandable sub-steps)
-7. DO NOT create artificial complexity
+📋 INTELLIGENT GROUPING RULES (MOST IMPORTANT):
 
-For EACH logical step:
-- Create a clear, concise title (3-6 words) - Action verb format
-- Write a brief description (1 sentence explaining WHY or WHAT this step achieves)
-- Determine if it's a decision or action
-- Identify what connects to what
-- Note which role/actor is responsible
+1. **Group Sequential Similar Actions**:
+   ❌ DON'T: "Review Alert" → "Click Alert" → "Extract Details" (3 nodes)
+   ✅ DO: "Process Alert" (1 node with 3 sub-steps)
+   
+2. **Group Repetitive Patterns**:
+   ❌ DON'T: "Call First Contact" → "Call Second Contact" → "Call Third Contact" (3 nodes)
+   ✅ DO: "Escalate Through Contacts" (1 node, use sub-steps for each attempt)
+   
+3. **Group Same-Phase Actions**:
+   ❌ DON'T: "Log in System" → "Search Record" → "Open File" (3 nodes)
+   ✅ DO: "Access System Records" (1 node with sub-steps)
 
-IMPORTANT: Title and Description must be DIFFERENT:
-  ❌ BAD: title: "Call First Contact", description: "Call the first escalation contact"
-  ✅ GOOD: title: "Call First Contact", description: "Attempt to reach primary escalation contact to share incident details"
+4. **Keep Decisions Separate**:
+   ✅ ALWAYS keep decision nodes (diamonds) as separate nodes
+   ✅ Each decision deserves its own node with clear YES/NO paths
+
+5. **Keep Critical Milestones Separate**:
+   ✅ Keep major phase transitions as separate nodes
+   Example: "Initial Assessment" → "Escalation Decision" → "Incident Closure"
+
+🎨 GROUPING EXAMPLES:
+
+Example 1 - Contact Escalation:
+BEFORE (5 nodes):
+- Call First Contact
+- First Contact Answered? 
+- Call Second Contact
+- Second Contact Answered?
+- Call Third Contact
+
+AFTER (2 nodes):
+- Attempt Contact Escalation (with sub-steps: try contacts 1-3)
+- Contact Successful? (decision node)
+
+Example 2 - Alert Processing:
+BEFORE (4 nodes):
+- Alert Appears
+- Click Alert
+- Review Details  
+- Extract Information
+
+AFTER (1 node):
+- Process Incoming Alert (with sub-steps for all actions)
+
+🔍 NODE CREATION GUIDELINES:
+
+1. Each node should represent a MEANINGFUL PHASE or DECISION
+2. Sub-steps handle the "how" (detailed actions)
+3. Main nodes show the "what" (key phases of the process)
+4. Aim for HIGH-LEVEL CLARITY, not granular detail in main flow
+
+For EACH node:
+- Title: High-level phase name (3-5 words)
+- Description: What this phase achieves
+- Sub-steps (CRITICAL): All detailed actions go here
+- Connections: Only to other main phases or decisions
 
 Return JSON:
 {{
