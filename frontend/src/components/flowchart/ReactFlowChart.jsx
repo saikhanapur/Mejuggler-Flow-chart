@@ -356,6 +356,7 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isLayoutLocked, setIsLayoutLocked] = useState(false);  // NEW: Prevent auto re-layout
   const [optimizeResult, setOptimizeResult] = useState(null);
   const baseNodePositionsRef = useRef([]);
   const expandedNodesRef = useRef({}); // Track ALL expanded nodes: { nodeId: expandedHeight }
