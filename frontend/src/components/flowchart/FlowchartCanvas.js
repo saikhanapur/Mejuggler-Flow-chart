@@ -49,7 +49,9 @@ const FlowchartCanvas = ({ processData }) => {
   const handleLayoutChange = async (optimizedNodes) => {
     // Save optimized node positions to database
     try {
-      // Update process with new node positions
+      console.log('💾 Saving layout with optimized nodes:', optimizedNodes.length);
+      
+      // CRITICAL: Update local state FIRST to prevent re-render conflicts
       const updatedProcess = {
         ...process,
         nodes: process.nodes.map(node => {
@@ -66,16 +68,18 @@ const FlowchartCanvas = ({ processData }) => {
         version: (process.version || 0) + 1
       };
       
-      // Save FULL process object to backend (backend expects complete Process model)
-      await api.updateProcess(id, updatedProcess);
-      
-      // Update local state
+      // Update local state immediately (prevents re-render from resetting positions)
       setProcess(updatedProcess);
+      console.log('📝 Local state updated with new positions');
       
+      // Then save to backend asynchronously
+      await api.updateProcess(id, updatedProcess);
       console.log('✅ Layout saved to database');
+      
     } catch (error) {
       console.error('❌ Failed to save layout:', error);
       console.error('Error details:', error.response?.data || error.message);
+      // Revert local state on error
       throw error;
     }
   };
