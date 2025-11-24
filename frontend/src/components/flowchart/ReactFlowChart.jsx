@@ -350,13 +350,13 @@ const nodeTypes = {
 };
 
 export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => {
-  const [isLayouting, setIsLayouting] = useState(true);
+  const [isLayouting, setIsLayouting] = useState(false);  // Changed: Start false, only layout if needed
   const [layoutDirection, setLayoutDirection] = useState('DOWN');
   const [expandedNodeId, setExpandedNodeId] = useState(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [isLayoutLocked, setIsLayoutLocked] = useState(false);  // NEW: Prevent auto re-layout
+  const [isLayoutLocked, setIsLayoutLocked] = useState(true);  // Changed: Start locked to preserve DB positions
   const [optimizeResult, setOptimizeResult] = useState(null);
   const baseNodePositionsRef = useRef([]);
   const expandedNodesRef = useRef({}); // Track ALL expanded nodes: { nodeId: expandedHeight }
