@@ -85,6 +85,20 @@ const FlowchartCanvas = ({ processData }) => {
       console.log('✅ Layout saved to database successfully');
       console.log('📥 Server response:', saveResponse);
       
+      // Verify the save by fetching back
+      console.log('🔍 Verifying save by fetching from database...');
+      const verifyResponse = await api.getProcess(id);
+      console.log('📥 Fetched back from DB - first node position:', verifyResponse.nodes[0]?.position);
+      
+      if (JSON.stringify(verifyResponse.nodes[0]?.position) !== JSON.stringify(updatedNodes[0].position)) {
+        console.error('❌ SAVE VERIFICATION FAILED! Positions do not match!');
+        console.error('Expected:', updatedNodes[0].position);
+        console.error('Got:', verifyResponse.nodes[0]?.position);
+        throw new Error('Save verification failed - positions not persisted');
+      }
+      
+      console.log('✅ Save verified - positions match in database');
+      
       // ONLY update state after successful save
       setProcess(updatedProcess);
       console.log('📝 Local state updated after successful save');
