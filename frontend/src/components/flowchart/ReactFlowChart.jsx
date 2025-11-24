@@ -514,6 +514,34 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
     // Do NOT call setNodes here - that's what was causing the displacement bug
   }, []);
 
+  // Save Layout: Persist optimized layout to database
+  const handleSaveLayout = useCallback(async () => {
+    if (!pendingNodesRef.current || !onLayoutChange) {
+      console.warn('⚠️ No pending changes to save');
+      return;
+    }
+    
+    try {
+      setIsSaving(true);
+      console.log('💾 Saving layout to database...');
+      
+      await onLayoutChange(pendingNodesRef.current);
+      
+      // Clear pending changes
+      pendingNodesRef.current = null;
+      setHasUnsavedChanges(false);
+      
+      console.log('✅ Layout saved successfully');
+      toast.success('✅ Layout saved successfully!');
+      
+    } catch (error) {
+      console.error('❌ Failed to save layout:', error);
+      toast.error('Failed to save layout. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [onLayoutChange]);
+
   // Auto-Organize: AI-powered layout optimization
   const handleAutoOrganize = useCallback(async () => {
     try {
