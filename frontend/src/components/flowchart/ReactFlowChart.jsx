@@ -563,20 +563,14 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
       
       setOptimizeResult(result);
       
-      // CRITICAL: Save the optimized layout to database
-      if (onLayoutChange) {
-        console.log('💾 Saving optimized layout to database...');
-        setTimeout(async () => {
-          try {
-            await onLayoutChange(result.optimized_nodes);
-            console.log('✅ Layout saved successfully');
-            toast.success('Layout saved!');
-          } catch (error) {
-            console.error('❌ Failed to save layout:', error);
-            toast.error('Failed to save layout. Your changes may be lost on refresh.');
-          }
-        }, 500); // Small delay to let animation complete
-      }
+      // Store optimized nodes for later save
+      pendingNodesRef.current = result.optimized_nodes;
+      setHasUnsavedChanges(true);
+      
+      // Show user prompt to save
+      toast.success('✨ Layout optimized! Click "Save Layout" to keep changes.', {
+        duration: 5000
+      });
       
       // Clear result message after 5 seconds
       setTimeout(() => setOptimizeResult(null), 5000);
