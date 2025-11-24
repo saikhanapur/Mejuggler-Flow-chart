@@ -937,6 +937,8 @@ Your job: Identify ALL structural patterns in the document."""
             
             prompt = f"""COMPREHENSIVE DOCUMENT STRUCTURE ANALYSIS
 
+{examples_text}
+
 DOCUMENT (first 5,000 chars):
 {document_text[:5000]}
 
