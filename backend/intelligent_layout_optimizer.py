@@ -149,9 +149,26 @@ Focus on VISUAL CLARITY and READABILITY."""
         
         # Build node map and identify decision nodes
         node_map = {n["id"]: n for n in nodes}
-        decision_nodes = {n["id"] for n in nodes if n.get("data", {}).get("isDecisionPoint", False)}
         
-        logger.info(f"🔶 Found {len(decision_nodes)} decision nodes")
+        # DEBUG: Log node structure to understand the format
+        if nodes:
+            logger.info(f"📋 Sample node structure: {list(nodes[0].keys())}")
+            logger.info(f"📋 Sample node: {nodes[0]}")
+        
+        # Try multiple ways to detect decision nodes (different data structures)
+        decision_nodes = set()
+        for n in nodes:
+            # Method 1: Check data.isDecisionPoint
+            if n.get("data", {}).get("isDecisionPoint", False):
+                decision_nodes.add(n["id"])
+            # Method 2: Check type field
+            elif n.get("type") == "decision":
+                decision_nodes.add(n["id"])
+            # Method 3: Check isDecisionPoint at root level
+            elif n.get("isDecisionPoint", False):
+                decision_nodes.add(n["id"])
+        
+        logger.info(f"🔶 Found {len(decision_nodes)} decision nodes: {decision_nodes}")
         
         # Build adjacency and edge label map
         adjacency = {}
