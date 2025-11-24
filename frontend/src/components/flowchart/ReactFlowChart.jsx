@@ -713,7 +713,7 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
     };
 
     applyLayout();
-  }, [initialNodes, initialEdges, layoutDirection, handleNodeExpand]); // Safe now with ref!
+  }, [initialNodes, initialEdges, layoutDirection, handleNodeExpand, isLayoutLocked]); // Include lock state
 
   const handleNodeClick = useCallback((event, node) => {
     if (onNodeClick) {
