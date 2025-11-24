@@ -141,16 +141,28 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
         
         // Check if multiple processes detected
         if (result.multipleProcesses) {
-          console.log(`✅ Multiple processes detected: ${result.processCount}`);
+          console.log(`✅ Multiple processes detected: ${result.processCount || result.detectedProcessCount}`);
           
-          // VALIDATION: Ensure we have processTitles
-          if (!result.processTitles || !Array.isArray(result.processTitles) || result.processTitles.length === 0) {
-            console.error('❌ Multi-process detected but processTitles missing or invalid');
-            console.error('Backend response:', result);
-            throw new Error('Invalid multi-process detection: Backend did not provide process titles. Please try again or contact support.');
+          // HANDLE MULTIPLE RESPONSE FORMATS
+          // Backend might return processTitles OR processes array
+          let processTitles = result.processTitles;
+          
+          // If processTitles missing but processes array exists, extract titles
+          if ((!processTitles || processTitles.length === 0) && result.processes && Array.isArray(result.processes)) {
+            console.log('📋 Extracting process titles from processes array');
+            processTitles = result.processes.map(p => p.name || p.title || p.processName || 'Unnamed Process');
+            result.processTitles = processTitles;
+            result.processCount = processTitles.length;
           }
           
-          console.log(`✅ Valid multi-process with titles:`, result.processTitles);
+          // VALIDATION: Ensure we have processTitles after extraction
+          if (!processTitles || !Array.isArray(processTitles) || processTitles.length === 0) {
+            console.error('❌ Multi-process detected but no process information found');
+            console.error('Backend response:', result);
+            throw new Error('Invalid multi-process detection: Could not extract process titles. Please try again.');
+          }
+          
+          console.log(`✅ Valid multi-process with titles:`, processTitles);
           
           console.log(`✅ Setting extracted data with ${result.processTitles.length} processes`);
           
