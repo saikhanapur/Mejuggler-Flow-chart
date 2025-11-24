@@ -143,17 +143,14 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
         if (result.multipleProcesses) {
           console.log(`✅ Multiple processes detected: ${result.processCount}`);
           
-          // SAFETY NET: Validate processTitles
+          // VALIDATION: Ensure we have processTitles
           if (!result.processTitles || !Array.isArray(result.processTitles) || result.processTitles.length === 0) {
-            console.warn('⚠️ Multi-process flag set but no process titles - treating as single process');
-            result.multipleProcesses = false;
-            result.processCount = 1;
-            // Don't throw error - gracefully degrade to single process
+            console.error('❌ Multi-process detected but processTitles missing or invalid');
+            console.error('Backend response:', result);
+            throw new Error('Invalid multi-process detection: Backend did not provide process titles. Please try again or contact support.');
           }
-        }
-        
-        // Proceed with multi-process handling if still valid
-        if (result.multipleProcesses && result.processTitles && result.processTitles.length > 0) {
+          
+          console.log(`✅ Valid multi-process with titles:`, result.processTitles);
           
           console.log(`✅ Setting extracted data with ${result.processTitles.length} processes`);
           
