@@ -510,6 +510,66 @@ export const ReactFlowChart = ({ processData, onNodeClick }) => {
     // Do NOT call setNodes here - that's what was causing the displacement bug
   }, []);
 
+  // Auto-Organize: AI-powered layout optimization
+  const handleAutoOrganize = useCallback(async () => {
+    try {
+      setIsOptimizing(true);
+      setOptimizeResult(null);
+      
+      console.log('✨ Starting auto-organize...');
+      
+      // Call backend API
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/flowchart/optimize-layout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nodes: nodes,
+          edges: edges,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Layout optimization failed');
+      }
+      
+      const result = await response.json();
+      console.log('✅ Optimization complete:', result);
+      
+      // Apply optimized positions with smooth animation
+      setNodes((currentNodes) => {
+        return currentNodes.map((node) => {
+          const optimizedNode = result.optimized_nodes.find(n => n.id === node.id);
+          if (optimizedNode) {
+            return {
+              ...node,
+              position: optimizedNode.position,
+            };
+          }
+          return node;
+        });
+      });
+      
+      // Update base positions
+      baseNodePositionsRef.current = result.optimized_nodes.map(n => ({
+        id: n.id,
+        position: n.position
+      }));
+      
+      setOptimizeResult(result);
+      
+      // Clear result message after 5 seconds
+      setTimeout(() => setOptimizeResult(null), 5000);
+      
+    } catch (error) {
+      console.error('❌ Auto-organize failed:', error);
+      alert('Failed to optimize layout. Please try again.');
+    } finally {
+      setIsOptimizing(false);
+    }
+  }, [nodes, edges, setNodes]);
+
   // Apply automatic layout - respects direction
   useEffect(() => {
     console.log('🔧 Layout effect triggered', {
