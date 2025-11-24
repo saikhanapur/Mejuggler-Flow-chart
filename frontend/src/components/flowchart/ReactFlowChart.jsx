@@ -354,9 +354,12 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
   const [layoutDirection, setLayoutDirection] = useState('DOWN');
   const [expandedNodeId, setExpandedNodeId] = useState(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [optimizeResult, setOptimizeResult] = useState(null);
   const baseNodePositionsRef = useRef([]);
   const expandedNodesRef = useRef({}); // Track ALL expanded nodes: { nodeId: expandedHeight }
+  const pendingNodesRef = useRef(null); // Store nodes waiting to be saved
 
   // DEBUG: Log processData on mount
   useEffect(() => {
