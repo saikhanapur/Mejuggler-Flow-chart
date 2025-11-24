@@ -82,6 +82,9 @@ class AdaptiveFlowchartProcessor:
         # Validate
         result = self._validate_and_fix(result)
         
+        # Apply intelligent grouping post-processing
+        result = self._apply_intelligent_grouping(result)
+        
         logger.info(f"✅ Processing complete: {len(result['nodes'])} nodes (expected ~{estimated_nodes})")
         
         return result
