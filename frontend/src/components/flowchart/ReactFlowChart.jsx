@@ -612,7 +612,7 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
     }
   }, [nodes, edges, setNodes]);
 
-  // Apply automatic layout - respects direction
+  // Apply automatic layout - respects direction and lock
   useEffect(() => {
     console.log('🔧 Layout effect triggered', {
       initialNodesCount: initialNodes.length,
@@ -621,6 +621,12 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
     });
     
     const applyLayout = async () => {
+      // CRITICAL: If layout is locked, don't re-calculate
+      if (isLayoutLocked) {
+        console.log('🔒 Layout locked - skipping automatic re-layout');
+        return;
+      }
+      
       if (initialNodes.length > 0) {
         console.log('🚀 Starting layout calculation...');
         setIsLayouting(true);
