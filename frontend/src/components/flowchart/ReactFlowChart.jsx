@@ -386,10 +386,16 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
       // Backend sets isDecisionPoint=true but may keep type='action' or 'operational'
       const nodeType = (node.type === 'decision' || node.isDecisionPoint) ? 'decision' : 'process';
 
+      // CRITICAL FIX: Use saved position from database if it exists
+      // This preserves user's manual layout adjustments and auto-organized layouts
+      const position = node.position && (node.position.x !== 0 || node.position.y !== 0)
+        ? node.position
+        : { x: 0, y: 0 }; // Only use {0,0} if no saved position exists
+
       return {
         id: node.id,
         type: nodeType,
-        position: { x: 0, y: 0 },
+        position: position,
         data: {
           title: node.title,
           type: node.type,
@@ -401,7 +407,7 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
       };
     });
     
-    console.log('✅ Computed', nodes.length, 'initial nodes');
+    console.log('✅ Computed', nodes.length, 'initial nodes (with saved positions)');
     return nodes;
   }, [processData]);
 
