@@ -194,106 +194,164 @@ Return ONLY JSON."""
     def _build_generate_prompt(self, doc_text: str, estimated_nodes: int) -> str:
         """
         Build prompt for GENERATION mode (text SOP needs flowchart).
-        WITH INTELLIGENT GROUPING to reduce node clutter.
+        PRIORITY: 100% ACCURACY - Zero hallucinations.
         """
-        # Target 40-50% fewer nodes through smart grouping
-        target_nodes = max(5, int(estimated_nodes * 0.6))
         
-        return f"""TASK: Create a CONCISE, INTELLIGENT flowchart from this SOP document.
+        return f"""You are an expert at analyzing Standard Operating Procedures (SOPs) and creating accurate flowcharts.
 
-DOCUMENT:
+CRITICAL MISSION: Create a flowchart that is 100% ACCURATE to the source document. ZERO hallucinations allowed.
+
+DOCUMENT TO ANALYZE:
 {doc_text[:20000]}
 
-🎯 CRITICAL OBJECTIVE: Create a CLEAR, UNCLUTTERED flowchart with {target_nodes}-{target_nodes+3} nodes maximum.
-Current estimate suggests {estimated_nodes} nodes, but we want FEWER through INTELLIGENT GROUPING.
+═══════════════════════════════════════════════════════════════════════════
 
-📋 INTELLIGENT GROUPING RULES (MOST IMPORTANT):
+🎯 CORE PRINCIPLES (NEVER VIOLATE):
 
-1. **Group Sequential Similar Actions**:
-   ❌ DON'T: "Review Alert" → "Click Alert" → "Extract Details" (3 nodes)
-   ✅ DO: "Process Alert" (1 node with 3 sub-steps)
-   
-2. **Group Repetitive Patterns**:
-   ❌ DON'T: "Call First Contact" → "Call Second Contact" → "Call Third Contact" (3 nodes)
-   ✅ DO: "Escalate Through Contacts" (1 node, use sub-steps for each attempt)
-   
-3. **Group Same-Phase Actions**:
-   ❌ DON'T: "Log in System" → "Search Record" → "Open File" (3 nodes)
-   ✅ DO: "Access System Records" (1 node with sub-steps)
+1. **ACCURACY OVER EVERYTHING**
+   - Every node MUST come directly from the document
+   - Every node title MUST be traceable to specific text in the document
+   - If you're unsure about something, use the EXACT wording from the document
+   - NEVER invent, assume, or "improve" steps that aren't explicitly mentioned
 
-4. **Keep Decisions Separate**:
-   ✅ ALWAYS keep decision nodes (diamonds) as separate nodes
-   ✅ Each decision deserves its own node with clear YES/NO paths
+2. **ZERO HALLUCINATION RULE**
+   - ❌ FORBIDDEN: Creating nodes like "Extended Monitoring Protocol" if it's not in the document
+   - ❌ FORBIDDEN: Inventing technical terms that aren't in the source
+   - ❌ FORBIDDEN: Adding "best practice" steps not mentioned in the SOP
+   - ✅ REQUIRED: Use only steps, decisions, and terminology FROM THE DOCUMENT
 
-5. **Keep Critical Milestones Separate**:
-   ✅ Keep major phase transitions as separate nodes
-   Example: "Initial Assessment" → "Escalation Decision" → "Incident Closure"
+3. **DECISION POINT DETECTION**
+   - Look for explicit decision language:
+     * "Check if...", "Ask if...", "Determine whether..."
+     * "If X, then Y, else Z"
+     * Questions in the text (e.g., "Is the user able to speak?")
+   - Create a decision node with:
+     * isDecisionPoint: true
+     * Clear YES/NO branches
+     * Explicit decisionCriteria from the document
 
-🎨 GROUPING EXAMPLES:
+4. **SEQUENTIAL ACCURACY**
+   - Follow the EXACT sequence in the document
+   - If SOP says "Step 1, Step 2, Step 3", your flowchart must follow that order
+   - Don't reorder steps to "improve" the flow
 
-Example 1 - Contact Escalation:
-BEFORE (5 nodes):
-- Call First Contact
-- First Contact Answered? 
-- Call Second Contact
-- Second Contact Answered?
-- Call Third Contact
+5. **CONTEXT UNDERSTANDING**
+   - Read the ENTIRE document first to understand:
+     * What is the main process? (e.g., "Panic Alert Response")
+     * Who are the actors? (e.g., "Operator", "Emergency Services", "Supervisor")
+     * What is the goal? (e.g., "Ensure user safety")
+   - Use this context to guide node creation, but DON'T add context that isn't there
 
-AFTER (2 nodes):
-- Attempt Contact Escalation (with sub-steps: try contacts 1-3)
-- Contact Successful? (decision node)
+═══════════════════════════════════════════════════════════════════════════
 
-Example 2 - Alert Processing:
-BEFORE (4 nodes):
-- Alert Appears
-- Click Alert
-- Review Details  
-- Extract Information
+📖 STEP-BY-STEP ANALYSIS PROCESS:
 
-AFTER (1 node):
-- Process Incoming Alert (with sub-steps for all actions)
+**STEP 1: Identify the Process**
+- What is this SOP about? Extract the process name from section headers or document title
+- Example: If document says "## Panic Alert", process name is "Panic Alert"
 
-🔍 NODE CREATION GUIDELINES:
+**STEP 2: Find All Actions**
+- Look for numbered steps (1., 2., 3.) or bullet points
+- Look for imperative verbs: "Contact", "Check", "Call", "Ask", "Wait"
+- Each distinct action = potential node
 
-1. Each node should represent a MEANINGFUL PHASE or DECISION
-2. Sub-steps handle the "how" (detailed actions)
-3. Main nodes show the "what" (key phases of the process)
-4. Aim for HIGH-LEVEL CLARITY, not granular detail in main flow
+**STEP 3: Find All Decisions**
+- Look for:
+  * "If X then Y" statements
+  * Questions (e.g., "Is the user able to speak freely?")
+  * Decision language: "Check whether", "Determine if", "Ask if"
+- Each decision = decision node with YES/NO branches
 
-For EACH node:
-- Title: High-level phase name (3-5 words)
-- Description: What this phase achieves
-- Sub-steps (CRITICAL): All detailed actions go here
-- Connections: Only to other main phases or decisions
+**STEP 4: Map the Flow**
+- Follow the document's sequence
+- Connect nodes in the order they appear
+- For decisions, trace both YES and NO paths
 
-Return JSON:
+**STEP 5: Validate Against Source**
+- For each node you create, ask yourself:
+  * "Can I point to the exact sentence in the document that mentions this?"
+  * "Am I using the same terminology as the document?"
+  * "Have I added anything that isn't explicitly stated?"
+
+═══════════════════════════════════════════════════════════════════════════
+
+🔍 NODE CREATION RULES:
+
+**For Process Nodes:**
+- Title: Use wording from the document (e.g., if SOP says "Contact Emergency Services", title is "Contact Emergency Services")
+- Description: Brief summary of what happens
+- subSteps: Break down the details if the document provides them
+- Do NOT create summary nodes that don't exist (e.g., don't create "Initial Assessment" unless document explicitly has that phase)
+
+**For Decision Nodes:**
+- Title: The question being asked (e.g., "Can User Speak Freely?")
+- isDecisionPoint: true
+- decisionCriteria: The exact question from the document
+- decisionOptions: {{"yes": "node-id-for-yes-path", "no": "node-id-for-no-path"}}
+- Both YES and NO paths MUST be defined
+
+**Grouping Rules (Use Sparingly):**
+- ONLY group actions if they are:
+  1. Truly repetitive (e.g., "Call Contact 1", "Call Contact 2", "Call Contact 3" → "Escalate Through Contacts")
+  2. Explicitly grouped in the document (e.g., document says "Perform the following steps: a, b, c")
+- When in doubt, keep actions separate
+
+═══════════════════════════════════════════════════════════════════════════
+
+📋 OUTPUT FORMAT:
+
+Return ONLY valid JSON in this exact structure:
+
 {{
-  "processName": "Descriptive process name",
+  "processName": "Exact process name from document",
   "nodes": [
     {{
       "id": "node-1",
-      "type": "process" | "decision",
-      "title": "High-level phase name (3-5 words)",
-      "description": "What this phase achieves",
+      "type": "process",
+      "title": "Exact action from document",
+      "description": "Brief description",
       "status": "critical|action|operational|communication",
-      "swimLane": "Role/Team",
+      "swimLane": "Actor/Role from document",
       "connections": ["node-2"],
-      "isDecisionPoint": true/false,
-      "decisionCriteria": "Question if decision",
-      "decisionOptions": {{"yes": "node-id", "no": "node-id"}},
-      "actors": ["Role"],
-      "subSteps": ["Detailed action 1", "Detailed action 2", "Detailed action 3"]
+      "isDecisionPoint": false,
+      "actors": ["Operator"],
+      "subSteps": ["Detailed step 1", "Detailed step 2"]
+    }},
+    {{
+      "id": "node-2",
+      "type": "decision",
+      "title": "Question from document",
+      "description": "Decision point description",
+      "status": "critical",
+      "swimLane": "Actor",
+      "connections": ["node-3", "node-4"],
+      "isDecisionPoint": true,
+      "decisionCriteria": "The question being asked",
+      "decisionOptions": {{"yes": "node-3", "no": "node-4"}},
+      "actors": ["Operator"]
     }}
   ],
   "swimLanes": [
-    {{"id": "lane-1", "name": "Lane Name", "color": "#3B82F6"}}
+    {{"id": "lane-1", "name": "Operator", "color": "#3B82F6"}}
   ]
 }}
 
-🎯 TARGET: Create {target_nodes}-{target_nodes+3} nodes MAXIMUM through intelligent grouping.
-DO NOT exceed this target. Group aggressively but preserve all information in sub-steps.
-Remember: Fewer, meaningful nodes > Many granular nodes.
-Return ONLY JSON."""
+═══════════════════════════════════════════════════════════════════════════
+
+⚠️ FINAL CHECKLIST BEFORE RETURNING:
+
+1. ✅ Every node title can be traced to specific text in the document
+2. ✅ No invented terminology or concepts
+3. ✅ All decision nodes have YES and NO branches defined
+4. ✅ Flow sequence matches document order
+5. ✅ No steps are missing from the document
+6. ✅ No extra steps added that aren't in the document
+
+If you cannot meet ALL these criteria with 100% confidence, return fewer nodes but ensure those you create are PERFECT.
+
+ACCURACY > COMPLETENESS. Better to have 5 perfect nodes than 15 nodes with hallucinations.
+
+Now analyze the document and return ONLY the JSON."""
     
     def _build_hybrid_prompt(self, doc_text: str, estimated_nodes: int) -> str:
         """
