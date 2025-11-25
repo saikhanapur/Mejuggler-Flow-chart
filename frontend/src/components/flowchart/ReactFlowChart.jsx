@@ -531,10 +531,6 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
       setIsSaving(true);
       console.log('💾 Saving layout to database...');
       
-      // LOCK LAYOUT: Prevent automatic re-layout during save
-      setIsLayoutLocked(true);
-      console.log('🔒 Layout locked before save');
-      
       await onLayoutChange(pendingNodesRef.current);
       
       // Clear pending changes
@@ -544,14 +540,9 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
       console.log('✅ Layout saved successfully');
       toast.success('✅ Layout saved successfully!');
       
-      // Keep layout locked to preserve optimized positions
-      console.log('🔒 Layout remains locked to preserve positions');
-      
     } catch (error) {
       console.error('❌ Failed to save layout:', error);
       toast.error('Failed to save layout. Please try again.');
-      // Unlock on error
-      setIsLayoutLocked(false);
     } finally {
       setIsSaving(false);
     }
