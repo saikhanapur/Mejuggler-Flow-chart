@@ -503,22 +503,85 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  // Smart layout adjustment when node expands/collapses - handles MULTIPLE expanded nodes!
+  // Smart layout adjustment when node expands/collapses
   const handleNodeExpand = useCallback((nodeId, isExpanded, expandedHeight) => {
-    // CRITICAL FIX: Disable automatic repositioning on expand
-    // This prevents nodes from jumping back to original positions when user clicks dropdown
-    // The node component handles its own height expansion via CSS
+    console.log('🔄 Node expand/collapse:', { nodeId, isExpanded, expandedHeight });
     
-    // Just record the expansion state for reference
-    if (isExpanded) {
-      expandedNodesRef.current[nodeId] = expandedHeight;
-    } else {
-      delete expandedNodesRef.current[nodeId];
-    }
+    setNodes((currentNodes) => {
+      // Store base positions if not already stored
+      if (baseNodePositionsRef.current.length === 0) {
+        baseNodePositionsRef.current = currentNodes.map(n => ({ 
+          id: n.id, 
+          position: { ...n.position } 
+        }));
+      }
+      
+      // Find the expanding/collapsing node
+      const expandingNode = currentNodes.find(n => n.id === nodeId);
+      if (!expandingNode) return currentNodes;
+      
+      const expandingNodeY = expandingNode.position.y;
+      
+      // Update expansion tracking
+      if (isExpanded) {
+        expandedNodesRef.current[nodeId] = expandedHeight || 200;
+      } else {
+        delete expandedNodesRef.current[nodeId];
+      }
+      
+      // Calculate total height delta from all expanded nodes
+      let totalHeightDelta = 0;
+      Object.keys(expandedNodesRef.current).forEach(expNodeId => {
+        const expNode = currentNodes.find(n => n.id === expNodeId);
+        if (expNode && expNode.position.y < expandingNodeY) {
+          // If there's an expanded node above, add its delta
+          totalHeightDelta += (expandedNodesRef.current[expNodeId] - 100);
+        }
+      });
+      
+      // Adjust positions of nodes below the expanding node
+      const updatedNodes = currentNodes.map(node => {
+        // Don't move the expanding node itself
+        if (node.id === nodeId) {
+          return node;
+        }
+        
+        // Get the base position (original position before any expansions)
+        const basePos = baseNodePositionsRef.current.find(n => n.id === node.id);
+        if (!basePos) {
+          return node;
+        }
+        
+        // Only move nodes that are below the expanding node
+        if (basePos.position.y > expandingNodeY) {
+          // Calculate cumulative offset from all expanded nodes above this node
+          let cumulativeOffset = 0;
+          Object.keys(expandedNodesRef.current).forEach(expNodeId => {
+            const expNode = currentNodes.find(n => n.id === expNodeId);
+            if (expNode && expNode.position.y < basePos.position.y) {
+              // Add the height delta (expanded height - default height of 100)
+              cumulativeOffset += (expandedNodesRef.current[expNodeId] - 100);
+            }
+          });
+          
+          return {
+            ...node,
+            position: {
+              ...node.position,
+              y: basePos.position.y + cumulativeOffset
+            }
+          };
+        }
+        
+        return node;
+      });
+      
+      console.log('✅ Positions updated for expansion');
+      return updatedNodes;
+    });
     
     setExpandedNodeId(isExpanded ? nodeId : null);
-    // Do NOT call setNodes here - that's what was causing the displacement bug
-  }, []);
+  }, [setNodes]);
 
   // Save Layout: Persist optimized layout to database
   const handleSaveLayout = useCallback(async () => {
