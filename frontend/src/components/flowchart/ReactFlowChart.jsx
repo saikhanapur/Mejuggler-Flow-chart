@@ -610,10 +610,6 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
       pendingNodesRef.current = result.optimized_nodes;
       setHasUnsavedChanges(true);
       
-      // LOCK LAYOUT: Prevent automatic re-layout from overwriting optimization
-      setIsLayoutLocked(true);
-      console.log('🔒 Layout locked after auto-organize');
-      
       // Show user prompt to save
       toast.success('✨ Layout optimized! Click "Save Layout" to keep changes.', {
         duration: 5000
