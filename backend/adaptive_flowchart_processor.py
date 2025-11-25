@@ -79,11 +79,14 @@ class AdaptiveFlowchartProcessor:
         # MERGE the results
         result = self._merge_results(structure, content, references, analysis)
         
-        # Validate
+        # Validate structure
         result = self._validate_and_fix(result)
         
-        # Apply intelligent grouping post-processing
-        result = self._apply_intelligent_grouping(result)
+        # Validate against source document to catch hallucinations
+        result = self._validate_against_source(result, doc_text)
+        
+        # Apply intelligent grouping post-processing (REMOVED FOR NOW - prioritize accuracy)
+        # result = self._apply_intelligent_grouping(result)
         
         logger.info(f"✅ Processing complete: {len(result['nodes'])} nodes (expected ~{estimated_nodes})")
         
