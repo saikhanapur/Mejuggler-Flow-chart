@@ -803,3 +803,75 @@ Keep CONCISE. Return ONLY JSON."""
             node["connections"] = [c for c in node.get("connections", []) if c in valid_node_ids]
         
         return data
+    
+    def _validate_against_source(self, data: Dict, source_text: str) -> Dict:
+        """
+        Validate generated flowchart against source document to catch hallucinations.
+        Adds confidence scores to each node.
+        """
+        import re
+        from difflib import SequenceMatcher
+        
+        def text_similarity(a: str, b: str) -> float:
+            """Calculate similarity between two strings (0-1)."""
+            return SequenceMatcher(None, a.lower(), b.lower()).ratio()
+        
+        def find_in_source(text: str, source: str, threshold: float = 0.5) -> bool:
+            """Check if text or similar phrase exists in source."""
+            text_lower = text.lower().strip()
+            source_lower = source.lower()
+            
+            # Direct substring match
+            if text_lower in source_lower:
+                return True
+            
+            # Split into sentences and check similarity
+            sentences = re.split(r'[.!?]\s+', source)
+            for sentence in sentences:
+                if text_similarity(text_lower, sentence) > threshold:
+                    return True
+            
+            # Split text into words and check if majority are in source
+            words = text_lower.split()
+            if len(words) > 0:
+                matches = sum(1 for word in words if len(word) > 3 and word in source_lower)
+                if matches / len(words) > 0.6:  # 60% of words match
+                    return True
+            
+            return False
+        
+        nodes = data.get("nodes", [])
+        hallucination_detected = False
+        
+        logger.info(f"🔍 Validating {len(nodes)} nodes against source document...")
+        
+        for node in nodes:
+            title = node.get("title", "")
+            description = node.get("description", "")
+            
+            # Check if title exists in source
+            title_found = find_in_source(title, source_text)
+            
+            # Check if description concepts exist in source
+            desc_found = find_in_source(description, source_text) if description else True
+            
+            # Confidence score
+            if title_found and desc_found:
+                node["_validationScore"] = 1.0  # High confidence
+            elif title_found:
+                node["_validationScore"] = 0.7  # Medium confidence
+            else:
+                node["_validationScore"] = 0.3  # Low confidence - possible hallucination
+                hallucination_detected = True
+                logger.warning(f"⚠️ Potential hallucination detected: '{title}' not found in source document")
+        
+        if hallucination_detected:
+            data["_hasHallucinations"] = True
+            data["_validationMessage"] = "Some nodes may not accurately reflect the source document. Please review carefully."
+        else:
+            data["_hasHallucinations"] = False
+            data["_validationMessage"] = "All nodes validated against source document."
+        
+        logger.info(f"✅ Validation complete. Hallucinations detected: {hallucination_detected}")
+        
+        return data
