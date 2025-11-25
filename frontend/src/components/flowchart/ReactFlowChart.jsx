@@ -639,7 +639,7 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
     }
   }, [nodes, edges, setNodes]);
 
-  // Apply automatic layout - respects direction and lock
+  // Apply layout ONLY if nodes don't have saved positions
   useEffect(() => {
     let timeoutId = null;
     let isCancelled = false;
@@ -651,102 +651,113 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
     });
     
     const applyLayout = async () => {
-      // CRITICAL: If layout is locked, use positions from database directly
-      if (isLayoutLocked) {
-        console.log('🔒 Layout locked - using saved positions from database');
+      if (initialNodes.length === 0) {
+        console.warn('⚠️ No initialNodes, skipping layout');
+        setIsLayouting(false);
+        return;
+      }
+
+      // CRITICAL: Check if nodes already have saved positions
+      // Only run layout algorithm if ALL nodes are at {0, 0} (fresh flowchart)
+      const hasValidPositions = initialNodes.some(node => 
+        node.position.x !== 0 || node.position.y !== 0
+      );
+      
+      if (hasValidPositions) {
+        console.log('✅ Using saved positions from database (no layout calculation needed)');
         
-        // Use positions directly from processData (already has saved positions)
-        setNodes(initialNodes);
+        // Inject onExpand callback and use positions as-is
+        const nodesWithCallbacks = initialNodes.map(node => ({
+          ...node,
+          data: {
+            ...node.data,
+            onExpand: handleNodeExpand,
+          },
+        }));
+        
+        setNodes(nodesWithCallbacks);
         setEdges(initialEdges);
         setIsLayouting(false);
-        
-        console.log('✅ Applied saved positions without recalculation');
         return;
       }
       
-      if (initialNodes.length > 0) {
-        console.log('🚀 Starting layout calculation...');
-        setIsLayouting(true);
+      // No saved positions - run layout algorithm for new flowchart
+      console.log('🚀 No saved positions found - calculating layout for new flowchart...');
+      setIsLayouting(true);
+      
+      try {
+        console.log('⏱️ Calling getLayoutedElements...');
         
-        try {
-          console.log('⏱️ Calling getLayoutedElements with timeout...');
-          
-          // Create cancellable timeout
-          const layoutPromise = getLayoutedElements(
-            initialNodes,
-            initialEdges,
-            layoutDirection
-          );
-          
-          const timeoutPromise = new Promise((_, reject) => {
-            timeoutId = setTimeout(() => {
-              if (!isCancelled) {
-                console.error('⏱️ Layout TIMEOUT after 60 seconds!');
-                reject(new Error('Layout timeout'));
-              }
-            }, 60000);
-          });
-          
-          const { nodes: layoutedNodes, edges: layoutedEdges } = await Promise.race([
-            layoutPromise,
-            timeoutPromise
-          ]);
-          
-          // Check if cancelled during calculation
-          if (isCancelled) {
-            console.log('🚫 Layout calculation cancelled');
-            return;
-          }
-          
-          console.log('✅ Layout calculation complete!', {
-            nodesCount: layoutedNodes.length,
-            edgesCount: layoutedEdges.length
-          });
-          
-          // Store base positions in ref (doesn't trigger re-renders)
-          baseNodePositionsRef.current = layoutedNodes.map(n => ({ id: n.id, position: n.position }));
-          
-          // Inject onExpand callback
-          const nodesWithCallbacks = layoutedNodes.map(node => ({
-            ...node,
-            data: {
-              ...node.data,
-              onExpand: handleNodeExpand,
-            },
-          }));
-          
-          console.log('📐 Setting nodes and edges...');
-          setNodes(nodesWithCallbacks);
-          setEdges(layoutedEdges);
-          setExpandedNodeId(null); // Reset expansion on layout change
-          expandedNodesRef.current = {}; // Clear all expanded nodes tracking
-        } catch (error) {
-          console.error('❌ Layout failed:', error);
-          // Use fallback simple layout
-          const fallbackNodes = initialNodes.map((node, index) => ({
-            ...node,
-            position: { x: 100, y: index * 200 },
-            data: {
-              ...node.data,
-              onExpand: handleNodeExpand,
-            },
-          }));
-          console.log('🔄 Using fallback layout with', fallbackNodes.length, 'nodes');
-          setNodes(fallbackNodes);
-          setEdges(initialEdges);
-        } finally {
-          console.log('🏁 Layout complete, setting isLayouting = false');
-          setIsLayouting(false);
+        // Create cancellable timeout
+        const layoutPromise = getLayoutedElements(
+          initialNodes,
+          initialEdges,
+          layoutDirection
+        );
+        
+        const timeoutPromise = new Promise((_, reject) => {
+          timeoutId = setTimeout(() => {
+            if (!isCancelled) {
+              console.error('⏱️ Layout TIMEOUT after 60 seconds!');
+              reject(new Error('Layout timeout'));
+            }
+          }, 60000);
+        });
+        
+        const { nodes: layoutedNodes, edges: layoutedEdges } = await Promise.race([
+          layoutPromise,
+          timeoutPromise
+        ]);
+        
+        if (isCancelled) {
+          console.log('🚫 Layout calculation cancelled');
+          return;
         }
-      } else {
-        console.warn('⚠️ No initialNodes, skipping layout');
+        
+        console.log('✅ Layout calculation complete!', {
+          nodesCount: layoutedNodes.length,
+          edgesCount: layoutedEdges.length
+        });
+        
+        // Store base positions in ref
+        baseNodePositionsRef.current = layoutedNodes.map(n => ({ id: n.id, position: n.position }));
+        
+        // Inject onExpand callback
+        const nodesWithCallbacks = layoutedNodes.map(node => ({
+          ...node,
+          data: {
+            ...node.data,
+            onExpand: handleNodeExpand,
+          },
+        }));
+        
+        console.log('📐 Setting nodes and edges...');
+        setNodes(nodesWithCallbacks);
+        setEdges(layoutedEdges);
+        setExpandedNodeId(null);
+        expandedNodesRef.current = {};
+      } catch (error) {
+        console.error('❌ Layout failed:', error);
+        // Fallback: Simple vertical layout
+        const fallbackNodes = initialNodes.map((node, index) => ({
+          ...node,
+          position: { x: 100, y: index * 200 },
+          data: {
+            ...node.data,
+            onExpand: handleNodeExpand,
+          },
+        }));
+        console.log('🔄 Using fallback layout');
+        setNodes(fallbackNodes);
+        setEdges(initialEdges);
+      } finally {
+        console.log('🏁 Layout complete');
         setIsLayouting(false);
       }
     };
 
     applyLayout();
     
-    // Cleanup function to cancel pending operations
     return () => {
       isCancelled = true;
       if (timeoutId) {
@@ -754,7 +765,7 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
         console.log('🧹 Layout timeout cleared on cleanup');
       }
     };
-  }, [initialNodes, initialEdges, layoutDirection, handleNodeExpand, isLayoutLocked]); // Include lock state
+  }, [initialNodes, initialEdges, layoutDirection, handleNodeExpand]);
 
   const handleNodeClick = useCallback((event, node) => {
     if (onNodeClick) {
