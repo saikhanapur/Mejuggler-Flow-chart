@@ -196,165 +196,69 @@ Return ONLY JSON."""
     
     def _build_generate_prompt(self, doc_text: str, estimated_nodes: int) -> str:
         """
-        Build prompt for GENERATION mode (text SOP needs flowchart).
-        PRIORITY: 100% ACCURACY - Zero hallucinations.
+        Build prompt for GENERATION mode.
+        Simple, clear instructions for accurate extraction.
         """
         
-        return f"""You are an expert at analyzing Standard Operating Procedures (SOPs) and creating accurate flowcharts.
+        return f"""Extract a flowchart from this SOP document. Be accurate and use exact terminology from the document.
 
-CRITICAL MISSION: Create a flowchart that is 100% ACCURATE to the source document. ZERO hallucinations allowed.
-
-DOCUMENT TO ANALYZE:
+DOCUMENT:
 {doc_text[:20000]}
 
-═══════════════════════════════════════════════════════════════════════════
+INSTRUCTIONS:
 
-🎯 CORE PRINCIPLES (NEVER VIOLATE):
+1. READ the document carefully to understand the process
+2. EXTRACT steps in the exact order they appear
+3. IDENTIFY decision points (questions, if-then statements, YES/NO branches)
+4. USE exact wording from the document for node titles
+5. CREATE connections that match the document's flow
 
-1. **ACCURACY OVER EVERYTHING**
-   - Every node MUST come directly from the document
-   - Every node title MUST be traceable to specific text in the document
-   - If you're unsure about something, use the EXACT wording from the document
-   - NEVER invent, assume, or "improve" steps that aren't explicitly mentioned
+DECISION POINTS:
+- Look for: "Check if...", "Ask if...", "Is X?", "If X then Y else Z"
+- Mark as: isDecisionPoint: true
+- Define: decisionOptions with "yes" and "no" paths
 
-2. **ZERO HALLUCINATION RULE**
-   - ❌ FORBIDDEN: Creating nodes like "Extended Monitoring Protocol" if it's not in the document
-   - ❌ FORBIDDEN: Inventing technical terms that aren't in the source
-   - ❌ FORBIDDEN: Adding "best practice" steps not mentioned in the SOP
-   - ✅ REQUIRED: Use only steps, decisions, and terminology FROM THE DOCUMENT
+NODE STRUCTURE:
+- Each numbered step (1., 2., 3.) = one node
+- Each clear action = one node  
+- Each decision/question = one decision node
+- Group only if document explicitly groups steps together
 
-3. **DECISION POINT DETECTION**
-   - Look for explicit decision language:
-     * "Check if...", "Ask if...", "Determine whether..."
-     * "If X, then Y, else Z"
-     * Questions in the text (e.g., "Is the user able to speak?")
-   - Create a decision node with:
-     * isDecisionPoint: true
-     * Clear YES/NO branches
-     * Explicit decisionCriteria from the document
+CRITICAL RULES:
+✅ Use exact terminology from document
+✅ Follow document's sequence
+✅ Mark all decisions with isDecisionPoint: true
+✅ Define both YES and NO paths for decisions
+❌ Don't invent steps not in document
+❌ Don't add "best practices" not mentioned
+❌ Don't rename actions - use document's wording
 
-4. **SEQUENTIAL ACCURACY**
-   - Follow the EXACT sequence in the document
-   - If SOP says "Step 1, Step 2, Step 3", your flowchart must follow that order
-   - Don't reorder steps to "improve" the flow
-
-5. **CONTEXT UNDERSTANDING**
-   - Read the ENTIRE document first to understand:
-     * What is the main process? (e.g., "Panic Alert Response")
-     * Who are the actors? (e.g., "Operator", "Emergency Services", "Supervisor")
-     * What is the goal? (e.g., "Ensure user safety")
-   - Use this context to guide node creation, but DON'T add context that isn't there
-
-═══════════════════════════════════════════════════════════════════════════
-
-📖 STEP-BY-STEP ANALYSIS PROCESS:
-
-**STEP 1: Identify the Process**
-- What is this SOP about? Extract the process name from section headers or document title
-- Example: If document says "## Panic Alert", process name is "Panic Alert"
-
-**STEP 2: Find All Actions**
-- Look for numbered steps (1., 2., 3.) or bullet points
-- Look for imperative verbs: "Contact", "Check", "Call", "Ask", "Wait"
-- Each distinct action = potential node
-
-**STEP 3: Find All Decisions**
-- Look for:
-  * "If X then Y" statements
-  * Questions (e.g., "Is the user able to speak freely?")
-  * Decision language: "Check whether", "Determine if", "Ask if"
-- Each decision = decision node with YES/NO branches
-
-**STEP 4: Map the Flow**
-- Follow the document's sequence
-- Connect nodes in the order they appear
-- For decisions, trace both YES and NO paths
-
-**STEP 5: Validate Against Source**
-- For each node you create, ask yourself:
-  * "Can I point to the exact sentence in the document that mentions this?"
-  * "Am I using the same terminology as the document?"
-  * "Have I added anything that isn't explicitly stated?"
-
-═══════════════════════════════════════════════════════════════════════════
-
-🔍 NODE CREATION RULES:
-
-**For Process Nodes:**
-- Title: Use wording from the document (e.g., if SOP says "Contact Emergency Services", title is "Contact Emergency Services")
-- Description: Brief summary of what happens
-- subSteps: Break down the details if the document provides them
-- Do NOT create summary nodes that don't exist (e.g., don't create "Initial Assessment" unless document explicitly has that phase)
-
-**For Decision Nodes:**
-- Title: The question being asked (e.g., "Can User Speak Freely?")
-- isDecisionPoint: true
-- decisionCriteria: The exact question from the document
-- decisionOptions: {{"yes": "node-id-for-yes-path", "no": "node-id-for-no-path"}}
-- Both YES and NO paths MUST be defined
-
-**Grouping Rules (Use Sparingly):**
-- ONLY group actions if they are:
-  1. Truly repetitive (e.g., "Call Contact 1", "Call Contact 2", "Call Contact 3" → "Escalate Through Contacts")
-  2. Explicitly grouped in the document (e.g., document says "Perform the following steps: a, b, c")
-- When in doubt, keep actions separate
-
-═══════════════════════════════════════════════════════════════════════════
-
-📋 OUTPUT FORMAT:
-
-Return ONLY valid JSON in this exact structure:
-
+Return JSON:
 {{
-  "processName": "Exact process name from document",
+  "processName": "Process name from document",
   "nodes": [
     {{
       "id": "node-1",
-      "type": "process",
-      "title": "Exact action from document",
-      "description": "Brief description",
+      "type": "process" | "decision",
+      "title": "Exact action/question from document",
+      "description": "What happens in this step",
       "status": "critical|action|operational|communication",
-      "swimLane": "Actor/Role from document",
+      "swimLane": "Actor/Role",
       "connections": ["node-2"],
-      "isDecisionPoint": false,
-      "actors": ["Operator"],
-      "subSteps": ["Detailed step 1", "Detailed step 2"]
-    }},
-    {{
-      "id": "node-2",
-      "type": "decision",
-      "title": "Question from document",
-      "description": "Decision point description",
-      "status": "critical",
-      "swimLane": "Actor",
-      "connections": ["node-3", "node-4"],
-      "isDecisionPoint": true,
-      "decisionCriteria": "The question being asked",
-      "decisionOptions": {{"yes": "node-3", "no": "node-4"}},
-      "actors": ["Operator"]
+      "isDecisionPoint": true/false,
+      "decisionCriteria": "Question if decision",
+      "decisionOptions": {{"yes": "node-id", "no": "node-id"}},
+      "actors": ["Role"],
+      "subSteps": ["Detail 1", "Detail 2"]
     }}
   ],
   "swimLanes": [
-    {{"id": "lane-1", "name": "Operator", "color": "#3B82F6"}}
+    {{"id": "lane-1", "name": "Role Name", "color": "#3B82F6"}}
   ]
 }}
 
-═══════════════════════════════════════════════════════════════════════════
-
-⚠️ FINAL CHECKLIST BEFORE RETURNING:
-
-1. ✅ Every node title can be traced to specific text in the document
-2. ✅ No invented terminology or concepts
-3. ✅ All decision nodes have YES and NO branches defined
-4. ✅ Flow sequence matches document order
-5. ✅ No steps are missing from the document
-6. ✅ No extra steps added that aren't in the document
-
-If you cannot meet ALL these criteria with 100% confidence, return fewer nodes but ensure those you create are PERFECT.
-
-ACCURACY > COMPLETENESS. Better to have 5 perfect nodes than 15 nodes with hallucinations.
-
-Now analyze the document and return ONLY the JSON."""
+Expected nodes: {max(5, estimated_nodes-2)} to {estimated_nodes+2}
+Return ONLY valid JSON."""
     
     def _build_hybrid_prompt(self, doc_text: str, estimated_nodes: int) -> str:
         """
