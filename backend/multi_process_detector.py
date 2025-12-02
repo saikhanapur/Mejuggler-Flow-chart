@@ -31,75 +31,32 @@ class MultiProcessDetector:
             system_message="Analyze documents for distinct processes. Return JSON only."
         ).with_model("openai", "gpt-4o").with_params(max_tokens=1000)
         
-        prompt = f"""Analyze this document to detect if it contains MULTIPLE DISTINCT PROCESSES.
+        prompt = f"""Analyze this document and determine if it contains MULTIPLE DISTINCT PROCESSES or ONE PROCESS.
 
 DOCUMENT:
 {document_text[:10000]}
 
-═══════════════════════════════════════════════════════════════════════════
+IMPORTANT: A document has MULTIPLE PROCESSES only if it describes completely separate workflows with different triggers.
 
-🔍 DETECTION CRITERIA:
+SINGLE PROCESS = One workflow with branches/decision points
+Example: "1. Check status 2. If OK → proceed, If NOT OK → escalate 3. Complete"
+This is ONE process with decision branches.
 
-A document has MULTIPLE PROCESSES if it contains:
+MULTIPLE PROCESSES = Completely separate workflows for different scenarios
+Example: 
+"## Process A: Equipment Failure - Steps: 1, 2, 3..."
+"## Process B: Power Outage - Steps: 1, 2, 3..."
+"## Process C: Data Loss - Steps: 1, 2, 3..."
+These are THREE different processes.
 
-1. **Multiple Section Headers with Different Process Names**
-   - Example: "## Panic Alert" followed by "## Silent Alert" followed by "## Missed Check-In"
-   - Each section describes a DIFFERENT procedure/scenario
-   - Keywords: "Procedure", "Alert", "Process", "Protocol", "SOP", "Scenario"
+KEY QUESTION: Are the sections describing:
+- Different scenarios within ONE procedure? → SINGLE PROCESS
+- Completely separate procedures? → MULTIPLE PROCESSES
 
-2. **Separate Procedures for Different Situations**
-   - Example: "Emergency Response" vs "False Alarm Response"
-   - Each has its own steps, not branches of the same process
-
-3. **Different Actors/Triggers**
-   - Example: "When X happens, do A-B-C" and "When Y happens, do D-E-F"
-   - X and Y are fundamentally different triggers
-
-A document has a SINGLE PROCESS if:
-- One main workflow with decision branches (YES/NO paths)
-- Steps that flow sequentially as part of one procedure
-- Subsections are just parts of the same overall process
-
-═══════════════════════════════════════════════════════════════════════════
-
-📋 EXAMPLES:
-
-**MULTIPLE PROCESSES (Return multipleProcesses: true):**
-
-Document: 
-"## Panic Alert - This is when duress button is pressed...
- Steps: 1. Check if user can speak 2. Contact emergency services...
- 
- ## Silent Alert - This is when silent duress is activated...
- Steps: 1. Check if user can speak 2. Contact emergency services...
- 
- ## Missed Check-In - When user doesn't check in...
- Steps: 1. Wait 5 mins 2. Call customer..."
-
-→ Result: 3 processes (Panic Alert, Silent Alert, Missed Check-In)
-
-**SINGLE PROCESS (Return multipleProcesses: false):**
-
-Document:
-"## Customer Support Escalation
- 1. Receive ticket
- 2. Check severity: If high → escalate, If low → handle
- 3. Resolve issue
- 4. Close ticket"
-
-→ Result: 1 process (Customer Support Escalation with branches)
-
-═══════════════════════════════════════════════════════════════════════════
-
-🎯 YOUR TASK:
-
-1. Scan the document for section headers (##, bold text, numbered sections)
-2. Identify if each section describes a DIFFERENT process or is part of the SAME process
-3. Count the distinct processes
-4. For EACH process, extract:
-   - Name (from section header)
-   - Brief description
-   - Where it starts in the document
+Look for:
+- ## section headers with different workflow names
+- "Procedure A", "Procedure B" style labeling
+- Completely different triggers/starting conditions
 
 Return JSON:
 {{
@@ -107,15 +64,15 @@ Return JSON:
   "processCount": number,
   "processes": [
     {{
-      "name": "Exact process name from document",
-      "description": "What this process handles",
-      "startSection": "Section header or line where it starts"
+      "name": "Process name from document",
+      "description": "Brief description",
+      "startSection": "Where it starts"
     }}
   ],
-  "reasoning": "Brief explanation of why you detected single or multiple processes"
+  "reasoning": "Why single or multiple"
 }}
 
-Be PRECISE. Look for explicit section boundaries. Return ONLY JSON."""
+If unsure, default to SINGLE PROCESS with branches. Return ONLY JSON.
 
         try:
             message = UserMessage(text=prompt)
