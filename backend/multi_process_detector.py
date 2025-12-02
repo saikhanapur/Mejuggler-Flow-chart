@@ -72,7 +72,7 @@ Return JSON:
   "reasoning": "Why single or multiple"
 }}
 
-If unsure, default to SINGLE PROCESS with branches. Return ONLY JSON.
+If unsure, default to SINGLE PROCESS with branches. Return ONLY JSON."""
 
         try:
             message = UserMessage(text=prompt)
