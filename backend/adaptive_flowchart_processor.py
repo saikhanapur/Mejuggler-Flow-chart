@@ -85,8 +85,8 @@ class AdaptiveFlowchartProcessor:
         # Validate against source document to catch hallucinations
         result = self._validate_against_source(result, doc_text)
         
-        # Apply intelligent grouping post-processing (REMOVED FOR NOW - prioritize accuracy)
-        # result = self._apply_intelligent_grouping(result)
+        # Apply intelligent grouping post-processing
+        result = self._apply_intelligent_grouping(result)
         
         logger.info(f"✅ Processing complete: {len(result['nodes'])} nodes (expected ~{estimated_nodes})")
         
