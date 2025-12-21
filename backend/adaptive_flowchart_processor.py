@@ -150,31 +150,44 @@ class AdaptiveFlowchartProcessor:
     ) -> Dict:
         """
         Extract flowchart structure with ADAPTIVE prompts based on analysis.
-        WITH COMPREHENSIVE ERROR HANDLING
+        WITH FEW-SHOT LEARNING and COMPREHENSIVE ERROR HANDLING
         """
         from ai_call_wrapper import AICallWrapper, AICallError
+        from few_shot_examples import get_few_shot_examples_text, get_anti_hallucination_rules
         
         strategy = analysis.get("processingStrategy", "generate")
         estimated_nodes = analysis.get("existingStructure", {}).get("estimatedNodes", 15)
         doc_type = analysis.get("documentType", "text_sop")
         fidelity = analysis.get("fidelityRequirement", "medium")
         
-        logger.info(f"📊 [Call 1/3] Extracting structure (strategy: {strategy})...")
+        logger.info(f"📊 [Call 1/3] Extracting structure (strategy: {strategy}) with FEW-SHOT LEARNING...")
         
         try:
+            # Enhanced system message with anti-hallucination emphasis
+            system_message = """You are a precise document-to-flowchart converter. Your ONLY job is to extract EXACTLY what's in the document.
+
+CRITICAL RULES:
+- NEVER invent steps not explicitly in the document
+- ALWAYS use exact wording from the source
+- EVERY node must have a sourceReference to document text
+- If unsure, include LESS nodes, not more
+- NO "best practice" additions
+
+You will be given examples of perfect extractions. Follow them exactly."""
+
             chat = LlmChat(
                 api_key=self.api_key,
                 session_id="adaptive_structure",
-                system_message="Extract flowchart structure with PERFECT FIDELITY. Never hallucinate steps."
+                system_message=system_message
             ).with_model("anthropic", "claude-4-sonnet-20250514").with_params(max_tokens=8000)
             
-            # Build adaptive prompt based on strategy
+            # Build adaptive prompt based on strategy WITH few-shot examples
             if strategy == "extract":
-                instruction = self._build_extract_prompt(doc_text, estimated_nodes, doc_type)
+                instruction = self._build_extract_prompt_with_examples(doc_text, estimated_nodes, doc_type)
             elif strategy == "generate":
-                instruction = self._build_generate_prompt(doc_text, estimated_nodes)
+                instruction = self._build_generate_prompt_with_examples(doc_text, estimated_nodes)
             else:
-                instruction = self._build_hybrid_prompt(doc_text, estimated_nodes)
+                instruction = self._build_hybrid_prompt_with_examples(doc_text, estimated_nodes)
             
             message = UserMessage(text=instruction)
             
