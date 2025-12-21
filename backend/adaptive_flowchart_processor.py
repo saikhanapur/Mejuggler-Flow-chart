@@ -14,6 +14,7 @@ import logging
 import asyncio
 from typing import Dict, List, Any, Optional
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+from error_catalog import ErrorCatalog
 
 logger = logging.getLogger(__name__)
 
