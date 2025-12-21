@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { api } from '@/utils/api';
 import { toast } from 'sonner';
 import { ErrorDisplay, WarningDisplay } from './ErrorDisplay';
+import TruncationWarning from './TruncationWarning';
 
 const DocumentUploader = ({ onComplete, onCancel }) => {
   const [files, setFiles] = useState([]);
@@ -12,6 +13,7 @@ const DocumentUploader = ({ onComplete, onCancel }) => {
   const [extractedText, setExtractedText] = useState('');
   const [error, setError] = useState(null);
   const [warnings, setWarnings] = useState([]);
+  const [truncationInfo, setTruncationInfo] = useState(null); // {originalLength, truncated}
 
   const handleDrop = (e) => {
     e.preventDefault();
