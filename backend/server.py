@@ -5417,25 +5417,74 @@ async def upload_document(file: UploadFile = File(...), force_vision: bool = Fal
                                 technical_detail=str(e)
                             )
                         )
-                "method": result["method"],
-                "confidence": result.get("confidence", 0),
-                "pages_processed": result.get("pages_processed", 1)
-            }
         
         elif file.filename.endswith('.docx'):
-            doc = docx.Document(io.BytesIO(content))
-            text = ""
-            for para in doc.paragraphs:
-                text += para.text + "\n"
-            return {"text": text, "method": "docx"}
+            try:
+                doc = docx.Document(io.BytesIO(content))
+                text = ""
+                for para in doc.paragraphs:
+                    text += para.text + "\n"
+                extracted_text = text
+                method = "docx"
+            except Exception as e:
+                raise HTTPException(
+                    status_code=422,
+                    detail=create_error_response(
+                        ErrorCatalog.TEXT_EXTRACTION_FAILED,
+                        technical_detail=f"DOCX parsing failed: {str(e)}"
+                    )
+                )
         
         else:
-            text = content.decode('utf-8')
-            return {"text": text, "method": "text"}
+            # Text files
+            try:
+                extracted_text = content.decode('utf-8')
+                method = "text"
+            except UnicodeDecodeError:
+                raise HTTPException(
+                    status_code=422,
+                    detail=create_error_response(
+                        ErrorCatalog.TEXT_EXTRACTION_FAILED,
+                        technical_detail="Unable to decode text file (encoding issue)"
+                    )
+                )
         
+        # STEP 3: Validate extracted text
+        text_validation = validate_extracted_text(extracted_text, file.filename)
+        if not text_validation.valid:
+            raise create_validation_response(text_validation)
+        
+        # Add truncation warnings if any
+        warnings.extend(text_validation.warnings)
+        
+        logger.info(f"📄 Document processed via {method}: {len(extracted_text)} chars")
+        
+        # STEP 4: Return success response with warnings
+        response = {
+            "text": extracted_text[:100000],  # Enforce limit
+            "method": method,
+            "original_length": len(extracted_text),
+            "truncated": len(extracted_text) > 100000
+        }
+        
+        if warnings:
+            response["warnings"] = warnings
+        
+        return response
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions (already formatted)
+        raise
     except Exception as e:
+        # Catch-all for unexpected errors
         logger.error(f"❌ Document processing failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to extract text: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=create_error_response(
+                ErrorCatalog.UNKNOWN_ERROR,
+                technical_detail=str(e)
+            )
+        )
 
 @api_router.post("/transcribe")
 async def transcribe_audio(file: UploadFile = File(...)):
