@@ -343,17 +343,12 @@ const DecisionNode = ({ data, selected }) => {
   );
 };
 
-// Import clean layout components
-import { 
-  getCleanLayoutedElements, 
-  CleanProcessNode, 
-  CleanDecisionNode, 
-  cleanNodeTypes,
-  createCleanEdges 
-} from './CleanFlowchartLayout';
-
-// Use CLEAN node types for better visual clarity
-const nodeTypes = cleanNodeTypes;
+// REVERTED: Use ORIGINAL node types - they were working fine
+const nodeTypes = {
+  default: ProcessNode,
+  process: ProcessNode,
+  decision: DecisionNode,
+};
 
 export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => {
   const [isLayouting, setIsLayouting] = useState(false);
