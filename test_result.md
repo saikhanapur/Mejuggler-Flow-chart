@@ -101,6 +101,18 @@ frontend:
           agent: "testing"
           comment: "✅ COMPREHENSIVE FRONTEND ERROR HANDLING TESTING COMPLETE - Document upload interface renders correctly with proper error handling integration. ErrorDisplay component properly imported and integrated in DocumentUploader.js and ProcessCreator.js. All UI elements verified: drop zone, supported formats, file input accessibility, navigation. Error handling includes parseBackendError function, structured error display with title/message/actions/buttons, retry functionality, and proper state management. Process button correctly disabled when no files selected. All supported file types (PDF, Word, Excel, Images) properly listed. Navigation between methods works correctly."
 
+  - task: "Flowchart Generation with Enhanced AI (Few-shot Learning)"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/ProcessCreator.js, /app/frontend/src/components/ChatInterface.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: false
+          agent: "testing"
+          comment: "❌ CRITICAL ISSUE: Chat interface loads correctly and AI responds to questions, but flowchart generation does not complete. The AI processes the sample Employee Leave Request Process and asks follow-up questions, but after answering questions, the system does not proceed to generate the flowchart. Navigation works (✅), guest mode entry works (✅), chat interface works (✅), AI interaction works (✅), but the completion trigger 'Perfect! I have everything' does not lead to flowchart generation. The chat interface appears to get stuck in question mode without transitioning to the extraction/generation phase. Backend logs show successful AI calls but no flowchart creation. This prevents testing of: step count accuracy (~7 nodes expected), text preservation (no hallucination), decision node detection (YES/NO branches), and final flowchart rendering."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
