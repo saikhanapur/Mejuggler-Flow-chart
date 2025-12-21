@@ -255,6 +255,7 @@ const DocumentUploader = ({ onComplete, onCancel }) => {
         </div>
       </div>
     </Card>
+    </>
   );
 };
 
