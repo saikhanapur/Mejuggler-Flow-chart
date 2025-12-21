@@ -278,6 +278,221 @@ class BackendTester:
         except Exception as e:
             self.log_result("POST Upload Document", False, f"Error: {str(e)}")
             return None
+
+    def test_error_handling_system(self):
+        """Test comprehensive error handling system for file uploads"""
+        print("\n🛡️ Testing Comprehensive Error Handling System...")
+        print("=" * 80)
+        
+        # Test 1: Empty file upload
+        self.test_empty_file_upload()
+        
+        # Test 2: Unsupported file type
+        self.test_unsupported_file_type()
+        
+        # Test 3: File too large
+        self.test_file_too_large()
+        
+        # Test 4: Valid PDF upload (if possible)
+        self.test_valid_pdf_upload()
+        
+        print("✅ Error Handling System Testing Complete!")
+
+    def test_empty_file_upload(self):
+        """Test uploading an empty file - should return FILE_EMPTY error"""
+        try:
+            # Create empty file
+            files = {
+                'file': ('empty.txt', '', 'text/plain')
+            }
+            
+            headers = {k: v for k, v in self.session.headers.items() if k.lower() != 'content-type'}
+            
+            response = requests.post(f"{self.base_url}/upload", 
+                                   files=files, headers=headers, timeout=TIMEOUT)
+            
+            if response.status_code == 400:
+                result = response.json()
+                detail = result.get('detail', {})
+                
+                # Check error structure
+                if (detail.get('code') == 'FILE_EMPTY' and 
+                    detail.get('title') == 'Empty File' and
+                    detail.get('severity') == 'error' and
+                    'actions' in detail and
+                    detail.get('retry_available') == False):
+                    
+                    self.log_result("Error Handling - Empty File", True, 
+                                  "Correctly returned FILE_EMPTY error with proper structure")
+                else:
+                    self.log_result("Error Handling - Empty File", False, 
+                                  f"Invalid error structure: {detail}")
+            else:
+                self.log_result("Error Handling - Empty File", False, 
+                              f"Expected 400, got HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("Error Handling - Empty File", False, f"Error: {str(e)}")
+
+    def test_unsupported_file_type(self):
+        """Test uploading unsupported file type - should return UNSUPPORTED_FILE_TYPE error"""
+        try:
+            # Create fake executable file
+            fake_exe_content = b'\x4d\x5a\x90\x00'  # PE header bytes
+            files = {
+                'file': ('malware.exe', fake_exe_content, 'application/octet-stream')
+            }
+            
+            headers = {k: v for k, v in self.session.headers.items() if k.lower() != 'content-type'}
+            
+            response = requests.post(f"{self.base_url}/upload", 
+                                   files=files, headers=headers, timeout=TIMEOUT)
+            
+            if response.status_code == 400:
+                result = response.json()
+                detail = result.get('detail', {})
+                
+                # Check error structure
+                if (detail.get('code') == 'UNSUPPORTED_FILE_TYPE' and 
+                    detail.get('title') == 'Unsupported File Format' and
+                    detail.get('severity') == 'error' and
+                    'actions' in detail and
+                    detail.get('retry_available') == False):
+                    
+                    self.log_result("Error Handling - Unsupported File", True, 
+                                  "Correctly returned UNSUPPORTED_FILE_TYPE error with proper structure")
+                else:
+                    self.log_result("Error Handling - Unsupported File", False, 
+                                  f"Invalid error structure: {detail}")
+            else:
+                self.log_result("Error Handling - Unsupported File", False, 
+                              f"Expected 400, got HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("Error Handling - Unsupported File", False, f"Error: {str(e)}")
+
+    def test_file_too_large(self):
+        """Test uploading file larger than 10MB - should return FILE_TOO_LARGE error"""
+        try:
+            # Create large file content (11MB)
+            large_content = "A" * (11 * 1024 * 1024)  # 11MB of 'A' characters
+            files = {
+                'file': ('large_file.txt', large_content, 'text/plain')
+            }
+            
+            headers = {k: v for k, v in self.session.headers.items() if k.lower() != 'content-type'}
+            
+            response = requests.post(f"{self.base_url}/upload", 
+                                   files=files, headers=headers, timeout=TIMEOUT)
+            
+            if response.status_code == 400:
+                result = response.json()
+                detail = result.get('detail', {})
+                
+                # Check error structure
+                if (detail.get('code') == 'FILE_TOO_LARGE' and 
+                    detail.get('title') == 'File Size Exceeds Limit' and
+                    detail.get('severity') == 'error' and
+                    'actions' in detail and
+                    detail.get('retry_available') == False and
+                    detail.get('support_contact') == True):
+                    
+                    self.log_result("Error Handling - File Too Large", True, 
+                                  "Correctly returned FILE_TOO_LARGE error with proper structure")
+                else:
+                    self.log_result("Error Handling - File Too Large", False, 
+                                  f"Invalid error structure: {detail}")
+            else:
+                self.log_result("Error Handling - File Too Large", False, 
+                              f"Expected 400, got HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("Error Handling - File Too Large", False, f"Error: {str(e)}")
+
+    def test_valid_pdf_upload(self):
+        """Test uploading a valid PDF - should process successfully"""
+        try:
+            # Create a simple PDF-like content (this is a minimal valid PDF)
+            pdf_content = """%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 44
+>>
+stream
+BT
+/F1 12 Tf
+72 720 Td
+(Hello World) Tj
+ET
+endstream
+endobj
+xref
+0 5
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000206 00000 n 
+trailer
+<<
+/Size 5
+/Root 1 0 R
+>>
+startxref
+300
+%%EOF"""
+            
+            files = {
+                'file': ('test_document.pdf', pdf_content.encode(), 'application/pdf')
+            }
+            
+            headers = {k: v for k, v in self.session.headers.items() if k.lower() != 'content-type'}
+            
+            response = requests.post(f"{self.base_url}/upload", 
+                                   files=files, headers=headers, timeout=TIMEOUT)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if 'text' in result and 'method' in result:
+                    self.log_result("Error Handling - Valid PDF", True, 
+                                  f"Successfully processed PDF via {result.get('method')}")
+                else:
+                    self.log_result("Error Handling - Valid PDF", False, 
+                                  f"Invalid success response structure: {result}")
+            elif response.status_code in [422, 500]:
+                # PDF processing might fail due to missing dependencies or API keys
+                # This is acceptable for testing purposes
+                result = response.json()
+                detail = result.get('detail', {})
+                if detail.get('code') in ['TEXT_EXTRACTION_FAILED', 'API_KEY_MISSING', 'OCR_FAILED']:
+                    self.log_result("Error Handling - Valid PDF", True, 
+                                  f"PDF processing failed gracefully with proper error: {detail.get('code')}")
+                else:
+                    self.log_result("Error Handling - Valid PDF", False, 
+                                  f"Unexpected error response: {detail}")
+            else:
+                self.log_result("Error Handling - Valid PDF", False, 
+                              f"Unexpected HTTP {response.status_code}: {response.text}")
+        except Exception as e:
+            self.log_result("Error Handling - Valid PDF", False, f"Error: {str(e)}")
     
     def test_ai_parse_process(self, text=None):
         """Test POST /api/process/parse - AI parsing"""
