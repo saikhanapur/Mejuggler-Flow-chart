@@ -1039,6 +1039,20 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
         Change Input Method
       </Button>
 
+      {/* Processing Error Display */}
+      {processingError && (
+        <ErrorDisplay 
+          error={processingError}
+          onRetry={processingError.retry_available ? () => {
+            setProcessingError(null);
+            if (extractedText) {
+              handleFlowchartGeneration(extractedText, 'document');
+            }
+          } : undefined}
+          onClose={() => setProcessingError(null)}
+        />
+      )}
+
       {method === 'voice' && (
         <VoiceRecorder
           onComplete={(transcript) => handleInputComplete(transcript, 'voice_transcript')}
