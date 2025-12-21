@@ -5323,12 +5323,31 @@ async def upload_document(file: UploadFile = File(...), force_vision: bool = Fal
     - Auto-detects text vs visual PDFs
     - Uses vision AI for visual/scanned documents
     - Uses text extraction for text-based documents
+    
+    WITH COMPREHENSIVE ERROR HANDLING
     """
+    from input_validation import validate_upload, validate_extracted_text, create_validation_response
+    from error_handling import ErrorCatalog, create_error_response
+    
     if not DOCUMENT_SUPPORT:
         raise HTTPException(status_code=501, detail="Document processing not available")
     
+    # STEP 1: Validate uploaded file
+    validation_result = await validate_upload(file)
+    if not validation_result.valid:
+        raise create_validation_response(validation_result)
+    
+    # Store warnings to return later
+    warnings = validation_result.warnings
+    
     try:
         content = await file.read()
+        extracted_text = ""
+        method = ""
+        result_data = {}
+        
+        # STEP 2: Extract text based on file type
+        try:
         
         # Use hybrid vision processor for PDFs and images
         if file.filename.endswith(('.pdf', '.png', '.jpg', '.jpeg')):
