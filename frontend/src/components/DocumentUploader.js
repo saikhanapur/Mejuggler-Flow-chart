@@ -17,6 +17,9 @@ const DocumentUploader = ({ onComplete, onCancel }) => {
     e.preventDefault();
     const droppedFiles = Array.from(e.dataTransfer.files);
     setFiles(prev => [...prev, ...droppedFiles]);
+    // Clear any previous errors when user drops new files
+    setError(null);
+    setWarnings([]);
   };
 
   const handleFileSelect = (e) => {
