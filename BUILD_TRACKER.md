@@ -99,8 +99,23 @@
 - ✅ Backend restarted successfully
 
 **Remaining (~3 hours):**
-- [ ] Phase 3C: Create frontend error UI components (2h)
+- [✅] Phase 3C: Create frontend error UI components (2h) - DONE
 - [ ] Phase 3D: Test all error scenarios (1h)
+
+**Phase 3C Completed:**
+- ✅ Created ErrorDisplay.jsx component (already existed from previous work)
+- ✅ Integrated ErrorDisplay into DocumentUploader.js
+  - Added error state management
+  - Added parseBackendError() to extract structured errors from API responses
+  - Added WarningDisplay for non-critical warnings (e.g., truncation)
+  - Clear errors on new file selection/drop
+  - Retry button for retryable errors
+- ✅ Integrated ErrorDisplay into ProcessCreator.js
+  - Added processingError state
+  - Added parseBackendError() helper function
+  - Updated catch blocks to use structured error handling
+  - Added error display in main render with retry functionality
+  - Clear errors when starting new generation
 
 **Impact So Far:** 
 - Zero silent failures (every error has clear message)
