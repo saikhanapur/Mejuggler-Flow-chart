@@ -26,6 +26,8 @@ const DocumentUploader = ({ onComplete, onCancel }) => {
 
   const removeFile = (index) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
+    // Clear errors when user modifies file selection
+    setError(null);
   };
 
   // Parse structured error from backend
