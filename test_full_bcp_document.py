@@ -8,7 +8,7 @@ import requests
 import json
 import time
 
-BACKEND_URL = "https://smartsop.preview.emergentagent.com"
+BACKEND_URL = "https://process2chart.preview.emergentagent.com"
 
 # Full BCP SOP Document
 FULL_BCP_TEXT = """Business Continuity Procedure #8

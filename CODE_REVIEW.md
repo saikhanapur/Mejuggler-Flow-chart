@@ -342,7 +342,7 @@ GOOGLE_CLIENT_SECRET=...
 
 #### Frontend (.env)
 ```
-REACT_APP_BACKEND_URL=https://smartsop.preview.emergentagent.com
+REACT_APP_BACKEND_URL=https://process2chart.preview.emergentagent.com
 WDS_SOCKET_PORT=443
 ```
 

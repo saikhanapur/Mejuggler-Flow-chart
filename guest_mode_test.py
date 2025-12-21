@@ -11,7 +11,7 @@ import os
 import time
 
 # Configuration
-BASE_URL = "https://smartsop.preview.emergentagent.com/api"
+BASE_URL = "https://process2chart.preview.emergentagent.com/api"
 TIMEOUT = 60
 
 class GuestModeTester:

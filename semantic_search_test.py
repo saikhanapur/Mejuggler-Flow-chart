@@ -9,7 +9,7 @@ import json
 import uuid
 import time
 
-BASE_URL = "https://smartsop.preview.emergentagent.com/api"
+BASE_URL = "https://process2chart.preview.emergentagent.com/api"
 TIMEOUT = 120
 
 def test_semantic_search():

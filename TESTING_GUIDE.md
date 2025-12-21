@@ -5,7 +5,7 @@
 ### 1. Test Stage 0: Document Analysis (the most important one!)
 
 ```bash
-curl -X POST https://smartsop.preview.emergentagent.com/api/process/analyze-document \
+curl -X POST https://process2chart.preview.emergentagent.com/api/process/analyze-document \
   -H "Content-Type: application/json" \
   -d '{
     "text": "Business Continuity Procedure: System Outage\n\nStep 1: Identify the outage\nStep 2: Contact IT team\nStep 3: Notify stakeholders\n\nReferences:\n- IT Contact: John Doe (555-1234)\n- Escalation email template",
@@ -24,7 +24,7 @@ curl -X POST https://smartsop.preview.emergentagent.com/api/process/analyze-docu
 ### 2. Test Learning System
 
 ```bash
-curl https://smartsop.preview.emergentagent.com/api/learning/insights | python -m json.tool
+curl https://process2chart.preview.emergentagent.com/api/learning/insights | python -m json.tool
 ```
 
 **What to expect:**
@@ -36,7 +36,7 @@ curl https://smartsop.preview.emergentagent.com/api/learning/insights | python -
 
 ```bash
 # Replace ANALYSIS_ID with the ID from step 1
-curl -X POST https://smartsop.preview.emergentagent.com/api/process/generate-from-analysis \
+curl -X POST https://process2chart.preview.emergentagent.com/api/process/generate-from-analysis \
   -H "Content-Type: application/json" \
   -d '{
     "documentText": "Business Continuity Procedure: System Outage\n\nStep 1: Identify the outage\nStep 2: Contact IT team\nStep 3: Notify stakeholders\n\nReferences:\n- IT Contact: John Doe (555-1234)\n- Escalation email template",
