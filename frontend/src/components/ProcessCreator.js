@@ -257,7 +257,8 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
         
       } catch (error) {
         console.error('Generation failed:', error);
-        toast.error(`Failed to generate flowchart: ${error.message || 'Please try again.'}`);
+        const parsedError = parseBackendError(error);
+        setProcessingError(parsedError);
         setProcessing(false);
       }
   };
