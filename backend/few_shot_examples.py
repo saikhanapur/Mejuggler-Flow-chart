@@ -460,35 +460,42 @@ def get_anti_hallucination_rules() -> str:
    - DO NOT rephrase to "Make phone call to worker" 
    - DO NOT add professional-sounding words not in the document
 
-3. STEP COUNT ACCURACY
-   - Count the numbered steps in the document
-   - Your output should have approximately that many nodes (±20%)
-   - If document has 8 steps, output should have 7-10 nodes, not 15 or 25
+3. BALANCED NODE COUNT (CRITICAL!)
+   - Count the explicit numbered/bulleted steps in the document
+   - A document with 5 numbered steps should have approximately 5-8 nodes
+   - A document with 8 steps + 2 decisions should have approximately 10-12 nodes
+   - DO NOT create 15+ nodes for a simple 5-step process
+   - MORE NODES ≠ BETTER. Clarity > Quantity.
 
-4. NO INVENTED STEPS
+4. GROUPING SIMILAR ACTIONS
+   - If document has "Contact 1st person, Contact 2nd person, Contact 3rd person"
+   - You MAY group into single node: "Contact escalation (3 attempts)"
+   - Keep sub-steps in the node's details
+   - This reduces visual clutter
+
+5. NO INVENTED STEPS
    ❌ "Review documentation" (unless document says this)
    ❌ "Quality check" (unless document says this)
    ❌ "Notify supervisor" (unless document says this)
    ❌ "Update records" (unless document says this)
    ❌ "Best practice" additions
    
-5. DECISION POINT RULES
+6. DECISION POINT RULES
    - Only create decision nodes where document explicitly shows:
      * "If... then..." statements
      * "Check if..." questions
      * "Yes/No" branching
-     * Explicit decision diamonds
    - DO NOT invent decision points to "improve" the flow
 
-6. ROLE/ACTOR EXTRACTION
+7. ROLE/ACTOR EXTRACTION
    - Only use roles explicitly mentioned in document
    - If document doesn't mention roles, use generic "Operations"
    - DO NOT invent department names
 
-7. VERIFICATION CHECKLIST (Apply before returning)
+8. VERIFICATION CHECKLIST (Apply before returning)
    □ Can I quote document text for every node? If no → remove node
    □ Did I use exact wording? If no → fix wording
+   □ Is my node count proportional to document steps? If way more → group/reduce
    □ Are there invented "improvement" steps? If yes → remove them
-   □ Does node count match document structure? If no → adjust
    □ Are decision points only where document shows branching? If no → fix
 """
