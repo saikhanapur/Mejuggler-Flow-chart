@@ -187,12 +187,20 @@
 
 ## 🎯 NEXT IMMEDIATE ACTION
 
-**Task:** Fix OCR (poppler-utils)
+**Task:** Test Error Handling (Phase 3D)
 **Time Estimate:** 1 hour
-**Depends On:** Nothing
-**Blocks:** OCR functionality for scanned PDFs
-**Status:** READY TO START
+**Depends On:** Frontend error UI integration (complete)
+**Blocks:** Task completion
+**Status:** READY TO TEST
+
+**Test scenarios to verify:**
+1. Upload empty file → Should show "Empty File" error
+2. Upload wrong file type (.exe) → Should show "Unsupported File Format" error
+3. Upload oversized file (>10MB) → Should show "File Size Exceeds Limit" error
+4. Upload corrupted PDF → Should show extraction error with retry option
+5. AI processing timeout → Should show timeout error
+6. Invalid API response → Should show structured error
 
 ---
 
-*Last Updated: December 2, 2025 - 04:15 UTC*
+*Last Updated: December 2025 - Task 3 Phase 3C Complete*
