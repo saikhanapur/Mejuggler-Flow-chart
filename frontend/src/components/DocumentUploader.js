@@ -4,11 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { api } from '@/utils/api';
 import { toast } from 'sonner';
+import { ErrorDisplay, WarningDisplay } from './ErrorDisplay';
 
 const DocumentUploader = ({ onComplete, onCancel }) => {
   const [files, setFiles] = useState([]);
   const [processing, setProcessing] = useState(false);
   const [extractedText, setExtractedText] = useState('');
+  const [error, setError] = useState(null);
+  const [warnings, setWarnings] = useState([]);
 
   const handleDrop = (e) => {
     e.preventDefault();
