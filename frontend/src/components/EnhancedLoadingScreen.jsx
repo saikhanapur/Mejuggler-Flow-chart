@@ -2,7 +2,7 @@
  * Enhanced Loading Screen
  * Shows granular, step-by-step progress during document processing
  */
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Check, Loader2, FileText, Brain, GitBranch, Sparkles, Clock } from 'lucide-react';
 
 const PROCESSING_STEPS = [
@@ -46,6 +46,7 @@ const PROCESSING_STEPS = [
 const EnhancedLoadingScreen = ({ processingStep }) => {
   const [stepProgress, setStepProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const prevStepRef = useRef(-1);
 
   // Derive current step index from processingStep text (using useMemo to avoid effect)
   const currentStepIndex = useMemo(() => {
@@ -72,7 +73,16 @@ const EnhancedLoadingScreen = ({ processingStep }) => {
       return;
     }
 
-    setStepProgress(0);
+    // Reset progress when step changes
+    if (prevStepRef.current !== currentStepIndex) {
+      prevStepRef.current = currentStepIndex;
+      // Use a timeout to avoid synchronous setState
+      const resetTimeout = setTimeout(() => {
+        setStepProgress(0);
+      }, 0);
+      return () => clearTimeout(resetTimeout);
+    }
+
     const interval = setInterval(() => {
       setStepProgress(prev => {
         const increment = 100 / (currentStep.duration * 10); // Update every 100ms
