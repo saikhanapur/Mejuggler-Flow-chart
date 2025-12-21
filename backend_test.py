@@ -5207,47 +5207,7 @@ if __name__ == "__main__":
     if passed == total:
         print("\n✅ All error handling tests passed!")
     else:
-        print(f"\n⚠️ Issues found with Error Handling System")
-    
-    Steps:
-    1. Call emergency services if needed
-    2. Contact support team
-    3. Notify manager
-    """
-    
-    try:
-        payload = {
-            "text": simple_contacts_doc,
-            "inputType": "document"
-        }
-        
-        response = tester.session.post(f"{tester.base_url}/process/eroad-style", 
-                                   json=payload, timeout=120)
-        
-        if response.status_code == 200:
-            result = response.json()
-            if 'processes' in result and result['processes']:
-                process = result['processes'][0]
-                quick_reference = process.get('quickReference', {})
-                emergency_contacts = quick_reference.get('emergencyContacts', {})
-                
-                # Check if simple contacts are parsed correctly
-                if emergency_contacts:
-                    simple_format_ok = True
-                    for contact_name, contact_data in emergency_contacts.items():
-                        # Should have main number, extension and options should be null/empty
-                        if not contact_data.get('main'):
-                            simple_format_ok = False
-                            break
-                    
-                    if simple_format_ok:
-                        tester.log_result("Backward Compatibility - Simple Contacts", True, 
-                                        f"Simple contacts parsed correctly: {list(emergency_contacts.keys())}")
-                    else:
-                        tester.log_result("Backward Compatibility - Simple Contacts", False, 
-                                        "Simple contacts not parsed correctly")
-                else:
-                    tester.log_result("Backward Compatibility - Simple Contacts", False, 
+        print(f"\n⚠️ Issues found with Error Handling System") 
                                     "No emergency contacts found in simple format")
             else:
                 tester.log_result("Backward Compatibility - Simple Contacts", False, 
