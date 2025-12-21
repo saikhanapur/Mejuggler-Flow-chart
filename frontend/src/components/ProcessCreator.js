@@ -36,6 +36,9 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
   const [showContextAdder, setShowContextAdder] = useState(false);
   const [extractedData, setExtractedData] = useState(null);
   
+  // Error handling state
+  const [processingError, setProcessingError] = useState(null);
+  
   // Smart question flow with streaming
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState(null);
@@ -60,6 +63,34 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
   // Project selection (disabled in guest mode)
   const [workspaces, setWorkspaces] = useState([]);
   const [selectedWorkspace, setSelectedWorkspace] = useState(null);
+  
+  // Parse structured error from backend API responses
+  const parseBackendError = (err) => {
+    if (err.response?.data?.detail) {
+      const detail = err.response.data.detail;
+      if (typeof detail === 'object' && detail.code) {
+        return detail;
+      }
+      if (typeof detail === 'string') {
+        return {
+          title: 'Processing Failed',
+          message: detail,
+          severity: 'error',
+          actions: ['Try a different document', 'Simplify your document content'],
+          retry_available: true
+        };
+      }
+    }
+    // Fallback for generic errors
+    const errorMessage = err.message || 'An unexpected error occurred';
+    return {
+      title: 'Error',
+      message: errorMessage,
+      severity: 'error',
+      actions: ['Try again', 'Contact support if the issue persists'],
+      retry_available: true
+    };
+  };
 
   useEffect(() => {
     if (!isGuestMode) {
