@@ -732,14 +732,14 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
       }
       
       // No saved positions - run layout algorithm for new flowchart
-      console.log('🚀 No saved positions found - calculating CLEAN layout for new flowchart...');
+      console.log('🚀 No saved positions found - calculating layout for new flowchart...');
       setIsLayouting(true);
       
       try {
-        console.log('⏱️ Calling getCleanLayoutedElements...');
+        console.log('⏱️ Calling getLayoutedElements...');
         
-        // Create cancellable timeout - use CLEAN layout algorithm
-        const layoutPromise = getCleanLayoutedElements(
+        // Create cancellable timeout
+        const layoutPromise = getLayoutedElements(
           initialNodes,
           initialEdges,
           layoutDirection
