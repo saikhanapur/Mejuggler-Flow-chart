@@ -109,10 +109,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Error Handling System - Empty File Upload"
-    - "Error Handling System - Unsupported File Type"
-    - "Error Handling System - File Too Large"
-    - "Error Handling System - Valid PDF Processing"
+    - "Frontend Error Display Testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
