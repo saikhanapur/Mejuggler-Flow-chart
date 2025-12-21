@@ -22,6 +22,9 @@ const DocumentUploader = ({ onComplete, onCancel }) => {
   const handleFileSelect = (e) => {
     const selectedFiles = Array.from(e.target.files);
     setFiles(prev => [...prev, ...selectedFiles]);
+    // Clear any previous errors when user selects new files
+    setError(null);
+    setWarnings([]);
   };
 
   const removeFile = (index) => {
