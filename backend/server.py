@@ -3659,17 +3659,44 @@ async def create_selected_processes(
             selected_titles = detection.get("processTitles", [])
             logger.info(f"Creating all {len(selected_titles)} processes")
         
+        # Create progress tracking session for real-time updates
+        progress_session_id = create_multi_process_session(
+            user_id=user_id,
+            process_count=len(selected_titles),
+            process_titles=selected_titles
+        )
+        
         # Create individual flowcharts for each selected process
         created_processes = []
         
         for i, process_title in enumerate(selected_titles):
             logger.info(f"Creating process {i+1}/{len(selected_titles)}: {process_title}")
             
+            # Update progress - starting this process
+            await update_process_progress(
+                session_id=progress_session_id,
+                process_index=i,
+                process_title=process_title,
+                phase="extracting_section",
+                message="Extracting document section...",
+                sub_progress=0
+            )
+            
             # Extract section for this process
             process_text = service._extract_process_section(
                 document_text, 
                 process_title, 
                 selected_titles
+            )
+            
+            # Update progress - analyzing
+            await update_process_progress(
+                session_id=progress_session_id,
+                process_index=i,
+                process_title=process_title,
+                phase="analyzing_structure",
+                message="AI analyzing process structure...",
+                sub_progress=25
             )
             
             # Generate EROAD-style flowchart for this one process
@@ -3680,20 +3707,49 @@ async def create_selected_processes(
                 user_id
             )
             
+            # Update progress - generating flowchart
+            await update_process_progress(
+                session_id=progress_session_id,
+                process_index=i,
+                process_title=process_title,
+                phase="generating_flowchart",
+                message="Building flowchart visualization...",
+                sub_progress=75
+            )
+            
             # Get the generated process
             if process_result.get("processes") and len(process_result["processes"]) > 0:
                 process_data = process_result["processes"][0]
                 
                 # Add to created list (don't save to DB yet - frontend will do that)
                 created_processes.append(process_data)
+                
+                # Update progress - completed this process
+                await update_process_progress(
+                    session_id=progress_session_id,
+                    process_index=i,
+                    process_title=process_title,
+                    phase="completed",
+                    message=f"Generated {len(process_data.get('nodes', []))} nodes",
+                    sub_progress=100
+                )
+                
                 logger.info(f"✅ Process '{process_title}' generated: {len(process_data.get('nodes', []))} nodes")
             else:
                 logger.warning(f"⚠️ No process generated for '{process_title}'")
         
+        # Mark progress as complete
+        await progress_tracker.complete(
+            session_id=progress_session_id,
+            result={"processCount": len(created_processes)},
+            message=f"Successfully generated {len(created_processes)} flowcharts"
+        )
+        
         result = {
             "multipleProcesses": True,
             "processCount": len(created_processes),
-            "processes": created_processes
+            "processes": created_processes,
+            "progressSessionId": progress_session_id  # Include for frontend reference
         }
         
         logger.info(f"✅ Created {len(created_processes)} processes")
