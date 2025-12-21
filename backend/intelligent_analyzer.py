@@ -52,12 +52,10 @@ class IntelligentDocumentAnalyzer:
         ]
         
         self.decision_patterns = [
-            r'\bif\b.*\bthen\b',
-            r'\bif\s+(?:yes|no)\b',
-            r'\b(?:yes|no)\s*[-:→]',
+            r'\bif\b[^.]*\bthen\b',  # "if... then..." in same sentence
+            r'(?:^|\n)\s*[-•]\s*(?:yes|no)\s*:',  # Bullet point YES: or NO:
             r'\bdecision\b',
             r'\bcheck\s+(?:if|whether)\b',
-            r'\?.*(?:yes|no)',
         ]
         
         self.parallel_patterns = [
