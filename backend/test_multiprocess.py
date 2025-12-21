@@ -52,7 +52,14 @@ Equipment Maintenance SOP
 """
 
 async def test_detection():
-    api_key = os.environ.get("EMERGENT_LLM_KEY")
+    # Get Emergent LLM key
+    from emergent_integrations_manager import get_universal_key
+    api_key = get_universal_key()
+    
+    if not api_key:
+        print("❌ ERROR: No API key available")
+        return
+    
     detector = MultiProcessDetector(api_key)
     
     print("=" * 60)
