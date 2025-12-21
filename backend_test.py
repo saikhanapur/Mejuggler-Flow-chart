@@ -5207,31 +5207,4 @@ if __name__ == "__main__":
     if passed == total:
         print("\n✅ All error handling tests passed!")
     else:
-        print(f"\n⚠️ Issues found with Error Handling System") 
-                                    "No emergency contacts found in simple format")
-            else:
-                tester.log_result("Backward Compatibility - Simple Contacts", False, 
-                                "No processes found in response")
-        else:
-            tester.log_result("Backward Compatibility - Simple Contacts", False, 
-                            f"HTTP {response.status_code}: {response.text}")
-    except Exception as e:
-        tester.log_result("Backward Compatibility - Simple Contacts", False, f"Error: {str(e)}")
-    
-    print("\n" + "=" * 80)
-    print("📊 TEST SUMMARY")
-    print("=" * 80)
-    
-    passed = sum(1 for r in tester.test_results if r['success'])
-    total = len(tester.test_results)
-    
-    print(f"📊 Tests Passed: {passed}/{total} ({passed/total*100:.1f}%)")
-    
-    for test_result in tester.test_results:
-        status = "✅ PASS" if test_result['success'] else "❌ FAIL"
-        print(f"{status} {test_result['test']}: {test_result['details']}")
-    
-    if passed == total:
-        print("\n🎉 Hierarchical Emergency Contacts working correctly!")
-    else:
-        print("\n⚠️ Issues found with Hierarchical Emergency Contacts")
+        print(f"\n⚠️ Issues found with Error Handling System")
