@@ -387,6 +387,130 @@ Return JSON:
 Expected range: {max(3, estimated_nodes-3)} to {estimated_nodes+3} nodes.
 Return ONLY JSON."""
     
+    def _build_generate_prompt_with_examples(self, doc_text: str, estimated_nodes: int) -> str:
+        """
+        Build prompt for GENERATION mode with few-shot learning.
+        This is the CORE method for accurate flowchart extraction.
+        """
+        from few_shot_examples import get_few_shot_examples_text, get_anti_hallucination_rules
+        
+        return f"""{get_anti_hallucination_rules()}
+
+=== LEARN FROM THESE EXAMPLES ===
+{get_few_shot_examples_text()}
+
+=== NOW PROCESS THIS DOCUMENT ===
+
+DOCUMENT TO PROCESS:
+\"\"\"
+{doc_text[:100000]}
+\"\"\"
+
+YOUR TASK:
+Extract a flowchart from the document above. Follow the EXACT same pattern as the examples.
+
+CRITICAL REQUIREMENTS:
+1. Each node MUST have a "sourceReference" field showing which part of the document it came from
+2. Use EXACT wording from the document for node titles
+3. Only create decision nodes where document explicitly shows YES/NO or IF/THEN
+4. Expected node count: approximately {estimated_nodes} nodes (based on document structure)
+
+VALIDATION BEFORE RETURNING:
+- Count your nodes. Do you have roughly {estimated_nodes}? If wildly different, re-check.
+- For EACH node, can you quote the source text? If not, delete that node.
+- Did you invent any "improvement" steps? Delete them.
+
+Return ONLY valid JSON in this exact format:
+{{
+  "processName": "Process name from document",
+  "nodes": [
+    {{
+      "id": "node-1",
+      "type": "process" | "decision",
+      "title": "EXACT text from document",
+      "description": "Brief description",
+      "status": "critical|action|operational|communication",
+      "swimLane": "Role mentioned in document",
+      "connections": ["node-2"],
+      "isDecisionPoint": true/false,
+      "decisionCriteria": "Question if decision node",
+      "decisionOptions": {{"yes": "node-id", "no": "node-id"}},
+      "actors": ["Role"],
+      "sourceReference": "Step X / Line Y / Quote from document"
+    }}
+  ],
+  "swimLanes": [
+    {{"id": "lane-1", "name": "Role Name", "color": "#3B82F6"}}
+  ]
+}}
+
+Return ONLY JSON, no explanations."""
+    
+    def _build_extract_prompt_with_examples(self, doc_text: str, estimated_nodes: int, doc_type: str) -> str:
+        """
+        Build prompt for EXTRACTION mode with few-shot learning.
+        For documents that already describe a flowchart structure.
+        """
+        from few_shot_examples import get_few_shot_examples_text, get_anti_hallucination_rules
+        
+        return f"""{get_anti_hallucination_rules()}
+
+=== LEARN FROM THESE EXAMPLES ===
+{get_few_shot_examples_text()}
+
+=== NOW EXTRACT FROM THIS DOCUMENT ===
+
+This document already describes a flowchart structure. Your job is to EXTRACT it EXACTLY as described.
+
+DOCUMENT:
+\"\"\"
+{doc_text[:100000]}
+\"\"\"
+
+EXTRACTION RULES:
+1. This document describes approximately {estimated_nodes} nodes. Extract EXACTLY what's described.
+2. Look for explicit node descriptions: "Step 1:", "Node:", "Action:", etc.
+3. Preserve EXACT titles as written in the document
+4. Map connections exactly as the document describes them
+5. Every node MUST have sourceReference showing where it came from
+
+DECISION NODE IDENTIFICATION:
+- Nodes with "?" in title → DECISION
+- Nodes with YES/NO branches → DECISION
+- "Check if..." statements → DECISION
+
+Return ONLY valid JSON in the standard format with sourceReference for each node."""
+    
+    def _build_hybrid_prompt_with_examples(self, doc_text: str, estimated_nodes: int) -> str:
+        """
+        Build prompt for HYBRID mode with few-shot learning.
+        For documents with mixed structured and unstructured content.
+        """
+        from few_shot_examples import get_few_shot_examples_text, get_anti_hallucination_rules
+        
+        return f"""{get_anti_hallucination_rules()}
+
+=== LEARN FROM THESE EXAMPLES ===
+{get_few_shot_examples_text()}
+
+=== NOW PROCESS THIS MIXED DOCUMENT ===
+
+This document has SOME flowchart structure but also unstructured text. Extract what's clear, organize what's unclear.
+
+DOCUMENT:
+\"\"\"
+{doc_text[:100000]}
+\"\"\"
+
+RULES:
+1. Where structure is clear (numbered steps, explicit nodes), EXTRACT exactly
+2. Where text is narrative, identify the key actions and sequence them
+3. Estimated complexity: ~{estimated_nodes} nodes
+4. Every node MUST have sourceReference to justify its existence
+5. If you can't point to source text for a node, don't create it
+
+Return ONLY valid JSON with sourceReference for each node."""
+
     async def _extract_content(
         self, 
         doc_text: str, 
