@@ -121,8 +121,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Frontend Error Display Testing"
-  stuck_tasks: []
+    - "Flowchart Generation with Enhanced AI (Few-shot Learning)"
+  stuck_tasks:
+    - "Flowchart Generation with Enhanced AI (Few-shot Learning)"
   test_all: false
   test_priority: "high_first"
 
