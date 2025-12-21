@@ -152,11 +152,11 @@
 
 ## ⏳ PENDING WORK
 
-### PHASE 1: Critical Bug Fixes (3.75 hours remaining)
+### PHASE 1: Critical Bug Fixes (3.7 hours remaining)
 1. [✅] Fix OCR (poppler-utils) - 1h → DONE in 0.25h
 2. [✅] Test & Fix Multi-Process Detection - 4h → DONE in 0.5h
 3. [✅] Add Comprehensive Error Handling - 8h → DONE in 6h
-4. [ ] Increase Character Limit - 5min
+4. [✅] Increase Character Limit - 5min → DONE in 5min
 5. [ ] Add Truncation Warning - 1h
 6. [ ] Add Loading States - 2h
 
