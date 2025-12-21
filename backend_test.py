@@ -5086,6 +5086,10 @@ Contacts:
         uploaded_text = self.test_document_upload()
         self.test_ai_parse_process(uploaded_text)
         
+        # Test Error Handling System
+        print("\n🛡️ ERROR HANDLING SYSTEM - Comprehensive Testing...")
+        self.test_error_handling_system()
+        
         # Test AI Integration endpoints
         print("\n🧠 AI INTEGRATION - Ideal State & Chat...")
         self.test_ai_ideal_state()
