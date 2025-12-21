@@ -5347,8 +5347,6 @@ async def upload_document(file: UploadFile = File(...), force_vision: bool = Fal
         result_data = {}
         
         # STEP 2: Extract text based on file type
-        try:
-        
         # Use hybrid vision processor for PDFs and images
         if file.filename.endswith(('.pdf', '.png', '.jpg', '.jpeg')):
             from vision_document_processor import VisionDocumentProcessor
@@ -5359,25 +5357,66 @@ async def upload_document(file: UploadFile = File(...), force_vision: bool = Fal
                 logger.warning("⚠️ EMERGENT_LLM_KEY not found, falling back to text extraction")
                 # Fallback to text extraction
                 if file.filename.endswith('.pdf'):
-                    pdf_reader = pypdf.PdfReader(io.BytesIO(content))
-                    text = ""
-                    for page in pdf_reader.pages:
-                        text += page.extract_text() + "\n"
-                    return {"text": text, "method": "text_fallback"}
+                    try:
+                        pdf_reader = pypdf.PdfReader(io.BytesIO(content))
+                        text = ""
+                        for page in pdf_reader.pages:
+                            text += page.extract_text() + "\n"
+                        extracted_text = text
+                        method = "text_fallback"
+                    except Exception as e:
+                        raise HTTPException(
+                            status_code=422,
+                            detail=create_error_response(
+                                ErrorCatalog.TEXT_EXTRACTION_FAILED,
+                                technical_detail=str(e)
+                            )
+                        )
                 else:
-                    raise HTTPException(status_code=500, detail="Vision processing requires EMERGENT_LLM_KEY")
-            
-            # Use hybrid processor
-            processor = VisionDocumentProcessor(api_key=llm_key)
-            result = await processor.process_document(
-                file_bytes=content,
-                filename=file.filename,
-                force_vision=force_vision
-            )
-            
-            logger.info(f"📄 Document processed via {result['method']}: {len(result['text'])} chars")
-            return {
-                "text": result["text"],
+                    raise HTTPException(
+                        status_code=500,
+                        detail=create_error_response(ErrorCatalog.API_KEY_MISSING)
+                    )
+            else:
+                # Use hybrid processor
+                try:
+                    processor = VisionDocumentProcessor(api_key=llm_key)
+                    result = await processor.process_document(
+                        file_bytes=content,
+                        filename=file.filename,
+                        force_vision=force_vision
+                    )
+                    extracted_text = result["text"]
+                    method = result["method"]
+                    result_data = result
+                except Exception as e:
+                    logger.error(f"❌ Vision processing failed: {e}", exc_info=True)
+                    # If vision fails and it's a PDF, try text fallback
+                    if file.filename.endswith('.pdf'):
+                        try:
+                            pdf_reader = pypdf.PdfReader(io.BytesIO(content))
+                            text = ""
+                            for page in pdf_reader.pages:
+                                text += page.extract_text() + "\n"
+                            extracted_text = text
+                            method = "text_fallback_after_vision_error"
+                            logger.info("✅ Recovered with text fallback")
+                        except:
+                            raise HTTPException(
+                                status_code=422,
+                                detail=create_error_response(
+                                    ErrorCatalog.OCR_FAILED,
+                                    technical_detail=str(e)
+                                )
+                            )
+                    else:
+                        raise HTTPException(
+                            status_code=422,
+                            detail=create_error_response(
+                                ErrorCatalog.TEXT_EXTRACTION_FAILED,
+                                technical_detail=str(e)
+                            )
+                        )
                 "method": result["method"],
                 "confidence": result.get("confidence", 0),
                 "pages_processed": result.get("pages_processed", 1)
