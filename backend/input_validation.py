@@ -6,7 +6,13 @@ import io
 from typing import Tuple, Optional
 from fastapi import UploadFile, HTTPException
 import pypdf
-import magic
+
+# Try to import magic, but handle gracefully if not available
+try:
+    import magic
+    MAGIC_AVAILABLE = True
+except ImportError:
+    MAGIC_AVAILABLE = False
 
 from error_handling import ErrorCatalog, create_error_response
 
