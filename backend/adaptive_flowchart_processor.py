@@ -204,7 +204,7 @@ class AdaptiveFlowchartProcessor:
         return f"""CRITICAL TASK: This document describes an EXISTING flowchart. Your job is to EXTRACT it EXACTLY as described.
 
 DOCUMENT:
-{doc_text[:20000]}
+{doc_text[:100000]}
 
 TASK: Extract the EXACT flowchart structure described in this document.
 
@@ -273,7 +273,7 @@ Return ONLY JSON."""
         return f"""Extract a flowchart from this SOP document. Be accurate and use exact terminology from the document.
 
 DOCUMENT:
-{doc_text[:20000]}
+{doc_text[:100000]}
 
 INSTRUCTIONS:
 
@@ -337,7 +337,7 @@ Return ONLY valid JSON."""
         return f"""TASK: Process this document which has SOME flowchart structure but needs organization.
 
 DOCUMENT:
-{doc_text[:20000]}
+{doc_text[:100000]}
 
 TASK: Extract existing structure and intelligently organize any unstructured parts.
 
@@ -393,7 +393,7 @@ Return ONLY JSON."""
         
         prompt = f"""Extract ACTIONABLE, DIFFERENTIATED CONTENT from this document for interactive flowchart nodes:
 
-{doc_text[:20000]}
+{doc_text[:100000]}
 
 CRITICAL: For each major step, provide DIFFERENT types of information:
 1. subSteps: Concrete action items someone would DO (not just restating the step name)

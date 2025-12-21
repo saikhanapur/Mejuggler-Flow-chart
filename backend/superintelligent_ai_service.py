@@ -48,7 +48,7 @@ class SuperintelligentAIService:
         
         # ⚠️ CRITICAL: Check document size and warn
         doc_length = len(document_text)
-        if doc_length > 20000:
+        if doc_length > 100000:
             logger.warning(
                 f"⚠️ LARGE DOCUMENT: {doc_length:,} characters\n"
                 f"   Processing first 20,000 chars (~10 pages)"
@@ -344,7 +344,7 @@ Return ONLY the JSON, nothing else."""
         prompt = f"""EXTRACT FLOWCHART SKELETON - MINIMAL JSON ONLY
 
 DOCUMENT:
-{section_content[:20000]}
+{section_content[:100000]}
 
 EXTRACT:
 1. Every procedural step as a node (ID + short title ONLY)

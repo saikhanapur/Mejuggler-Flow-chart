@@ -128,7 +128,7 @@ class ActionableIntelligenceService:
         # ⚠️ CRITICAL: Check document size and warn about truncation
         doc_length = len(document_text)
         
-        if doc_length > 20000:
+        if doc_length > 100000:
             logger.warning(
                 f"⚠️ LARGE DOCUMENT WARNING: {doc_length:,} characters\n"
                 f"   Processing first 20,000 chars (~10 pages).\n"
@@ -219,7 +219,7 @@ CRITICAL RULES:
 - VALIDATE IDs: All edge sources/targets must exist in nodes
 
 Document to analyze:
-{document_text[:20000]}
+{document_text[:100000]}
 """
         
         chat = LlmChat(
@@ -459,7 +459,7 @@ Return JSON:
 }}
 
 Document context:
-{document_text[:20000]}
+{document_text[:100000]}
 """
             
             chat = LlmChat(

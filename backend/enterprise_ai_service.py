@@ -74,7 +74,7 @@ EXAMPLE GOOD:
 ✅ "Notify Stakeholders via Email"
 
 INPUT DOCUMENT:
-{input_text[:20000]}
+{input_text[:100000]}
 
 IDENTIFY:
 1. Strategic phases (8-12 max)

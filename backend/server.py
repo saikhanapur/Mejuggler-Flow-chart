@@ -908,7 +908,7 @@ EXAMPLE OF GOOD (Smart Grouping):
 (Grouped intelligently - ADDS VALUE)
 
 INPUT DOCUMENT:
-{input_text[:20000]}
+{input_text[:100000]}
 
 STEP 1: IDENTIFY STRATEGIC PHASES
 Ask yourself: "If I had to explain this process in 8 key steps, what would they be?"

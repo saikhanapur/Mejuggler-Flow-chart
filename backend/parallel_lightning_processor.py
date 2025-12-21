@@ -89,7 +89,7 @@ class ParallelLightningProcessor:
         
         prompt = f"""Extract the flowchart STRUCTURE from this document:
 
-{doc_text[:20000]}
+{doc_text[:100000]}
 
 Return JSON:
 {{
@@ -135,7 +135,7 @@ Return ONLY JSON."""
         
         prompt = f"""Extract DETAILED CONTENT from this document:
 
-{doc_text[:20000]}
+{doc_text[:100000]}
 
 For each major step/action, extract:
 - 3-5 specific sub-steps (for expandable dropdowns)
