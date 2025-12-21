@@ -144,18 +144,29 @@ const DocumentUploader = ({ onComplete, onCancel }) => {
   };
 
   return (
-    <Card className="max-w-4xl mx-auto p-8" data-testid="document-uploader">
-      <h2 className="text-2xl font-bold text-slate-800 mb-2">Upload Documents</h2>
-      <p className="text-slate-600 mb-8">Upload existing process documentation, emails, or screenshots. We'll extract and structure the information.</p>
-
-      {/* Error Display */}
-      {error && (
-        <ErrorDisplay 
-          error={error} 
-          onRetry={error.retry_available ? handleRetry : undefined}
-          onClose={handleClearError}
+    <>
+      {/* Truncation Warning Modal */}
+      {truncationInfo && (
+        <TruncationWarning
+          originalLength={truncationInfo.originalLength}
+          truncatedLength={100000}
+          onProceed={handleTruncationProceed}
+          onCancel={handleTruncationCancel}
         />
       )}
+      
+      <Card className="max-w-4xl mx-auto p-8" data-testid="document-uploader">
+        <h2 className="text-2xl font-bold text-slate-800 mb-2">Upload Documents</h2>
+        <p className="text-slate-600 mb-8">Upload existing process documentation, emails, or screenshots. We'll extract and structure the information.</p>
+
+        {/* Error Display */}
+        {error && (
+          <ErrorDisplay 
+            error={error} 
+            onRetry={error.retry_available ? handleRetry : undefined}
+            onClose={handleClearError}
+          />
+        )}
       
       {/* Warnings Display */}
       {warnings.length > 0 && !error && warnings.map((warning, idx) => (
