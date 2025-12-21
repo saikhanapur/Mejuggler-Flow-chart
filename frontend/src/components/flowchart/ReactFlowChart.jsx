@@ -445,7 +445,8 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
     
     // Map edges and add YES/NO labels for decision nodes
     const enhancedEdges = validEdges.map((edge) => {
-      // CRITICAL FIX: Add YES/NO labels for decision edges
+      // Track which handle to connect from (for decision nodes)
+      let sourceHandle = undefined;
       let edgeLabel = edge.label || '';
       
       // Check if this edge comes from a decision node
