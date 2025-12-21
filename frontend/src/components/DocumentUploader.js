@@ -71,17 +71,39 @@ const DocumentUploader = ({ onComplete, onCancel }) => {
     setProcessing(true);
     setError(null);
     setWarnings([]);
+    setTruncationInfo(null);
     let allText = '';
+    let totalOriginalLength = 0;
+    let wasTruncated = false;
 
     try {
       for (const file of files) {
         const data = await api.uploadDocument(file);
         allText += data.text + '\n\n';
         
+        // Track truncation info
+        if (data.original_length) {
+          totalOriginalLength += data.original_length;
+        }
+        if (data.truncated) {
+          wasTruncated = true;
+        }
+        
         // Collect warnings from response
         if (data.warnings && data.warnings.length > 0) {
           setWarnings(prev => [...prev, ...data.warnings]);
         }
+      }
+
+      // If document was truncated, show warning modal before proceeding
+      if (wasTruncated) {
+        setExtractedText(allText);
+        setTruncationInfo({
+          originalLength: totalOriginalLength,
+          truncated: true
+        });
+        setProcessing(false);
+        return; // Wait for user confirmation
       }
 
       setExtractedText(allText);
@@ -96,9 +118,24 @@ const DocumentUploader = ({ onComplete, onCancel }) => {
     }
   };
   
+  // Handle truncation warning - user proceeds
+  const handleTruncationProceed = () => {
+    setTruncationInfo(null);
+    toast.success('Text extracted successfully! (Document was truncated)');
+  };
+  
+  // Handle truncation warning - user cancels
+  const handleTruncationCancel = () => {
+    setTruncationInfo(null);
+    setExtractedText('');
+    setFiles([]);
+    toast.info('Upload cancelled. Try uploading a smaller document.');
+  };
+  
   const handleRetry = () => {
     setError(null);
     setWarnings([]);
+    setTruncationInfo(null);
     processFiles();
   };
   
