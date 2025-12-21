@@ -2,7 +2,7 @@
  * Enhanced Loading Screen
  * Shows granular, step-by-step progress during document processing
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Check, Loader2, FileText, Brain, GitBranch, Sparkles, Clock } from 'lucide-react';
 
 const PROCESSING_STEPS = [
@@ -43,33 +43,32 @@ const PROCESSING_STEPS = [
   }
 ];
 
-const EnhancedLoadingScreen = ({ processingStep, startTime }) => {
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+const EnhancedLoadingScreen = ({ processingStep }) => {
   const [stepProgress, setStepProgress] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
 
-  // Map processingStep text to step index
-  useEffect(() => {
+  // Derive current step index from processingStep text (using useMemo to avoid effect)
+  const currentStepIndex = useMemo(() => {
     const stepText = processingStep?.toLowerCase() || '';
     
     if (stepText.includes('upload') || stepText.includes('reading')) {
-      setCurrentStepIndex(1);
+      return 1;
     } else if (stepText.includes('extract') || stepText.includes('intelligence')) {
-      setCurrentStepIndex(1);
+      return 1;
     } else if (stepText.includes('analyz') || stepText.includes('structure')) {
-      setCurrentStepIndex(2);
+      return 2;
     } else if (stepText.includes('generat') || stepText.includes('flowchart') || stepText.includes('building')) {
-      setCurrentStepIndex(3);
+      return 3;
     } else if (stepText.includes('final') || stepText.includes('prepar')) {
-      setCurrentStepIndex(4);
+      return 4;
     }
+    return 0;
   }, [processingStep]);
 
   // Progress animation within current step
   useEffect(() => {
     const currentStep = PROCESSING_STEPS[currentStepIndex];
     if (!currentStep || currentStep.duration === 0) {
-      setStepProgress(100);
       return;
     }
 
@@ -174,7 +173,6 @@ const EnhancedLoadingScreen = ({ processingStep, startTime }) => {
               const StepIcon = step.icon;
               const isCompleted = index < currentStepIndex;
               const isCurrent = index === currentStepIndex;
-              const isPending = index > currentStepIndex;
 
               return (
                 <div 
