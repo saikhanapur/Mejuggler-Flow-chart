@@ -20,6 +20,7 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 import secrets
 from cache_service import cache_service
+from progress_tracker import progress_tracker, create_multi_process_session, update_process_progress
 try:
     from openai import OpenAI
     OPENAI_AVAILABLE = True
