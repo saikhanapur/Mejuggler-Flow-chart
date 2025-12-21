@@ -663,9 +663,9 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
     }
   };
 
-  // Loading screen during processing - DYNAMIC with real-time steps
+  // Loading screen during processing - ENHANCED with step-by-step progress
   if (processing || analyzing) {
-    return <DynamicLoadingScreen processingStep={processingStep} analyzing={analyzing} />;
+    return <EnhancedLoadingScreen processingStep={processingStep} />;
   }
 
   // NEW: Show context adder after document upload (legacy, might be removed)
