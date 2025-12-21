@@ -81,21 +81,22 @@ async def validate_upload(file: UploadFile) -> ValidationResult:
             )
         )
     
-    # 4. Validate file content matches extension
-    try:
-        mime = magic.from_buffer(content[:2048], mime=True)
-        if mime not in SUPPORTED_MIME_TYPES:
-            # File extension doesn't match content
-            return ValidationResult(
-                valid=False,
-                error=create_error_response(
-                    ErrorCatalog.UNSUPPORTED_FILE_TYPE,
-                    technical_detail=f"File claims to be {file_ext} but contains {mime}"
+    # 4. Validate file content matches extension (if magic is available)
+    if MAGIC_AVAILABLE:
+        try:
+            mime = magic.from_buffer(content[:2048], mime=True)
+            if mime not in SUPPORTED_MIME_TYPES:
+                # File extension doesn't match content
+                return ValidationResult(
+                    valid=False,
+                    error=create_error_response(
+                        ErrorCatalog.UNSUPPORTED_FILE_TYPE,
+                        technical_detail=f"File claims to be {file_ext} but contains {mime}"
+                    )
                 )
-            )
-    except:
-        # magic library not available, skip MIME check
-        pass
+        except:
+            # magic library error, skip MIME check
+            pass
     
     # 5. PDF-specific validation
     if file_ext == '.pdf':
