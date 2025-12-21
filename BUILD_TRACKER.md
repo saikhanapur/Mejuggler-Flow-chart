@@ -221,17 +221,21 @@
 
 ## 🎯 NEXT IMMEDIATE ACTION
 
-**Task:** Task 5 - Add Truncation Warning UI
-**Time Estimate:** 1 hour
-**Depends On:** Task 4 (complete)
-**Blocks:** User transparency for long documents
+**Task:** Task 6 - Add Granular Loading States
+**Time Estimate:** 2 hours
+**Depends On:** Nothing
+**Blocks:** User experience during processing
 **Status:** READY TO START
 
 **Implementation:**
-- Backend: Return document length in upload response (already done)
-- Frontend: Show warning modal if document > 100k chars
-- Options: "Process First ~40 Pages" / "Cancel"
+- Show step-by-step progress during document processing:
+  - ✅ Document uploaded
+  - ⏳ Extracting text... (5-10 seconds)
+  - ⏳ Analyzing structure... (10-15 seconds)
+  - ⏳ Generating flowchart... (5-10 seconds)
+  - ⏳ Rendering visualization...
+- Add progress bar with estimated time remaining
 
 ---
 
-*Last Updated: December 2025 - Task 4 Complete ✅*
+*Last Updated: December 2025 - Task 5 Complete ✅*
