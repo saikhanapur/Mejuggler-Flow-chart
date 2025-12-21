@@ -110,10 +110,26 @@ class AdaptiveFlowchartProcessor:
             # Validate against source document to catch hallucinations
             result = self._validate_against_source(result, doc_text)
             
-            # Apply intelligent grouping post-processing
-            result = self._apply_intelligent_grouping(result)
+            # Apply INTELLIGENT grouping based on document complexity analysis
+            from intelligent_analyzer import IntelligentDocumentAnalyzer, IntelligentNodeGrouper
             
-            logger.info(f"✅ Processing complete: {len(result['nodes'])} nodes (expected ~{estimated_nodes})")
+            analyzer = IntelligentDocumentAnalyzer()
+            complexity = analyzer.analyze(doc_text)
+            
+            # Only group if we have more nodes than recommended
+            if len(result.get('nodes', [])) > complexity.recommended_nodes:
+                logger.info(f"🔄 Applying intelligent grouping: {len(result['nodes'])} nodes → target {complexity.recommended_nodes}")
+                grouper = IntelligentNodeGrouper(complexity)
+                grouped_nodes, grouped_edges = grouper.group_nodes(
+                    result.get('nodes', []),
+                    result.get('edges', [])
+                )
+                result['nodes'] = grouped_nodes
+                result['edges'] = grouped_edges
+            else:
+                logger.info(f"✅ Node count OK: {len(result.get('nodes', []))} ≤ target {complexity.recommended_nodes}")
+            
+            logger.info(f"✅ Processing complete: {len(result['nodes'])} nodes (target: {complexity.recommended_nodes})")
             
             return result
             
