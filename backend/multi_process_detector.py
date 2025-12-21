@@ -78,6 +78,9 @@ If unsure, default to SINGLE PROCESS with branches. Return ONLY JSON."""
             message = UserMessage(text=prompt)
             response = await chat.send_message(message)
             
+            # Debug logging
+            logger.info(f"Raw AI response: {response[:200] if response else 'None'}")
+            
             # Parse JSON
             result = self._parse_json(response)
             
@@ -86,7 +89,7 @@ If unsure, default to SINGLE PROCESS with branches. Return ONLY JSON."""
             return result
             
         except Exception as e:
-            logger.error(f"❌ Process detection failed: {e}")
+            logger.error(f"❌ Process detection failed: {e}", exc_info=True)
             # Fallback: assume single process
             return {
                 "multipleProcesses": False,
