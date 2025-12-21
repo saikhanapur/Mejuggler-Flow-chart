@@ -28,24 +28,72 @@ const DocumentUploader = ({ onComplete, onCancel }) => {
     setFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Parse structured error from backend
+  const parseBackendError = (err) => {
+    // Check if it's a structured error from our error handling system
+    if (err.response?.data?.detail) {
+      const detail = err.response.data.detail;
+      // Backend returns structured error in detail field
+      if (typeof detail === 'object' && detail.code) {
+        return detail;
+      }
+      // String error message - wrap it
+      if (typeof detail === 'string') {
+        return {
+          title: 'Upload Failed',
+          message: detail,
+          severity: 'error',
+          actions: ['Try uploading a different file', 'Check that your file is not corrupted']
+        };
+      }
+    }
+    // Fallback for network or unexpected errors
+    return {
+      title: 'Connection Error',
+      message: err.message || 'Failed to connect to server. Please check your connection.',
+      severity: 'error',
+      actions: ['Check your internet connection', 'Try again in a few moments'],
+      retry_available: true
+    };
+  };
+
   const processFiles = async () => {
     setProcessing(true);
+    setError(null);
+    setWarnings([]);
     let allText = '';
 
     try {
       for (const file of files) {
         const data = await api.uploadDocument(file);
         allText += data.text + '\n\n';
+        
+        // Collect warnings from response
+        if (data.warnings && data.warnings.length > 0) {
+          setWarnings(prev => [...prev, ...data.warnings]);
+        }
       }
 
       setExtractedText(allText);
       toast.success('Text extracted successfully!');
-    } catch (error) {
-      toast.error('Failed to extract text from documents');
-      console.error(error);
+    } catch (err) {
+      console.error('Document upload failed:', err);
+      const parsedError = parseBackendError(err);
+      setError(parsedError);
+      // Don't show toast when showing full error display
     } finally {
       setProcessing(false);
     }
+  };
+  
+  const handleRetry = () => {
+    setError(null);
+    setWarnings([]);
+    processFiles();
+  };
+  
+  const handleClearError = () => {
+    setError(null);
   };
 
   return (
