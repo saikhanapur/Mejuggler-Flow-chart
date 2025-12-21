@@ -201,20 +201,16 @@
 
 ## 🎯 NEXT IMMEDIATE ACTION
 
-**Task:** Test Error Handling (Phase 3D)
-**Time Estimate:** 1 hour
-**Depends On:** Frontend error UI integration (complete)
-**Blocks:** Task completion
-**Status:** READY TO TEST
+**Task:** Task 4 - Increase Character Limit (20k → 100k)
+**Time Estimate:** 5 minutes
+**Depends On:** Nothing
+**Blocks:** Long document processing
+**Status:** READY TO START
 
-**Test scenarios to verify:**
-1. Upload empty file → Should show "Empty File" error
-2. Upload wrong file type (.exe) → Should show "Unsupported File Format" error
-3. Upload oversized file (>10MB) → Should show "File Size Exceeds Limit" error
-4. Upload corrupted PDF → Should show extraction error with retry option
-5. AI processing timeout → Should show timeout error
-6. Invalid API response → Should show structured error
+**Implementation:**
+- Change character limit from 20,000 to 100,000 in adaptive_flowchart_processor.py
+- Allows processing of ~40-50 page documents instead of ~15 pages
 
 ---
 
-*Last Updated: December 2025 - Task 3 Phase 3C Complete*
+*Last Updated: December 2025 - Task 3 Complete ✅*
