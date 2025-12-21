@@ -2333,6 +2333,86 @@ async def analyze_document_stream(text: str):
     
     return EventSourceResponse(event_generator())
 
+
+@api_router.get("/progress/{session_id}")
+async def get_progress_stream(session_id: str):
+    """
+    ENTERPRISE-GRADE SSE endpoint for real-time progress updates.
+    
+    Clients connect here to receive live updates about long-running operations.
+    Supports multi-process generation, document analysis, and other async operations.
+    
+    Response format (SSE events):
+    - event: progress - Regular progress updates
+    - event: complete - Operation completed successfully
+    - event: error - Operation failed
+    
+    Data format:
+    {
+        "sessionId": "uuid",
+        "operationType": "multi_process_generation",
+        "totalSteps": 3,
+        "currentStep": 2,
+        "currentPhase": "generating_flowchart",
+        "currentMessage": "[2/3] Silent Alert Process: Analyzing structure...",
+        "subProgress": 45.5,
+        "overallProgress": 65.2,
+        "elapsedSeconds": 45,
+        "estimatedRemainingSeconds": 30,
+        "stepsCompleted": [{"name": "Panic Alert Process", "nodes": 12}],
+        "isComplete": false,
+        "isError": false
+    }
+    """
+    async def event_generator():
+        # Subscribe to updates for this session
+        queue = await progress_tracker.subscribe(session_id)
+        
+        try:
+            while True:
+                try:
+                    # Wait for updates with timeout (keep-alive)
+                    event_type, data = await asyncio.wait_for(
+                        queue.get(), 
+                        timeout=30.0  # Send keepalive every 30 seconds
+                    )
+                    
+                    yield {
+                        "event": event_type,
+                        "data": json.dumps(data)
+                    }
+                    
+                    # Stop streaming after complete or error
+                    if event_type in ("complete", "error"):
+                        break
+                        
+                except asyncio.TimeoutError:
+                    # Send keepalive to prevent connection timeout
+                    yield {
+                        "event": "keepalive",
+                        "data": json.dumps({"timestamp": datetime.now(timezone.utc).isoformat()})
+                    }
+                    
+        except asyncio.CancelledError:
+            logger.info(f"Progress stream cancelled for session {session_id}")
+        finally:
+            progress_tracker.unsubscribe(session_id, queue)
+    
+    return EventSourceResponse(event_generator())
+
+
+@api_router.get("/progress/{session_id}/status")
+async def get_progress_status(session_id: str):
+    """
+    Get current progress status without streaming.
+    Useful for polling or initial state.
+    """
+    status = progress_tracker.get_session(session_id)
+    if not status:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return status
+
+
 @api_router.get("/admin/cache-stats")
 async def get_cache_stats():
     """Get cache statistics for monitoring (admin only in production)"""
