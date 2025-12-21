@@ -201,16 +201,17 @@
 
 ## 🎯 NEXT IMMEDIATE ACTION
 
-**Task:** Task 4 - Increase Character Limit (20k → 100k)
-**Time Estimate:** 5 minutes
-**Depends On:** Nothing
-**Blocks:** Long document processing
+**Task:** Task 5 - Add Truncation Warning UI
+**Time Estimate:** 1 hour
+**Depends On:** Task 4 (complete)
+**Blocks:** User transparency for long documents
 **Status:** READY TO START
 
 **Implementation:**
-- Change character limit from 20,000 to 100,000 in adaptive_flowchart_processor.py
-- Allows processing of ~40-50 page documents instead of ~15 pages
+- Backend: Return document length in upload response (already done)
+- Frontend: Show warning modal if document > 100k chars
+- Options: "Process First ~40 Pages" / "Cancel"
 
 ---
 
-*Last Updated: December 2025 - Task 3 Complete ✅*
+*Last Updated: December 2025 - Task 4 Complete ✅*
