@@ -454,52 +454,50 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
         
         // Determine if this edge is the YES or NO path
         if (decisionOptions.yes === edge.target) {
-          edgeLabel = '✓ YES';  // More prominent with checkmark
+          edgeLabel = ''; // Label is now ON the decision node, not edge
+          sourceHandle = 'yes';
         } else if (decisionOptions.no === edge.target) {
-          edgeLabel = '✗ NO';   // More prominent with X mark
+          edgeLabel = ''; // Label is now ON the decision node, not edge
+          sourceHandle = 'no';
         }
       }
       
-      // Determine edge color based on YES/NO
-      const isYesEdge = edgeLabel.includes('YES');
-      const isNoEdge = edgeLabel.includes('NO');
-      const edgeColor = isYesEdge ? '#10b981' : isNoEdge ? '#ef4444' : '#64748b';
+      // Determine edge color based on YES/NO - now using sourceHandle
+      const isYesEdge = sourceHandle === 'yes';
+      const isNoEdge = sourceHandle === 'no';
+      const edgeColor = isYesEdge ? '#22c55e' : isNoEdge ? '#ef4444' : '#64748b';
       
       return {
         id: edge.id,
         source: edge.source,
         target: edge.target,
+        sourceHandle: sourceHandle, // Connect to specific handle on decision node
         label: edgeLabel,
         type: 'smoothstep',
-        animated: true,  // ALWAYS animate - those beautiful flowing dotted lines!
+        animated: false,  // NO ANIMATION - clean, solid lines for clarity
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          width: 20,
-          height: 20,
+          width: 18,
+          height: 18,
           color: edgeColor,
         },
         style: {
-          strokeWidth: 2,
+          strokeWidth: 2.5,
           stroke: edgeColor,
-          strokeDasharray: '5, 5',  // DOTTED LINES - the beautiful flowing effect!
+          // SOLID LINES - no dash, clear visual flow
         },
         labelStyle: {
           fill: edgeColor,
           fontWeight: 700,
-          fontSize: 14,
-          fontFamily: 'Inter, sans-serif',
+          fontSize: 12,
         },
         labelBgStyle: {
           fill: '#ffffff',
           fillOpacity: 0.95,
-          stroke: edgeColor,
-          strokeWidth: 1.5,
         },
-        labelBgPadding: [12, 8],
-        labelBgBorderRadius: 6,
-        // Add offset to position label away from nodes
-        labelShowBg: true,
-        interactionWidth: 20,  // Wider interaction area for better UX
+        labelBgPadding: [6, 4],
+        labelBgBorderRadius: 4,
+        interactionWidth: 15,
       };
     });
     
