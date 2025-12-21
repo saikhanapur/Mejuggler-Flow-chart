@@ -390,8 +390,23 @@ Extract ONLY what's in the document. If document lacks detail, generate logical 
 Return ONLY JSON."""
         
         message = UserMessage(text=prompt)
-        response = await chat.send_message(message)
-        return self._parse_json(response)
+        
+        # Use wrapper for error handling
+        from ai_call_wrapper import AICallWrapper, AICallError
+        try:
+            ai_wrapper = AICallWrapper(self.api_key, timeout_seconds=60)
+            response = await ai_wrapper.call_with_timeout(
+                chat, message, "Extract Content (2/3)"
+            )
+            return ai_wrapper.validate_json_response(response, "Extract Content")
+        except AICallError:
+            raise
+        except Exception as e:
+            logger.error(f"❌ Content extraction failed: {e}", exc_info=True)
+            raise AICallError(
+                ErrorCatalog.AI_INVALID_RESPONSE,
+                f"Content extraction error: {str(e)}"
+            )
     
     async def _extract_references(self, doc_text: str, doc_name: str) -> Dict:
         """
