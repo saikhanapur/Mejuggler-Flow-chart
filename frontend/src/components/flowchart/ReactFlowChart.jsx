@@ -440,8 +440,7 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
     
     // Map edges and add YES/NO labels for decision nodes
     const enhancedEdges = validEdges.map((edge) => {
-      // Track which handle to connect from (for decision nodes)
-      let sourceHandle = undefined;
+      // CRITICAL FIX: Add YES/NO labels for decision edges
       let edgeLabel = edge.label || '';
       
       // Check if this edge comes from a decision node
@@ -450,50 +449,50 @@ export const ReactFlowChart = ({ processData, onNodeClick, onLayoutChange }) => 
         
         // Determine if this edge is the YES or NO path
         if (decisionOptions.yes === edge.target) {
-          edgeLabel = ''; // Label is now ON the decision node, not edge
-          sourceHandle = 'yes';
+          edgeLabel = '✓ YES';
         } else if (decisionOptions.no === edge.target) {
-          edgeLabel = ''; // Label is now ON the decision node, not edge
-          sourceHandle = 'no';
+          edgeLabel = '✗ NO';
         }
       }
       
-      // Determine edge color based on YES/NO - now using sourceHandle
-      const isYesEdge = sourceHandle === 'yes';
-      const isNoEdge = sourceHandle === 'no';
-      const edgeColor = isYesEdge ? '#22c55e' : isNoEdge ? '#ef4444' : '#64748b';
+      // Determine edge color based on YES/NO
+      const isYesEdge = edgeLabel.includes('YES');
+      const isNoEdge = edgeLabel.includes('NO');
+      const edgeColor = isYesEdge ? '#10b981' : isNoEdge ? '#ef4444' : '#64748b';
       
       return {
         id: edge.id,
         source: edge.source,
         target: edge.target,
-        sourceHandle: sourceHandle, // Connect to specific handle on decision node
         label: edgeLabel,
         type: 'smoothstep',
-        animated: false,  // NO ANIMATION - clean, solid lines for clarity
+        animated: true,
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          width: 18,
-          height: 18,
+          width: 20,
+          height: 20,
           color: edgeColor,
         },
         style: {
-          strokeWidth: 2.5,
+          strokeWidth: 2,
           stroke: edgeColor,
-          // SOLID LINES - no dash, clear visual flow
+          strokeDasharray: '5, 5',
         },
         labelStyle: {
           fill: edgeColor,
           fontWeight: 700,
-          fontSize: 12,
+          fontSize: 14,
         },
         labelBgStyle: {
           fill: '#ffffff',
           fillOpacity: 0.95,
+          stroke: edgeColor,
+          strokeWidth: 1.5,
         },
-        labelBgPadding: [6, 4],
-        labelBgBorderRadius: 4,
-        interactionWidth: 15,
+        labelBgPadding: [12, 8],
+        labelBgBorderRadius: 6,
+        labelShowBg: true,
+        interactionWidth: 20,
       };
     });
     
