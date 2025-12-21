@@ -153,6 +153,7 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
   const handleFlowchartGeneration = async (input, inputType) => {
     setProcessing(true);
     setProcessingStep('Creating intelligent flowchart...');
+    setProcessingError(null); // Clear any previous errors
     
     try {
       // Using proven EROAD service with intelligent 10-15 node grouping
