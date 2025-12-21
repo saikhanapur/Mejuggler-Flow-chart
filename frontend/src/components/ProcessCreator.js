@@ -140,7 +140,8 @@ const ProcessCreator = ({ currentWorkspace, isGuestMode = false }) => {
         
       } catch (error) {
         console.error('Extraction failed:', error);
-        toast.error('Failed to extract document intelligence');
+        const parsedError = parseBackendError(error);
+        setProcessingError(parsedError);
         setProcessing(false);
         return;
       }
