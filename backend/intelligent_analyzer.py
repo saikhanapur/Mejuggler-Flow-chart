@@ -134,16 +134,30 @@ class IntelligentDocumentAnalyzer:
         return count
     
     def _count_patterns(self, text: str, patterns: List[str]) -> int:
-        """Count UNIQUE occurrences of patterns in text (de-duplicated)."""
-        matches = set()
+        """Count decision points in text (not branches)."""
+        decision_lines = set()
+        
         for pattern in patterns:
-            found = re.findall(pattern, text, re.IGNORECASE | re.MULTILINE)
-            # Take the position of each match to de-duplicate overlaps
             for match in re.finditer(pattern, text, re.IGNORECASE | re.MULTILINE):
-                # Use line number as key to avoid counting same decision twice
                 line_num = text[:match.start()].count('\n')
-                matches.add(line_num)
-        return len(matches)
+                decision_lines.add(line_num)
+        
+        # YES and NO on consecutive lines are the SAME decision - merge them
+        # Sort and group consecutive lines
+        if not decision_lines:
+            return 0
+            
+        sorted_lines = sorted(decision_lines)
+        decision_count = 1
+        prev_line = sorted_lines[0]
+        
+        for line in sorted_lines[1:]:
+            # If lines are more than 2 apart, it's a new decision
+            if line - prev_line > 2:
+                decision_count += 1
+            prev_line = line
+        
+        return decision_count
     
     def _extract_actors(self, text: str) -> set:
         """Extract unique actors/roles from document."""
