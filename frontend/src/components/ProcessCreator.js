@@ -22,6 +22,7 @@ import DocumentAnalysisReview from './DocumentAnalysisReview';
 import CoverageReportPanel from './CoverageReportPanel';
 import DynamicLoadingScreen from './DynamicLoadingScreen';
 import ExtractionReview from './ExtractionReview';
+import { ErrorDisplay } from './ErrorDisplay';
 import { api } from '@/utils/api';
 import { streamDocumentAnalysis } from '@/utils/sseClient';
 import { toast } from 'sonner';
