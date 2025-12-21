@@ -100,7 +100,9 @@ class AdaptiveFlowchartProcessor:
     ) -> Dict:
         """
         Extract flowchart structure with ADAPTIVE prompts based on analysis.
+        WITH COMPREHENSIVE ERROR HANDLING
         """
+        from ai_call_wrapper import AICallWrapper, AICallError
         
         strategy = analysis.get("processingStrategy", "generate")
         estimated_nodes = analysis.get("existingStructure", {}).get("estimatedNodes", 15)
@@ -109,23 +111,41 @@ class AdaptiveFlowchartProcessor:
         
         logger.info(f"📊 [Call 1/3] Extracting structure (strategy: {strategy})...")
         
-        chat = LlmChat(
-            api_key=self.api_key,
-            session_id="adaptive_structure",
-            system_message="Extract flowchart structure with PERFECT FIDELITY. Never hallucinate steps."
-        ).with_model("anthropic", "claude-4-sonnet-20250514").with_params(max_tokens=8000)
-        
-        # Build adaptive prompt based on strategy
-        if strategy == "extract":
-            instruction = self._build_extract_prompt(doc_text, estimated_nodes, doc_type)
-        elif strategy == "generate":
-            instruction = self._build_generate_prompt(doc_text, estimated_nodes)
-        else:
-            instruction = self._build_hybrid_prompt(doc_text, estimated_nodes)
-        
-        message = UserMessage(text=instruction)
-        response = await chat.send_message(message)
-        return self._parse_json(response)
+        try:
+            chat = LlmChat(
+                api_key=self.api_key,
+                session_id="adaptive_structure",
+                system_message="Extract flowchart structure with PERFECT FIDELITY. Never hallucinate steps."
+            ).with_model("anthropic", "claude-4-sonnet-20250514").with_params(max_tokens=8000)
+            
+            # Build adaptive prompt based on strategy
+            if strategy == "extract":
+                instruction = self._build_extract_prompt(doc_text, estimated_nodes, doc_type)
+            elif strategy == "generate":
+                instruction = self._build_generate_prompt(doc_text, estimated_nodes)
+            else:
+                instruction = self._build_hybrid_prompt(doc_text, estimated_nodes)
+            
+            message = UserMessage(text=instruction)
+            
+            # Use wrapper for error handling
+            ai_wrapper = AICallWrapper(self.api_key, timeout_seconds=60)
+            response = await ai_wrapper.call_with_timeout(
+                chat, message, "Extract Structure (1/3)"
+            )
+            
+            # Parse and validate JSON
+            return ai_wrapper.validate_json_response(response, "Extract Structure")
+            
+        except AICallError:
+            # Re-raise AI errors (already user-friendly)
+            raise
+        except Exception as e:
+            logger.error(f"❌ Structure extraction failed: {e}", exc_info=True)
+            raise AICallError(
+                ErrorCatalog.AI_INVALID_RESPONSE,
+                f"Structure extraction error: {str(e)}"
+            )
     
     def _build_extract_prompt(self, doc_text: str, estimated_nodes: int, doc_type: str) -> str:
         """
