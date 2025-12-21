@@ -101,7 +101,25 @@ const DocumentUploader = ({ onComplete, onCancel }) => {
       <h2 className="text-2xl font-bold text-slate-800 mb-2">Upload Documents</h2>
       <p className="text-slate-600 mb-8">Upload existing process documentation, emails, or screenshots. We'll extract and structure the information.</p>
 
-      {files.length === 0 && (
+      {/* Error Display */}
+      {error && (
+        <ErrorDisplay 
+          error={error} 
+          onRetry={error.retry_available ? handleRetry : undefined}
+          onClose={handleClearError}
+        />
+      )}
+      
+      {/* Warnings Display */}
+      {warnings.length > 0 && !error && warnings.map((warning, idx) => (
+        <WarningDisplay 
+          key={idx}
+          message={warning}
+          onDismiss={() => setWarnings(prev => prev.filter((_, i) => i !== idx))}
+        />
+      ))}
+
+      {files.length === 0 && !error && (
         <div
           onDrop={handleDrop}
           onDragOver={(e) => e.preventDefault()}
