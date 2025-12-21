@@ -36,7 +36,11 @@ class AdaptiveFlowchartProcessor:
     ) -> Dict[str, Any]:
         """
         Process document using the strategy determined by analysis.
+        WITH COMPREHENSIVE ERROR HANDLING
         """
+        from ai_call_wrapper import AICallError
+        from fastapi import HTTPException
+        from error_handling import create_error_response
         
         strategy = analysis.get("processingStrategy", "generate")
         estimated_nodes = analysis.get("existingStructure", {}).get("estimatedNodes", 15)
@@ -47,51 +51,96 @@ class AdaptiveFlowchartProcessor:
         # Truncate if too long
         doc_text = document_text[:50000]
         
-        # Launch THREE parallel calls with ADAPTIVE prompts
-        structure_task = self._extract_structure(
-            doc_text, document_name, analysis
-        )
-        content_task = self._extract_content(
-            doc_text, document_name, analysis
-        )
-        references_task = self._extract_references(
-            doc_text, document_name
-        )
-        
-        # Wait for all three to complete
-        structure, content, references = await asyncio.gather(
-            structure_task,
-            content_task,
-            references_task,
-            return_exceptions=True
-        )
-        
-        # Check for failures
-        if isinstance(structure, Exception):
-            logger.error(f"❌ Structure extraction failed: {structure}")
-            structure = {"nodes": [], "swimLanes": []}
-        if isinstance(content, Exception):
-            logger.error(f"❌ Content extraction failed: {content}")
-            content = {}
-        if isinstance(references, Exception):
-            logger.error(f"❌ References extraction failed: {references}")
-            references = {"contacts": [], "templates": []}
-        
-        # MERGE the results
-        result = self._merge_results(structure, content, references, analysis)
-        
-        # Validate structure
-        result = self._validate_and_fix(result)
-        
-        # Validate against source document to catch hallucinations
-        result = self._validate_against_source(result, doc_text)
-        
-        # Apply intelligent grouping post-processing
-        result = self._apply_intelligent_grouping(result)
-        
-        logger.info(f"✅ Processing complete: {len(result['nodes'])} nodes (expected ~{estimated_nodes})")
-        
-        return result
+        try:
+            # Launch THREE parallel calls with ADAPTIVE prompts
+            structure_task = self._extract_structure(
+                doc_text, document_name, analysis
+            )
+            content_task = self._extract_content(
+                doc_text, document_name, analysis
+            )
+            references_task = self._extract_references(
+                doc_text, document_name
+            )
+            
+            # Wait for all three to complete
+            structure, content, references = await asyncio.gather(
+                structure_task,
+                content_task,
+                references_task,
+                return_exceptions=True
+            )
+            
+            # Check for AI call failures
+            if isinstance(structure, AICallError):
+                logger.error(f"❌ Structure extraction failed: {structure}")
+                raise HTTPException(
+                    status_code=422,
+                    detail=create_error_response(
+                        structure.error_catalog_item,
+                        structure.technical_detail
+                    )
+                )
+            if isinstance(content, AICallError):
+                logger.error(f"❌ Content extraction failed: {content}")
+                # Content failure is less critical, use fallback
+                content = {}
+            if isinstance(references, AICallError):
+                logger.error(f"❌ References extraction failed: {references}")
+                # References failure is less critical, use fallback
+                references = {"contacts": [], "templates": []}
+            
+            # Check for other exceptions
+            if isinstance(structure, Exception):
+                logger.error(f"❌ Structure extraction error: {structure}", exc_info=True)
+                structure = {"nodes": [], "swimLanes": []}
+            if isinstance(content, Exception):
+                logger.error(f"❌ Content extraction error: {content}", exc_info=True)
+                content = {}
+            if isinstance(references, Exception):
+                logger.error(f"❌ References extraction error: {references}", exc_info=True)
+                references = {"contacts": [], "templates": []}
+            
+            # MERGE the results
+            result = self._merge_results(structure, content, references, analysis)
+            
+            # Validate structure
+            result = self._validate_and_fix(result)
+            
+            # Validate against source document to catch hallucinations
+            result = self._validate_against_source(result, doc_text)
+            
+            # Apply intelligent grouping post-processing
+            result = self._apply_intelligent_grouping(result)
+            
+            logger.info(f"✅ Processing complete: {len(result['nodes'])} nodes (expected ~{estimated_nodes})")
+            
+            return result
+            
+        except AICallError as e:
+            # AI call errors are already user-friendly
+            logger.error(f"❌ AI processing failed: {e}")
+            raise HTTPException(
+                status_code=422,
+                detail=create_error_response(
+                    e.error_catalog_item,
+                    e.technical_detail
+                )
+            )
+        except HTTPException:
+            # Re-raise HTTP exceptions
+            raise
+        except Exception as e:
+            # Unexpected errors
+            logger.error(f"❌ Unexpected processing error: {e}", exc_info=True)
+            from error_handling import ErrorCatalog
+            raise HTTPException(
+                status_code=500,
+                detail=create_error_response(
+                    ErrorCatalog.UNKNOWN_ERROR,
+                    str(e)
+                )
+            )
     
     async def _extract_structure(
         self, 
