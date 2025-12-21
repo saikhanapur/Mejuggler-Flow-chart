@@ -5182,22 +5182,32 @@ Contacts:
 if __name__ == "__main__":
     tester = BackendTester()
     
-    # Run Hierarchical Emergency Contacts test only
-    print("📞 Running Hierarchical Emergency Contacts Test Only...")
+    # Run Error Handling System tests only
+    print("🛡️ Running Error Handling System Tests Only...")
     print(f"🌐 Testing against: {tester.base_url}")
     print("=" * 80)
     
-    tester.test_hierarchical_emergency_contacts()
+    tester.test_error_handling_system()
     
-    # Test backward compatibility with simple contacts
-    print("\n🔄 Testing Backward Compatibility with Simple Contacts...")
+    # Print summary
+    print("\n" + "=" * 80)
+    print("📊 TEST SUMMARY")
+    print("=" * 80)
     
-    simple_contacts_doc = """Simple Emergency Procedure
+    passed = sum(1 for r in tester.test_results if r['success'])
+    total = len(tester.test_results)
+    success_rate = (passed / total) * 100 if total > 0 else 0
     
-    Emergency Contacts:
-    - Emergency Services: 111
-    - Support Team: 0800 123 456
-    - Manager: 021 555 1234
+    print(f"📊 Tests Passed: {passed}/{total} ({success_rate:.1f}%)")
+    
+    for result in tester.test_results:
+        status = "✅ PASS" if result['success'] else "❌ FAIL"
+        print(f"{status} {result['test']}: {result['details']}")
+    
+    if passed == total:
+        print("\n✅ All error handling tests passed!")
+    else:
+        print(f"\n⚠️ Issues found with Error Handling System")
     
     Steps:
     1. Call emergency services if needed
