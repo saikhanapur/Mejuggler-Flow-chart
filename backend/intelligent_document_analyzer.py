@@ -55,20 +55,14 @@ class DocumentAnalyzer:
         
         logger.info(f"🔍 Analyzing document: {document_name}")
         
-        # Use representative sample: full text up to 60k, or first 50k + last 5k for very long docs
+        # Use representative sample: full text up to 60k chars; for longer docs
+        # use first 50k + last 5k to capture both document structure and final steps
         if len(document_text) <= 60000:
             analysis_text = document_text
         else:
-            # Include start and end to capture both intro structure and final steps
-            analysis_text = (
-                document_text[:50000]
-                + "
-
-[... document continues ...]
-
-"
-                + document_text[-5000:]
-            )
+            analysis_text = (document_text[:50000]
+                             + "\n\n[... document continues ...]\n\n"
+                             + document_text[-5000:])
         
         chat = LlmChat(
             api_key=self.api_key,
