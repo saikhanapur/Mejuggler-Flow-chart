@@ -107,168 +107,148 @@ class VisionDocumentProcessor:
             logger.error(f"Text extraction failed: {e}")
             return ""
     
-    async def process_visual_pdf(self, pdf_bytes: bytes, filename: str) -> str:
+    async def process_visual_pdf(self, pdf_bytes: bytes, filename: str) -> Dict:
         """
-        Process visual/scanned PDF using Claude Vision API (Native Anthropic SDK)
-        Converts PDF pages to images and analyzes with vision model
+        Process visual/scanned PDF using Claude Vision API (Native Anthropic SDK).
+        Pages are processed in batches of 5.  Documents over 50 pages scan every
+        other page and surface a visible truncation_warning in the returned dict.
+        Returns: {"text": str, "truncation_warning": str|None, "pages_processed": int, "total_pages": int}
         """
         try:
-            logger.info(f"🔍 Processing visual PDF: {filename}")
-            
-            # Convert PDF to images (first 3 pages to manage costs)
-            images = convert_from_bytes(
-                pdf_bytes,
-                first_page=1,
-                last_page=min(3, 10),
-                dpi=150  # Balance between quality and size
-            )
-            
-            logger.info(f"📸 Converted {len(images)} pages to images")
-            
-            # Initialize Anthropic client
-            client = anthropic.Anthropic(api_key=self.api_key)
-            
-            # Process each page with Claude Vision
-            all_extracted_text = []
-            
-            for idx, image in enumerate(images, 1):
-                logger.info(f"🤖 Analyzing page {idx}/{len(images)} with Claude Vision...")
-                
-                # Convert PIL Image to base64
-                buffered = io.BytesIO()
-                image.save(buffered, format="PNG", optimize=True, quality=85)
-                img_base64 = base64.b64encode(buffered.getvalue()).decode()
-                
-                # Construct comprehensive vision prompt
-                prompt = f"""You are an expert at analyzing business process flowcharts and SOPs.
+            logger.info(f"Scanning visual PDF: {filename}")
 
-Analyze this flowchart document (page {idx}) and extract EVERYTHING with extreme precision:
+            pdf_reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
+            total_pages = len(pdf_reader.pages)
+            logger.info(f"Document has {total_pages} total pages")
 
-## CRITICAL INSTRUCTIONS:
-Extract ALL information - treat this like a life-or-death emergency procedure where missing ANY detail could be catastrophic.
-
-## SECTION 1: PROCESS STRUCTURE
-For each shape/node you see:
-- Exact text inside the shape
-- Shape type (rectangle, diamond, oval, etc.)
-- Shape color (blue, yellow, green, red, grey, white, etc.)
-- Position in the flow (which swim lane, sequence number)
-- What it connects TO (list all arrows going out)
-- What connects to IT (list all arrows coming in)
-
-## SECTION 2: DECISION POINTS
-For EVERY diamond shape:
-- Exact decision question
-- YES branch destination
-- NO branch destination
-- Any conditions or criteria mentioned
-
-## SECTION 3: SWIM LANES / COLUMNS
-Identify all vertical or horizontal sections:
-- Section names (e.g., "Onshore Actions", "Offshore Actions")
-- Which steps belong to which section
-- Any role labels (Supervisor, Patrol Officer, etc.)
-
-## SECTION 4: CONTACTS & REFERENCES
-Extract EVERY single:
-- Name (person, team, role)
-- Phone number (including country code, extensions)
-- Email address
-- System names
-- Document references
-- Links or URLs
-
-## SECTION 5: TIMINGS & DEADLINES
-Extract ALL time-related information:
-- Durations (e.g., "30 minutes", "1 hour")
-- Frequencies (e.g., "every 30 minutes", "daily")
-- Deadlines (e.g., "within 24 hours")
-- Sequences (e.g., "step 1, then step 2")
-
-## SECTION 6: REFERENCE BOXES
-Look for yellow/highlighted boxes containing:
-- Message templates
-- Email scripts
-- Call scripts
-- Quick reference guides
-- Contact lists
-
-## SECTION 7: PARALLEL PROCESSES
-Identify any processes that happen simultaneously:
-- Which steps can run in parallel
-- Which steps must be sequential
-- Any synchronization points
-
-## OUTPUT FORMAT:
-Provide a complete, detailed extraction structured as:
-
-SWIM LANES:
-[List all swim lanes/sections with their exact names]
-
-PROCESS STEPS (in order):
-Step N: [Exact text] (Shape: rectangle/diamond/oval, Color: X, Lane: Y)
-→ Connects to: [Step IDs or descriptions]
-
-DECISION POINTS:
-Decision N: "[Exact question]"
-- YES → [destination]
-- NO → [destination]
-
-CONTACTS:
-- [Name]: [Phone] / [Email]
-- [...]
-
-TIMINGS:
-- [Time requirement]
-- [...]
-
-REFERENCES:
-- [Document/template name]
-- [...]
-
-MESSAGE TEMPLATES:
-[Copy any message/email templates word-for-word]
-
-Be EXTREMELY thorough. Missing information = failure."""
-
-                # Call Claude Vision API
-                message = client.messages.create(
-                    model="claude-4-sonnet-20250514",
-                    max_tokens=4000,
-                    messages=[{
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "image",
-                                "source": {
-                                    "type": "base64",
-                                    "media_type": "image/png",
-                                    "data": img_base64
-                                }
-                            },
-                            {
-                                "type": "text",
-                                "text": prompt
-                            }
-                        ]
-                    }]
+            truncation_warning = None
+            if total_pages > 50:
+                pages_to_process = list(range(1, total_pages + 1, 2))
+                truncation_warning = (
+                    f"Partial coverage: document has {total_pages} pages. "
+                    f"Every other page was scanned ({len(pages_to_process)} pages processed). "
+                    "Content on skipped pages may not appear in the flowchart."
                 )
-                
-                page_text = message.content[0].text
-                all_extracted_text.append(f"=== PAGE {idx} ===\n{page_text}\n")
-                logger.info(f"✅ Page {idx} extracted: {len(page_text)} characters")
-            
-            # Combine all pages
+                logger.warning(
+                    f"Large document ({total_pages} pages): "
+                    f"processing every other page ({len(pages_to_process)} pages)"
+                )
+            else:
+                pages_to_process = list(range(1, total_pages + 1))
+
+            client = anthropic.Anthropic(api_key=self.api_key)
+            all_extracted_text = []
+            batch_size = 5
+
+            for batch_start in range(0, len(pages_to_process), batch_size):
+                batch = pages_to_process[batch_start:batch_start + batch_size]
+                first_in_batch = batch[0]
+                last_in_batch = batch[-1]
+                logger.info(f"Converting batch pages {first_in_batch}-{last_in_batch} to images")
+
+                images = convert_from_bytes(
+                    pdf_bytes,
+                    first_page=first_in_batch,
+                    last_page=last_in_batch,
+                    dpi=150
+                )
+
+                for page_num, image in zip(batch, images):
+                    logger.info(f"Analyzing page {page_num}/{total_pages} with Claude Vision...")
+
+                    buffered = io.BytesIO()
+                    image.save(buffered, format="PNG", optimize=True, quality=85)
+                    img_base64 = base64.b64encode(buffered.getvalue()).decode()
+
+                    prompt = (
+                        f"You are an expert at analyzing business process flowcharts and SOPs.\n\n"
+                        f"Analyze this flowchart document (page {page_num}) and extract EVERYTHING with extreme precision:\n\n"
+                        "## CRITICAL INSTRUCTIONS:\n"
+                        "Extract ALL information - treat this like a life-or-death emergency procedure where missing ANY detail could be catastrophic.\n\n"
+                        "## SECTION 1: PROCESS STRUCTURE\n"
+                        "For each shape/node you see:\n"
+                        "- Exact text inside the shape\n"
+                        "- Shape type (rectangle, diamond, oval, etc.)\n"
+                        "- Shape color (blue, yellow, green, red, grey, white, etc.)\n"
+                        "- Position in the flow (which swim lane, sequence number)\n"
+                        "- What it connects TO (list all arrows going out)\n"
+                        "- What connects to IT (list all arrows coming in)\n\n"
+                        "## SECTION 2: DECISION POINTS\n"
+                        "For EVERY diamond shape:\n"
+                        "- Exact decision question\n"
+                        "- YES branch destination\n"
+                        "- NO branch destination\n"
+                        "- Any conditions or criteria mentioned\n\n"
+                        "## SECTION 3: SWIM LANES / COLUMNS\n"
+                        "Identify all vertical or horizontal sections:\n"
+                        "- Section names (e.g., 'Onshore Actions', 'Offshore Actions')\n"
+                        "- Which steps belong to which section\n"
+                        "- Any role labels (Supervisor, Patrol Officer, etc.)\n\n"
+                        "## SECTION 4: CONTACTS & REFERENCES\n"
+                        "Extract EVERY single: Name, phone, email, system names, document references, URLs\n\n"
+                        "## SECTION 5: TIMINGS & DEADLINES\n"
+                        "Extract ALL time-related information: durations, frequencies, deadlines, sequences\n\n"
+                        "## SECTION 6: REFERENCE BOXES\n"
+                        "Look for yellow/highlighted boxes: message templates, email scripts, call scripts, quick reference guides\n\n"
+                        "## SECTION 7: PARALLEL PROCESSES\n"
+                        "Identify steps that happen simultaneously vs sequentially\n\n"
+                        "## OUTPUT FORMAT:\n"
+                        "SWIM LANES: [List all swim lanes]\n"
+                        "PROCESS STEPS (in order): Step N: [Exact text] (Shape, Color, Lane) -> Connects to: [steps]\n"
+                        "DECISION POINTS: Decision N: [Exact question] - YES -> [dest] - NO -> [dest]\n"
+                        "CONTACTS: [Name]: [Phone] / [Email]\n"
+                        "TIMINGS: [Time requirement]\n"
+                        "REFERENCES: [Document/template name]\n"
+                        "MESSAGE TEMPLATES: [Copy any templates word-for-word]\n\n"
+                        "Be EXTREMELY thorough. Missing information = failure."
+                    )
+
+                    message = client.messages.create(
+                        model="claude-4-sonnet-20250514",
+                        max_tokens=4000,
+                        messages=[{
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "image",
+                                    "source": {
+                                        "type": "base64",
+                                        "media_type": "image/png",
+                                        "data": img_base64
+                                    }
+                                },
+                                {
+                                    "type": "text",
+                                    "text": prompt
+                                }
+                            ]
+                        }]
+                    )
+
+                    page_text = message.content[0].text
+                    all_extracted_text.append(f"=== PAGE {page_num} ===\n{page_text}\n")
+                    logger.info(f"Page {page_num} extracted: {len(page_text)} characters")
+
             combined_text = "\n\n".join(all_extracted_text)
-            logger.info(f"✅ Vision extraction complete: {len(combined_text)} total characters")
-            
-            return combined_text
-            
+            logger.info(f"Vision extraction complete: {len(combined_text)} total characters from {len(pages_to_process)} pages")
+
+            return {
+                "text": combined_text,
+                "truncation_warning": truncation_warning,
+                "pages_processed": len(pages_to_process),
+                "total_pages": total_pages,
+            }
+
         except Exception as e:
-            logger.error(f"❌ Vision processing failed: {e}", exc_info=True)
-            # Fallback to text extraction
-            logger.info("⚠️ Falling back to text extraction...")
-            return self.extract_text_from_pdf(pdf_bytes)
+            logger.error(f"Vision processing failed: {e}", exc_info=True)
+            logger.info("Falling back to text extraction...")
+            return {
+                "text": self.extract_text_from_pdf(pdf_bytes),
+                "truncation_warning": None,
+                "pages_processed": 0,
+                "total_pages": 0,
+            }
+
     
     async def process_document(
         self, 
@@ -298,12 +278,14 @@ Be EXTREMELY thorough. Missing information = failure."""
                 
                 if force_vision or not is_text_based:
                     # Use vision processing
-                    text = await self.process_visual_pdf(file_bytes, filename)
+                    vision_result = await self.process_visual_pdf(file_bytes, filename)
                     return {
-                        "text": text,
+                        "text": vision_result["text"],
                         "method": "vision",
                         "confidence": confidence,
-                        "pages_processed": text.count("=== PAGE")
+                        "pages_processed": vision_result["pages_processed"],
+                        "total_pages": vision_result["total_pages"],
+                        "truncation_warning": vision_result["truncation_warning"],
                     }
                 else:
                     # Use text extraction

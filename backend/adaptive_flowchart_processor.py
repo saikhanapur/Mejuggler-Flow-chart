@@ -47,9 +47,14 @@ class AdaptiveFlowchartProcessor:
         
         logger.info(f"⚡ Processing with strategy: {strategy}")
         logger.info(f"📊 Expected nodes: ~{estimated_nodes}")
+
+        # Chunk document at sentence boundaries for long documents
+        chunks = self._chunk_document(document_text)
+        doc_text = chunks[0]
+        is_multi_chunk = len(chunks) > 1
+        if is_multi_chunk:
+            logger.info(f"📄 Document split into {len(chunks)} chunks for processing")
         
-        # Truncate if too long
-        doc_text = document_text[:50000]
         
         try:
             # Launch THREE parallel calls with ADAPTIVE prompts
@@ -101,7 +106,20 @@ class AdaptiveFlowchartProcessor:
                 logger.error(f"❌ References extraction error: {references}", exc_info=True)
                 references = {"contacts": [], "templates": []}
             
-            # MERGE the results
+            # For multi-chunk documents: extract structure from remaining chunks and merge
+            if is_multi_chunk and not isinstance(structure, (Exception,)):
+                extra_structures = []
+                for chunk_text in chunks[1:]:
+                    try:
+                        extra_structure = await self._extract_structure(chunk_text, document_name, analysis)
+                        extra_structures.append(extra_structure)
+                    except Exception as chunk_err:
+                        logger.warning(f"⚠️ Chunk structure extraction failed: {chunk_err}")
+                if extra_structures:
+                    structure = self._merge_chunk_structures([structure] + extra_structures)
+                    logger.info(f"✅ Merged {len(extra_structures)+1} chunks: {len(structure.get('nodes',[]))} total nodes")
+
+                        # MERGE the results
             result = self._merge_results(structure, content, references, analysis)
             
             # Validate structure
@@ -233,7 +251,7 @@ You will be given examples of perfect extractions. Follow them exactly."""
         return f"""CRITICAL TASK: This document describes an EXISTING flowchart. Your job is to EXTRACT it EXACTLY as described.
 
 DOCUMENT:
-{doc_text[:100000]}
+{doc_text}
 
 TASK: Extract the EXACT flowchart structure described in this document.
 
@@ -302,7 +320,7 @@ Return ONLY JSON."""
         return f"""Extract a flowchart from this SOP document. Be accurate and use exact terminology from the document.
 
 DOCUMENT:
-{doc_text[:100000]}
+{doc_text}
 
 INSTRUCTIONS:
 
@@ -366,7 +384,7 @@ Return ONLY valid JSON."""
         return f"""TASK: Process this document which has SOME flowchart structure but needs organization.
 
 DOCUMENT:
-{doc_text[:100000]}
+{doc_text}
 
 TASK: Extract existing structure and intelligently organize any unstructured parts.
 
@@ -419,7 +437,7 @@ Return ONLY JSON."""
 
 DOCUMENT TO PROCESS:
 \"\"\"
-{doc_text[:100000]}
+{doc_text}
 \"\"\"
 
 YOUR TASK:
@@ -480,7 +498,7 @@ This document already describes a flowchart structure. Your job is to EXTRACT it
 
 DOCUMENT:
 \"\"\"
-{doc_text[:100000]}
+{doc_text}
 \"\"\"
 
 EXTRACTION RULES:
@@ -515,7 +533,7 @@ This document has SOME flowchart structure but also unstructured text. Extract w
 
 DOCUMENT:
 \"\"\"
-{doc_text[:100000]}
+{doc_text}
 \"\"\"
 
 RULES:
@@ -546,7 +564,7 @@ Return ONLY valid JSON with sourceReference for each node."""
         
         prompt = f"""Extract ACTIONABLE, DIFFERENTIATED CONTENT from this document for interactive flowchart nodes:
 
-{doc_text[:100000]}
+{doc_text}
 
 CRITICAL: For each major step, provide DIFFERENT types of information:
 1. subSteps: Concrete action items someone would DO (not just restating the step name)
@@ -625,7 +643,7 @@ Return ONLY JSON."""
         
         prompt = f"""Extract CRITICAL REFERENCE INFORMATION ONLY:
 
-{doc_text[:30000]}
+{doc_text}
 
 Extract ONLY:
 1. Emergency contacts (name, phone, when to call)
@@ -883,6 +901,56 @@ Keep CONCISE. Return ONLY JSON."""
             logger.info("ℹ️ No grouping opportunities found")
         
         return result
+
+    def _chunk_document(self, text: str, chunk_size: int = 80000) -> List[str]:
+        """Split document at sentence/paragraph boundaries for long documents."""
+        if len(text) <= chunk_size:
+            return [text]
+
+        import re
+        # Split at paragraph breaks first, then sentence boundaries
+        segments = re.split(r'\n{2,}', text)
+        if len(segments) < 3:
+            segments = re.split(r'(?<=[.!?])\s+', text)
+
+        chunks, current = [], ""
+        for seg in segments:
+            if len(current) + len(seg) + 2 > chunk_size and current:
+                chunks.append(current.strip())
+                current = seg
+            else:
+                current += ("\n\n" if current else "") + seg
+        if current:
+            chunks.append(current.strip())
+
+        logger.info(f"📄 Document chunked: {len(text)} chars → {len(chunks)} chunks")
+        return chunks
+
+    def _merge_chunk_structures(self, structures: List[Dict]) -> Dict:
+        """Merge node lists from multiple chunk extractions, deduplicating by title."""
+        if not structures:
+            return {"nodes": [], "swimLanes": []}
+        merged = {
+            "processName": structures[0].get("processName", "Process Flowchart"),
+            "nodes": list(structures[0].get("nodes", [])),
+            "swimLanes": list(structures[0].get("swimLanes", [])),
+        }
+        seen_titles = {n.get("title", "").lower() for n in merged["nodes"]}
+        seen_lane_ids = {l.get("id") for l in merged["swimLanes"]}
+
+        for structure in structures[1:]:
+            for node in structure.get("nodes", []):
+                title_lower = node.get("title", "").lower()
+                if title_lower and title_lower not in seen_titles:
+                    merged["nodes"].append(node)
+                    seen_titles.add(title_lower)
+            for lane in structure.get("swimLanes", []):
+                if lane.get("id") not in seen_lane_ids:
+                    merged["swimLanes"].append(lane)
+                    seen_lane_ids.add(lane.get("id"))
+
+        logger.info(f"✅ Chunk merge complete: {len(merged['nodes'])} unique nodes")
+        return merged
 
     def _parse_json(self, response: str) -> Dict:
         """Parse AI response to JSON."""

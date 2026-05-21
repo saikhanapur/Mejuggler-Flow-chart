@@ -38,16 +38,16 @@ const getLayoutedElements = async (nodes, edges, direction = 'DOWN') => {
         'elk.algorithm': 'layered',
         'elk.direction': direction,
         // Spacing configuration for clean, uncluttered layouts
-        'elk.spacing.nodeNode': '120',  // Horizontal spacing between nodes
-        'elk.layered.spacing.nodeNodeBetweenLayers': '150',  // Vertical spacing between layers
+        'elk.spacing.nodeNode': '200',  // Horizontal min spacing between nodes
+        'elk.layered.spacing.nodeNodeBetweenLayers': '220',  // Vertical min spacing between layers
         'elk.layered.spacing.edgeNodeBetweenLayers': '60',  // Space between edges and nodes
         'elk.spacing.edgeNode': '40',  // Additional edge-to-node spacing
         'elk.spacing.edgeEdge': '20',  // Space between parallel edges
         
         // Placement and routing for optimal clarity
-        'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',  // Best placement algorithm
+        'elk.layered.nodePlacement.strategy': 'BRANDES_KOEPF',  // Cleaner branch separation
         'elk.layered.nodePlacement.bk.fixedAlignment': 'BALANCED',  // Balanced alignment
-        'elk.edgeRouting': 'ORTHOGONAL',  // Clean right-angle routing
+        'elk.edgeRouting': 'POLYLINE',  // Reduces sharp crossing angles
         'elk.layered.unnecessaryBendpoints': 'false',  // Minimize bends
         'elk.layered.considerModelOrder.strategy': 'PREFER_EDGES',  // Optimize for edge clarity
         
@@ -57,13 +57,21 @@ const getLayoutedElements = async (nodes, edges, direction = 'DOWN') => {
         
         // Improve label placement
         'elk.edgeLabels.inline': 'true',  // Keep labels inline with edges
+        'elk.edgeLabels.placement': 'TAIL',  // Anchor YES/NO labels at decision node output point
       },
-      children: nodes.map((node) => ({
-        id: node.id,
-        // Decision nodes are larger (200x200) so give them proper dimensions
-        width: node.type === 'decision' ? 200 : 280,
-        height: node.type === 'decision' ? 200 : 100,
-      })),
+      children: nodes.map((node) => {
+        const isDecision = node.type === 'decision';
+        const child = {
+          id: node.id,
+          width: isDecision ? 200 : 280,
+          height: isDecision ? 200 : 100,
+        };
+        if (isDecision) {
+          // 60px top/bottom padding so YES and NO branches visually separate before converging
+          child.layoutOptions = { 'elk.padding': '[top=60, bottom=60, left=20, right=20]' };
+        }
+        return child;
+      }),
       edges: validEdges.map((edge) => ({
         id: edge.id,
         sources: [edge.source],

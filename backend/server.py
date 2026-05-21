@@ -1354,27 +1354,49 @@ Use status values: "trigger", "current", "warning" for variety. Include gaps whe
             logger.info("Falling back to single process parsing due to error")
             return await self._parse_single_process(input_text[:30000], input_type)
     
-    def _extract_process_section(self, full_text: str, process_title: str, all_titles: List[str]) -> str:
-        """Extract the section of text relevant to a specific process"""
-        # Find where this process starts
-        start_pos = full_text.find(process_title)
+    def _extract_process_section(
+        self, full_text: str, process_title: str, all_titles: List[str],
+        start_phrase: str = None
+    ) -> str:
+        """Extract the section of text for a specific process.
+        Uses start_phrase (from detector) for accurate anchoring when available,
+        falls back to title search, and finally returns a proportional slice."""
+        text_len = len(full_text)
+
+        # Prefer start_phrase anchor (verbatim excerpt from detector)
+        if start_phrase and len(start_phrase) >= 10:
+            anchor = start_phrase[:80]
+            start_pos = full_text.find(anchor)
+            if start_pos == -1:
+                start_pos = full_text.lower().find(anchor.lower())
+        else:
+            start_pos = -1
+
+        # Fall back to title search
         if start_pos == -1:
-            # Try case-insensitive search
+            start_pos = full_text.find(process_title)
+        if start_pos == -1:
             start_pos = full_text.lower().find(process_title.lower())
-        
+
         if start_pos == -1:
-            return full_text[:5000]  # Return first 5k chars as fallback
-        
+            # Last resort: distribute the document proportionally across processes
+            if all_titles:
+                idx = all_titles.index(process_title) if process_title in all_titles else 0
+                slice_size = text_len // max(len(all_titles), 1)
+                start = idx * slice_size
+                return full_text[start:start + slice_size + 500]
+            return full_text[:10000]
+
         # Find where the next process starts
-        end_pos = len(full_text)
+        end_pos = text_len
         for other_title in all_titles:
             if other_title != process_title:
                 next_pos = full_text.find(other_title, start_pos + len(process_title))
                 if next_pos != -1 and next_pos < end_pos:
                     end_pos = next_pos
-        
-        # Extract this section with some buffer
-        section = full_text[max(0, start_pos - 100):min(len(full_text), end_pos + 100)]
+
+        section = full_text[max(0, start_pos - 100):min(text_len, end_pos + 200)]
+        logger.info(f"Extracted section for {process_title}: {len(section)} chars")
         return section
     
     async def generate_ideal_state(self, process_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -3629,6 +3651,14 @@ async def create_selected_processes(
         document_text = request_data.get("documentText")
         input_type = request_data.get("inputType", "document")
         selected_titles = request_data.get("selectedProcessTitles", [])
+        # selectedProcesses may carry startPhrase anchors from the detector
+        selected_process_objects = request_data.get("selectedProcesses", [])
+        # Build a title->startPhrase lookup for improved section extraction
+        start_phrase_map = {
+            p.get("name", ""): p.get("startPhrase", "")
+            for p in selected_process_objects
+            if isinstance(p, dict)
+        }
         create_all = request_data.get("createAll", False)
         
         # CRITICAL: Check budget before expensive AI operations
@@ -3682,11 +3712,12 @@ async def create_selected_processes(
                 sub_progress=0
             )
             
-            # Extract section for this process
+            # Extract section for this process (use startPhrase anchor if available)
             process_text = service._extract_process_section(
-                document_text, 
-                process_title, 
-                selected_titles
+                document_text,
+                process_title,
+                selected_titles,
+                start_phrase=start_phrase_map.get(process_title, "")
             )
             
             # Update progress - analyzing

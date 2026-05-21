@@ -34,7 +34,7 @@ class MultiProcessDetector:
         prompt = f"""Analyze this document and determine if it contains MULTIPLE DISTINCT PROCESSES or ONE PROCESS.
 
 DOCUMENT:
-{document_text[:10000]}
+{document_text[:50000]}
 
 IMPORTANT: A document has MULTIPLE PROCESSES only if it describes completely separate workflows with different triggers.
 
@@ -66,10 +66,12 @@ Return JSON:
     {{
       "name": "Process name from document",
       "description": "Brief description",
-      "startSection": "Where it starts"
+      "startSection": "Where it starts in the document",
+      "startPhrase": "The first 150 characters of this process section opening, verbatim from the document"
     }}
   ],
   "reasoning": "Why single or multiple"
+}}
 }}
 
 If unsure, default to SINGLE PROCESS with branches. Return ONLY JSON."""
