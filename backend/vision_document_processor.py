@@ -143,6 +143,10 @@ class VisionDocumentProcessor:
             else:
                 pages_to_process = list(range(1, total_pages + 1))
 
+            client = anthropic.Anthropic(api_key=self.api_key)
+            all_extracted_text = []
+            batch_size = 5
+
             for batch_start in range(0, len(pages_to_process), batch_size):
                 batch = pages_to_process[batch_start:batch_start + batch_size]
                 first_in_batch = batch[0]

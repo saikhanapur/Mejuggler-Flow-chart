@@ -72,7 +72,6 @@ Return JSON:
   ],
   "reasoning": "Why single or multiple"
 }}
-}}
 
 If unsure, default to SINGLE PROCESS with branches. Return ONLY JSON."""
 
