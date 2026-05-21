@@ -122,23 +122,26 @@ class VisionDocumentProcessor:
             logger.info(f"Document has {total_pages} total pages")
 
             truncation_warning = None
+            MAX_SYNC_PAGES = 10  # Cap for synchronous processing within gateway timeout
+
             if total_pages > 50:
-                pages_to_process = list(range(1, total_pages + 1, 2))
+                # Very large doc: every other page, capped at MAX_SYNC_PAGES
+                pages_to_process = list(range(1, total_pages + 1, 2))[:MAX_SYNC_PAGES]
                 truncation_warning = (
                     f"Partial coverage: document has {total_pages} pages. "
                     f"Every other page was scanned ({len(pages_to_process)} pages processed). "
                     "Content on skipped pages may not appear in the flowchart."
                 )
-                logger.warning(
-                    f"Large document ({total_pages} pages): "
-                    f"processing every other page ({len(pages_to_process)} pages)"
+            elif total_pages > MAX_SYNC_PAGES:
+                # Medium doc: first MAX_SYNC_PAGES pages
+                pages_to_process = list(range(1, MAX_SYNC_PAGES + 1))
+                truncation_warning = (
+                    f"Document has {total_pages} pages. "
+                    f"First {MAX_SYNC_PAGES} pages were processed to stay within time limits. "
+                    "Re-upload pages 11+ as a separate document to capture remaining content."
                 )
             else:
                 pages_to_process = list(range(1, total_pages + 1))
-
-            client = anthropic.Anthropic(api_key=self.api_key)
-            all_extracted_text = []
-            batch_size = 5
 
             for batch_start in range(0, len(pages_to_process), batch_size):
                 batch = pages_to_process[batch_start:batch_start + batch_size]

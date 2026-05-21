@@ -36,105 +36,96 @@ class AdaptiveFlowchartProcessor:
     ) -> Dict[str, Any]:
         """
         Process document using the strategy determined by analysis.
-        WITH COMPREHENSIVE ERROR HANDLING
+        Long documents are split at sentence boundaries and all chunks
+        are processed in parallel to avoid gateway timeouts.
         """
         from ai_call_wrapper import AICallError
         from fastapi import HTTPException
         from error_handling import create_error_response
-        
+
         strategy = analysis.get("processingStrategy", "generate")
         estimated_nodes = analysis.get("existingStructure", {}).get("estimatedNodes", 15)
-        
+
         logger.info(f"⚡ Processing with strategy: {strategy}")
         logger.info(f"📊 Expected nodes: ~{estimated_nodes}")
 
         # Chunk document at sentence boundaries for long documents
         chunks = self._chunk_document(document_text)
         doc_text = chunks[0]
-        is_multi_chunk = len(chunks) > 1
-        if is_multi_chunk:
-            logger.info(f"📄 Document split into {len(chunks)} chunks for processing")
-        
-        
+        logger.info(f"📄 Document: {len(document_text)} chars → {len(chunks)} chunk(s)")
+
         try:
-            # Launch THREE parallel calls with ADAPTIVE prompts
-            structure_task = self._extract_structure(
-                doc_text, document_name, analysis
-            )
-            content_task = self._extract_content(
-                doc_text, document_name, analysis
-            )
-            references_task = self._extract_references(
-                doc_text, document_name
-            )
-            
-            # Wait for all three to complete
-            structure, content, references = await asyncio.gather(
-                structure_task,
+            # Launch ALL structure tasks (one per chunk) + content + references IN PARALLEL
+            # This means total time ≈ one call time, not N × call time
+            structure_tasks = [
+                self._extract_structure(chunk, document_name, analysis)
+                for chunk in chunks
+            ]
+            content_task = self._extract_content(doc_text, document_name, analysis)
+            references_task = self._extract_references(doc_text, document_name)
+
+            all_results = await asyncio.gather(
+                *structure_tasks,
                 content_task,
                 references_task,
                 return_exceptions=True
             )
-            
-            # Check for AI call failures
-            if isinstance(structure, AICallError):
-                logger.error(f"❌ Structure extraction failed: {structure}")
+
+            # Split results: first len(chunks) are structures, last 2 are content/references
+            structures_raw = list(all_results[:len(chunks)])
+            content = all_results[len(chunks)]
+            references = all_results[len(chunks) + 1]
+
+            # Handle failures in primary structure (chunk 0)
+            if isinstance(structures_raw[0], AICallError):
+                logger.error(f"❌ Structure extraction failed: {structures_raw[0]}")
                 raise HTTPException(
                     status_code=422,
                     detail=create_error_response(
-                        structure.error_catalog_item,
-                        structure.technical_detail
+                        structures_raw[0].error_catalog_item,
+                        structures_raw[0].technical_detail
                     )
                 )
-            if isinstance(content, AICallError):
-                logger.error(f"❌ Content extraction failed: {content}")
-                # Content failure is less critical, use fallback
-                content = {}
-            if isinstance(references, AICallError):
-                logger.error(f"❌ References extraction failed: {references}")
-                # References failure is less critical, use fallback
-                references = {"contacts": [], "templates": []}
-            
-            # Check for other exceptions
-            if isinstance(structure, Exception):
-                logger.error(f"❌ Structure extraction error: {structure}", exc_info=True)
-                structure = {"nodes": [], "swimLanes": []}
-            if isinstance(content, Exception):
-                logger.error(f"❌ Content extraction error: {content}", exc_info=True)
-                content = {}
-            if isinstance(references, Exception):
-                logger.error(f"❌ References extraction error: {references}", exc_info=True)
-                references = {"contacts": [], "templates": []}
-            
-            # For multi-chunk documents: extract structure from remaining chunks and merge
-            if is_multi_chunk and not isinstance(structure, (Exception,)):
-                extra_structures = []
-                for chunk_text in chunks[1:]:
-                    try:
-                        extra_structure = await self._extract_structure(chunk_text, document_name, analysis)
-                        extra_structures.append(extra_structure)
-                    except Exception as chunk_err:
-                        logger.warning(f"⚠️ Chunk structure extraction failed: {chunk_err}")
-                if extra_structures:
-                    structure = self._merge_chunk_structures([structure] + extra_structures)
-                    logger.info(f"✅ Merged {len(extra_structures)+1} chunks: {len(structure.get('nodes',[]))} total nodes")
+            if isinstance(structures_raw[0], Exception):
+                logger.error(f"❌ Structure extraction error: {structures_raw[0]}", exc_info=True)
+                structures_raw[0] = {"nodes": [], "swimLanes": []}
 
-                        # MERGE the results
+            # Content/references failures are non-critical
+            if isinstance(content, (AICallError, Exception)):
+                logger.error(f"❌ Content extraction failed: {content}")
+                content = {}
+            if isinstance(references, (AICallError, Exception)):
+                logger.error(f"❌ References extraction failed: {references}")
+                references = {"contacts": [], "templates": []}
+
+            # Merge structures from all chunks (extra-chunk failures are non-critical)
+            valid_structures = [
+                s for s in structures_raw
+                if isinstance(s, dict) and "nodes" in s
+            ]
+            if len(valid_structures) > 1:
+                structure = self._merge_chunk_structures(valid_structures)
+                logger.info(f"✅ Merged {len(valid_structures)} chunk structures: {len(structure.get('nodes', []))} total nodes")
+            elif valid_structures:
+                structure = valid_structures[0]
+            else:
+                structure = {"nodes": [], "swimLanes": []}
+
+            # MERGE structure + content + references
             result = self._merge_results(structure, content, references, analysis)
-            
+
             # Validate structure
             result = self._validate_and_fix(result)
-            
+
             # Validate against source document to catch hallucinations
             result = self._validate_against_source(result, doc_text)
-            
+
             # Apply INTELLIGENT grouping based on document complexity analysis
             from intelligent_analyzer import IntelligentDocumentAnalyzer, IntelligentNodeGrouper
-            
+
             analyzer = IntelligentDocumentAnalyzer()
             complexity = analyzer.analyze(doc_text)
-            
-            # Only group if we have more nodes than recommended
+
             if len(result.get('nodes', [])) > complexity.recommended_nodes:
                 logger.info(f"🔄 Applying intelligent grouping: {len(result['nodes'])} nodes → target {complexity.recommended_nodes}")
                 grouper = IntelligentNodeGrouper(complexity)
@@ -146,13 +137,11 @@ class AdaptiveFlowchartProcessor:
                 result['edges'] = grouped_edges
             else:
                 logger.info(f"✅ Node count OK: {len(result.get('nodes', []))} ≤ target {complexity.recommended_nodes}")
-            
+
             logger.info(f"✅ Processing complete: {len(result['nodes'])} nodes (target: {complexity.recommended_nodes})")
-            
             return result
-            
+
         except AICallError as e:
-            # AI call errors are already user-friendly
             logger.error(f"❌ AI processing failed: {e}")
             raise HTTPException(
                 status_code=422,
@@ -162,10 +151,8 @@ class AdaptiveFlowchartProcessor:
                 )
             )
         except HTTPException:
-            # Re-raise HTTP exceptions
             raise
         except Exception as e:
-            # Unexpected errors
             logger.error(f"❌ Unexpected processing error: {e}", exc_info=True)
             from error_handling import ErrorCatalog
             raise HTTPException(
@@ -175,7 +162,7 @@ class AdaptiveFlowchartProcessor:
                     str(e)
                 )
             )
-    
+
     async def _extract_structure(
         self, 
         doc_text: str, 
