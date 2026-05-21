@@ -113,7 +113,7 @@ echo "========================================="
 echo "TESTING: OLD SERVICE (EROAD)"
 echo "========================================="
 
-timeout 120 curl -s -X POST "https://process2chart.preview.emergentagent.com/api/process/eroad-style" \
+timeout 120 curl -s -X POST "https://sop-flowchart-ai.preview.emergentagent.com/api/process/eroad-style" \
   -H "Content-Type: application/json" \
   -d "{\"text\": $(echo "$DOC_TEXT" | jq -Rs .), \"inputType\": \"document\"}" 2>&1 | python3 << 'PYEOF'
 import sys, json

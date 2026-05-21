@@ -8,7 +8,7 @@ import json
 import uuid
 import time
 
-BASE_URL = "https://process2chart.preview.emergentagent.com/api"
+BASE_URL = "https://sop-flowchart-ai.preview.emergentagent.com/api"
 TIMEOUT = 180
 
 def authenticate():

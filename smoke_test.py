@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://process2chart.preview.emergentagent.com/api"
+BASE_URL = "https://sop-flowchart-ai.preview.emergentagent.com/api"
 TIMEOUT = 30
 
 # Test credentials from review request

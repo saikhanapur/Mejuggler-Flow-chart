@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime, timezone
 
 # Configuration
-BASE_URL = "https://process2chart.preview.emergentagent.com/api"
+BASE_URL = "https://sop-flowchart-ai.preview.emergentagent.com/api"
 TIMEOUT = 120
 
 def test_intelligent_critical_actions_extraction():

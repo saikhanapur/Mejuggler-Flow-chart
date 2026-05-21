@@ -29,7 +29,7 @@ def test_priority_detection():
     9. Complete monthly reports
     """
     
-    url = 'https://process2chart.preview.emergentagent.com/api/process/eroad-style'
+    url = 'https://sop-flowchart-ai.preview.emergentagent.com/api/process/eroad-style'
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
     payload = {
         'text': emergency_response_doc,

@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 
 # Get backend URL from environment
-BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://process2chart.preview.emergentagent.com')
+BACKEND_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://sop-flowchart-ai.preview.emergentagent.com')
 API_BASE_URL = f"{BACKEND_URL}/api"
 
 class ErrorHandlingTester:
